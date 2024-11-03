@@ -6,7 +6,7 @@
 }
 
 .inputField label {
-    height: 1em;
+    height: max-content;
     letter-spacing: 0.5px;
     width: max-content;
     margin-bottom: 0.5em;
@@ -40,5 +40,5 @@
     margin: 0.1em 0.5em 0;
     text-align: justify;
     color: var(--alert-color);
-    visibility: hidden;
+    /* visibility: hidden; */
 }
