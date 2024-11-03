@@ -1,0 +1,26 @@
+:root {
+  --ligth-theme-color: #068801;
+  --dark-theme-color: #023000;
+  --dark-font-color: #000000;
+  --ligth-font-color: #e7e7e7;
+  --alert-color: #cc1f1f;
+  --dark-bg-color: ;
+  --ligth-bg-color: .
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Roboto", "Open Sans", sans-serif;
+  color: var(--ligth-font-color);
+  /* border: 1px solid red; */
+}
+
+html,
+body,
+#root,
+main {
+    height: 100%;
+    width: 100%;
+}

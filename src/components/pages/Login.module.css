@@ -1,0 +1,25 @@
+.login_page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ligth-theme-color) url(../../../img/bgLogin.svg) center;
+}
+
+.login_container {
+    border: 3px solid var(--ligth-font-color);
+    border-radius: 1.5em;
+    padding: 1em;
+    backdrop-filter: brightness(0.2);
+    height: max-content;
+    width: 50%;
+    display: flex;
+}
+
+.forms_container {
+    display: flex;
+    gap: 5em;
+}
+
+.welcome_container {
+    display: none;
+}

@@ -1,0 +1,543 @@
+/* logico_tds: */
+
+CREATE TABLE formacao (
+    id_formacao int PRIMARY KEY,
+    inicio date,
+    conclusao date,
+    fk_grau_formacao_id_grau_formacao int,
+    fk_usuario_id_usuario int,
+    fk_curso_id_curso int
+);
+
+CREATE TABLE perfil (
+    id_perfil int PRIMARY KEY,
+    email varchar(255),
+    senha varchar(20),
+    nome varchar(30),
+    verificado boolean,
+    biografia varchar(150),
+    ativo boolean,
+    privado boolean
+);
+
+CREATE TABLE marca (
+    id_marca int PRIMARY KEY,
+    nome_legal varchar(100),
+    nome_fantasia varchar(100),
+    descricao varchar(255),
+    website varchar(255),
+    ativo boolean,
+    numero_processo varchar(50),
+    nome_titular varchar(100),
+    cnpj_cpf_titular varchar(14),
+    data_registro date,
+    fk_perfil_id_perfil int
+);
+
+CREATE TABLE esporte (
+    id_esporte int PRIMARY KEY,
+    nome varchar(50),
+    descricao varchar(255),
+    fk_midia_id_icone int
+);
+
+CREATE TABLE endereco (
+    id_endereco int PRIMARY KEY,
+    logradouro varchar(100),
+    numero varchar(10),
+    complemento varchar(50),
+    bairro varchar(50),
+    cidade varchar(50),
+    estado char(2),
+    pais char(2),
+    cep char(8),
+    descricao varchar(255)
+);
+
+CREATE TABLE categoria_esporte (
+    id_categoria_esporte int PRIMARY KEY,
+    nome varchar(50),
+    descricao varchar(100)
+);
+
+CREATE TABLE compartilhamento (
+    id_compartilhamento int PRIMARY KEY,
+    legenda varchar(255),
+    fk_postagem_id_postagem int,
+    fk_perfil_id_perfil int
+);
+
+CREATE TABLE comentario (
+    id_comentario int PRIMARY KEY,
+    texto varchar(255),
+    fk_postagem_id_postagem int,
+    fk_perfil_id_perfil int
+);
+
+CREATE TABLE postagem (
+    id_postagem int PRIMARY KEY,
+    legenda text,
+    data_publicacao datetime,
+    fk_perfil_id_perfil int
+);
+
+CREATE TABLE midia (
+    id_midia int PRIMARY KEY,
+    caminho varchar(255),
+    tipo varchar(10),
+    formato varchar(10),
+    fk_postagem_id_postagem int
+);
+
+CREATE TABLE instituicao (
+    id_instituicao int PRIMARY KEY,
+    nome varchar(100),
+    estado char(2),
+    cidade varchar(50)
+);
+
+CREATE TABLE curso (
+    id_curso int PRIMARY KEY,
+    nome varchar(100)
+);
+
+CREATE TABLE hashtag (
+    id_hashtag int PRIMARY KEY,
+    nome varchar(50)
+);
+
+CREATE TABLE usuario (
+    id_usuario int PRIMARY KEY,
+    fk_perfil_id_perfil int
+);
+
+CREATE TABLE pesquisa (
+    id_pesquisa int PRIMARY KEY,
+    texto varchar(50),
+    fk_perfil_id_perfil int
+);
+
+CREATE TABLE denuncia (
+    id_denuncia int PRIMARY KEY,
+    descricao varchar(255),
+    fk_perfil_id_autor int,
+    fk_perfil_id_denunciado int,
+    fk_postagem_id_postagem int
+);
+
+CREATE TABLE motivo_denuncia (
+    id_motivo_denuncia int PRIMARY KEY,
+    motivo varchar(30)
+);
+
+CREATE TABLE segue (
+    fk_perfil_id_seguidor int,
+    fk_perfil_id_seguido int
+);
+
+CREATE TABLE responde (
+    fk_comentario_id_resposta int,
+    fk_comentario_id_respondido int
+);
+
+CREATE TABLE curso_instituicao (
+    fk_instituicao_id_instituicao int,
+    fk_curso_id_curso int
+);
+
+CREATE TABLE postagem_hashtag (
+    fk_postagem_id_postagem int,
+    fk_hashtag_id_hashtag int
+);
+
+CREATE TABLE categorias_esporte (
+    fk_categoria_esporte_id_categoria_esporte int,
+    fk_esporte_id_esporte int
+);
+
+CREATE TABLE preferencia (
+    fk_usuario_id_usuario int,
+    fk_esporte_id_esporte int
+);
+
+CREATE TABLE motivos_denuncia (
+    fk_motivo_denuncia_id_motivo_denuncia int,
+    fk_denuncia_id_denuncia int
+);
+
+CREATE TABLE compartilhado (
+    fk_perfil_id_perfil int,
+    fk_compartilhamento_id_compartilhamento int
+);
+
+CREATE TABLE marcacao_comentario (
+    fk_comentario_id_comentario int,
+    fk_perfil_id_perfil int
+);
+
+CREATE TABLE marcacao_postagem (
+    fk_perfil_id_perfil int,
+    fk_postagem_id_postagem int
+);
+
+CREATE TABLE local_favorito (
+    fk_usuario_id_usuario int,
+    fk_endereco_id_endereco int
+);
+
+CREATE TABLE evento_endereco (
+    fk_endereco_id_endereco int,
+    fk_evento_id_evento int
+);
+
+CREATE TABLE esporte_hashtag (
+    fk_esporte_id_esporte int,
+    fk_hashtag_id_hashtag int
+);
+
+CREATE TABLE foto_perfil (
+    fk_midia_id_midia int,
+    fk_perfil_id_perfil int
+);
+
+CREATE TABLE banner (
+    fk_midia_id_midia int,
+    fk_evento_id_evento int
+);
+
+CREATE TABLE curte (
+    fk_perfil_id_perfil int,
+    fk_postagem_id_postagem int
+);
+
+CREATE TABLE grau_formacao (
+    id_grau_formacao int PRIMARY KEY,
+    grau varchar(50)
+);
+
+CREATE TABLE notificacao (
+    id_notificacao int PRIMARY KEY,
+    mensagem varchar(50),
+    lancamento datetime,
+    fk_perfil_id_perfil int
+);
+
+CREATE TABLE evento (
+    id_evento int PRIMARY KEY,
+    nome varchar(100),
+    descricao text,
+    inicio datetime,
+    fim datetime,
+    fk_marca_id_marca int
+);
+
+CREATE TABLE story (
+    id_story int PRIMARY KEY,
+    duracao_horas tinyint,
+    fk_perfil_id_perfil int,
+    fk_midia_id_midia int
+);
+
+CREATE TABLE interacao (
+    id_interacao int PRIMARY KEY,
+    texto varchar(255),
+    momento datetime,
+    fk_perfil_id_perfil int,
+    fk_live_id_live int
+);
+
+CREATE TABLE configuracao (
+    id_configuracao int PRIMARY KEY,
+    permissao_camera boolean,
+    permissao_microfone boolean,
+    permissao_fotos_videos boolean,
+    permissao_localizacao boolean,
+    visibilidade_curtidas boolean,
+    visibilidade_compartilhamentos boolean,
+    visibilidade_comentarios boolean,
+    visibilidade_seguidores boolean,
+    visibilidade_seguindo boolean,
+    permissao_marcacao varchar(20),
+    permissao_compartilhamento varchar(20),
+    permissao_comentario varchar(20),
+    notificacoes boolean,
+    notificacoes_email boolean,
+    fk_perfil_id_perfil int
+);
+
+CREATE TABLE live (
+    id_live int PRIMARY KEY,
+    inicio datetime,
+    fim datetime,
+    curtidas_totais int,
+    fk_perfil_id_perfil int
+);
+ 
+ALTER TABLE formacao ADD CONSTRAINT FK_formacao_2
+    FOREIGN KEY (fk_usuario_id_usuario)
+    REFERENCES usuario (id_usuario)
+    ON DELETE CASCADE;
+ 
+ALTER TABLE formacao ADD CONSTRAINT FK_formacao_3
+    FOREIGN KEY (fk_curso_id_curso)
+    REFERENCES curso (id_curso)
+    ON DELETE CASCADE;
+ 
+ALTER TABLE formacao ADD CONSTRAINT FK_formacao_4
+    FOREIGN KEY (fk_grau_formacao_id_grau_formacao)
+    REFERENCES grau_formacao (id_grau_formacao);
+ 
+ALTER TABLE marca ADD CONSTRAINT FK_marca_2
+    FOREIGN KEY (fk_perfil_id_perfil)
+    REFERENCES perfil (id_perfil)
+    ON DELETE CASCADE;
+ 
+ALTER TABLE esporte ADD CONSTRAINT FK_esporte_2
+    FOREIGN KEY (fk_midia_id_icone)
+    REFERENCES midia (id_midia)
+    ON DELETE CASCADE;
+ 
+ALTER TABLE compartilhamento ADD CONSTRAINT FK_compartilhamento_2
+    FOREIGN KEY (fk_postagem_id_postagem)
+    REFERENCES postagem (id_postagem)
+    ON DELETE CASCADE;
+ 
+ALTER TABLE compartilhamento ADD CONSTRAINT FK_compartilhamento_3
+    FOREIGN KEY (fk_perfil_id_perfil)
+    REFERENCES perfil (id_perfil)
+    ON DELETE CASCADE;
+ 
+ALTER TABLE comentario ADD CONSTRAINT FK_comentario_2
+    FOREIGN KEY (fk_postagem_id_postagem)
+    REFERENCES postagem (id_postagem)
+    ON DELETE CASCADE;
+ 
+ALTER TABLE comentario ADD CONSTRAINT FK_comentario_3
+    FOREIGN KEY (fk_perfil_id_perfil)
+    REFERENCES perfil (id_perfil)
+    ON DELETE CASCADE;
+ 
+ALTER TABLE postagem ADD CONSTRAINT FK_postagem_2
+    FOREIGN KEY (fk_perfil_id_perfil)
+    REFERENCES perfil (id_perfil)
+    ON DELETE CASCADE;
+ 
+ALTER TABLE midia ADD CONSTRAINT FK_midia_2
+    FOREIGN KEY (fk_postagem_id_postagem)
+    REFERENCES postagem (id_postagem)
+    ON DELETE CASCADE;
+ 
+ALTER TABLE usuario ADD CONSTRAINT FK_usuario_2
+    FOREIGN KEY (fk_perfil_id_perfil)
+    REFERENCES perfil (id_perfil)
+    ON DELETE CASCADE;
+ 
+ALTER TABLE pesquisa ADD CONSTRAINT FK_pesquisa_2
+    FOREIGN KEY (fk_perfil_id_perfil)
+    REFERENCES perfil (id_perfil)
+    ON DELETE CASCADE;
+ 
+ALTER TABLE denuncia ADD CONSTRAINT FK_denuncia_2
+    FOREIGN KEY (fk_perfil_id_autor, fk_perfil_id_denunciado)
+    REFERENCES perfil (id_perfil, id_perfil)
+    ON DELETE CASCADE;
+ 
+ALTER TABLE denuncia ADD CONSTRAINT FK_denuncia_3
+    FOREIGN KEY (fk_postagem_id_postagem)
+    REFERENCES postagem (id_postagem)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE segue ADD CONSTRAINT FK_segue_1
+    FOREIGN KEY (fk_perfil_id_seguidor)
+    REFERENCES perfil (id_perfil)
+    ON DELETE CASCADE;
+ 
+ALTER TABLE segue ADD CONSTRAINT FK_segue_2
+    FOREIGN KEY (fk_perfil_id_seguido)
+    REFERENCES perfil (id_perfil)
+    ON DELETE CASCADE;
+ 
+ALTER TABLE responde ADD CONSTRAINT FK_responde_1
+    FOREIGN KEY (fk_comentario_id_resposta)
+    REFERENCES comentario (id_comentario)
+    ON DELETE CASCADE;
+ 
+ALTER TABLE responde ADD CONSTRAINT FK_responde_2
+    FOREIGN KEY (fk_comentario_id_respondido)
+    REFERENCES comentario (id_comentario)
+    ON DELETE CASCADE;
+ 
+ALTER TABLE curso_instituicao ADD CONSTRAINT FK_curso_instituicao_1
+    FOREIGN KEY (fk_instituicao_id_instituicao)
+    REFERENCES instituicao (id_instituicao)
+    ON DELETE RESTRICT;
+ 
+ALTER TABLE curso_instituicao ADD CONSTRAINT FK_curso_instituicao_2
+    FOREIGN KEY (fk_curso_id_curso)
+    REFERENCES curso (id_curso)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE postagem_hashtag ADD CONSTRAINT FK_postagem_hashtag_1
+    FOREIGN KEY (fk_postagem_id_postagem)
+    REFERENCES postagem (id_postagem)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE postagem_hashtag ADD CONSTRAINT FK_postagem_hashtag_2
+    FOREIGN KEY (fk_hashtag_id_hashtag)
+    REFERENCES hashtag (id_hashtag)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE categorias_esporte ADD CONSTRAINT FK_categorias_esporte_1
+    FOREIGN KEY (fk_categoria_esporte_id_categoria_esporte)
+    REFERENCES categoria_esporte (id_categoria_esporte)
+    ON DELETE RESTRICT;
+ 
+ALTER TABLE categorias_esporte ADD CONSTRAINT FK_categorias_esporte_2
+    FOREIGN KEY (fk_esporte_id_esporte)
+    REFERENCES esporte (id_esporte)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE preferencia ADD CONSTRAINT FK_preferencia_1
+    FOREIGN KEY (fk_usuario_id_usuario)
+    REFERENCES usuario (id_usuario)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE preferencia ADD CONSTRAINT FK_preferencia_2
+    FOREIGN KEY (fk_esporte_id_esporte)
+    REFERENCES esporte (id_esporte)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE motivos_denuncia ADD CONSTRAINT FK_motivos_denuncia_1
+    FOREIGN KEY (fk_motivo_denuncia_id_motivo_denuncia)
+    REFERENCES motivo_denuncia (id_motivo_denuncia)
+    ON DELETE RESTRICT;
+ 
+ALTER TABLE motivos_denuncia ADD CONSTRAINT FK_motivos_denuncia_2
+    FOREIGN KEY (fk_denuncia_id_denuncia)
+    REFERENCES denuncia (id_denuncia)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE compartilhado ADD CONSTRAINT FK_compartilhado_1
+    FOREIGN KEY (fk_perfil_id_perfil)
+    REFERENCES perfil (id_perfil)
+    ON DELETE RESTRICT;
+ 
+ALTER TABLE compartilhado ADD CONSTRAINT FK_compartilhado_2
+    FOREIGN KEY (fk_compartilhamento_id_compartilhamento)
+    REFERENCES compartilhamento (id_compartilhamento)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE marcacao_comentario ADD CONSTRAINT FK_marcacao_comentario_1
+    FOREIGN KEY (fk_comentario_id_comentario)
+    REFERENCES comentario (id_comentario)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE marcacao_comentario ADD CONSTRAINT FK_marcacao_comentario_2
+    FOREIGN KEY (fk_perfil_id_perfil)
+    REFERENCES perfil (id_perfil)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE marcacao_postagem ADD CONSTRAINT FK_marcacao_postagem_1
+    FOREIGN KEY (fk_perfil_id_perfil)
+    REFERENCES perfil (id_perfil)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE marcacao_postagem ADD CONSTRAINT FK_marcacao_postagem_2
+    FOREIGN KEY (fk_postagem_id_postagem)
+    REFERENCES postagem (id_postagem)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE local_favorito ADD CONSTRAINT FK_local_favorito_1
+    FOREIGN KEY (fk_usuario_id_usuario)
+    REFERENCES usuario (id_usuario)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE local_favorito ADD CONSTRAINT FK_local_favorito_2
+    FOREIGN KEY (fk_endereco_id_endereco)
+    REFERENCES endereco (id_endereco)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE evento_endereco ADD CONSTRAINT FK_evento_endereco_1
+    FOREIGN KEY (fk_endereco_id_endereco)
+    REFERENCES endereco (id_endereco)
+    ON DELETE RESTRICT;
+ 
+ALTER TABLE evento_endereco ADD CONSTRAINT FK_evento_endereco_2
+    FOREIGN KEY (fk_evento_id_evento)
+    REFERENCES evento (id_evento)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE esporte_hashtag ADD CONSTRAINT FK_esporte_hashtag_1
+    FOREIGN KEY (fk_esporte_id_esporte)
+    REFERENCES esporte (id_esporte)
+    ON DELETE RESTRICT;
+ 
+ALTER TABLE esporte_hashtag ADD CONSTRAINT FK_esporte_hashtag_2
+    FOREIGN KEY (fk_hashtag_id_hashtag)
+    REFERENCES hashtag (id_hashtag)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE foto_perfil ADD CONSTRAINT FK_foto_perfil_1
+    FOREIGN KEY (fk_midia_id_midia)
+    REFERENCES midia (id_midia)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE foto_perfil ADD CONSTRAINT FK_foto_perfil_2
+    FOREIGN KEY (fk_perfil_id_perfil)
+    REFERENCES perfil (id_perfil)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE banner ADD CONSTRAINT FK_banner_1
+    FOREIGN KEY (fk_midia_id_midia)
+    REFERENCES midia (id_midia)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE banner ADD CONSTRAINT FK_banner_2
+    FOREIGN KEY (fk_evento_id_evento)
+    REFERENCES evento (id_evento)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE curte ADD CONSTRAINT FK_curte_1
+    FOREIGN KEY (fk_perfil_id_perfil)
+    REFERENCES perfil (id_perfil)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE curte ADD CONSTRAINT FK_curte_2
+    FOREIGN KEY (fk_postagem_id_postagem)
+    REFERENCES postagem (id_postagem)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE notificacao ADD CONSTRAINT FK_notificacao_2
+    FOREIGN KEY (fk_perfil_id_perfil)
+    REFERENCES perfil (id_perfil);
+ 
+ALTER TABLE evento ADD CONSTRAINT FK_evento_2
+    FOREIGN KEY (fk_marca_id_marca)
+    REFERENCES marca (id_marca)
+    ON DELETE CASCADE;
+ 
+ALTER TABLE story ADD CONSTRAINT FK_story_2
+    FOREIGN KEY (fk_perfil_id_perfil)
+    REFERENCES perfil (id_perfil)
+    ON DELETE CASCADE;
+ 
+ALTER TABLE story ADD CONSTRAINT FK_story_3
+    FOREIGN KEY (fk_midia_id_midia)
+    REFERENCES midia (id_midia)
+    ON DELETE CASCADE;
+ 
+ALTER TABLE interacao ADD CONSTRAINT FK_interacao_2
+    FOREIGN KEY (fk_perfil_id_perfil)
+    REFERENCES perfil (id_perfil);
+ 
+ALTER TABLE interacao ADD CONSTRAINT FK_interacao_3
+    FOREIGN KEY (fk_live_id_live)
+    REFERENCES live (id_live);
+ 
+ALTER TABLE configuracao ADD CONSTRAINT FK_configuracao_1
+    FOREIGN KEY (fk_perfil_id_perfil)
+    REFERENCES perfil (id_perfil);
+ 
+ALTER TABLE live ADD CONSTRAINT FK_live_2
+    FOREIGN KEY (fk_perfil_id_perfil)
+    REFERENCES perfil (id_perfil);
