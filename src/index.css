@@ -4,8 +4,9 @@
   --dark-font-color: #000000;
   --ligth-font-color: #e7e7e7;
   --alert-color: #cc1f1f;
-  --dark-bg-color: ;
-  --ligth-bg-color: .
+  --dark-bg-color: #101010;
+  --ligth-bg-color: #3c3c3c;
+  --white-bg-color: #898989;
 }
 
 * {

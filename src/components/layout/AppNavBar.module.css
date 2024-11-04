@@ -1,0 +1,36 @@
+.app_nav_bar,
+.app_nav_bar ul {
+    display: flex;
+    height: max-content;
+    width: 100%;
+    background-color: var(--dark-bg-color);
+}
+
+.app_nav_bar {
+    position: fixed;
+    bottom: 0;
+    border-top: 1px solid var(--ligth-font-color);
+}
+
+.app_nav_bar ul {
+    list-style: none;
+    padding: 0.8em;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.app_nav_bar ul li {
+    cursor: pointer;
+    padding: 0.6em;
+    border-radius: 50%;
+    transition: background-color, 0.2s ease-in-out;
+}
+
+.app_nav_bar ul li:hover {
+    background-color: var(--ligth-bg-color);
+}
+
+.app_nav_bar ul li img {
+    height: 2em;
+    display: block;
+}
