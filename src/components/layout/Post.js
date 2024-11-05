@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 import styles from "./Post.module.css";
-import likeIcon from "../../img/likeIcon.png";
+import likeIcon from "../../img/likedIcon.png";
 import commentIcon from "../../img/commentIcon.png";
-import shareIcon from "../../img/shareIcon.png";
-import complaintIcon from "../../img/complaintIcon.png";
+import shareIcon from "../../img/sharedIcon.png";
+import complaintIcon from "../../img/complaintedIcon.png";
 import tagsIcon from "../../img/tagsIcon.png";
 import hashtagsIcon from "../../img/hashtagsIcon.png";
 
 function Post({authorUserName, authorPhotoPath, moment, mediasPath, caption}) {
     const [medias, setMedias] = useState([]);
+    const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
 
     useEffect(() => {
         setMedias(mediasPath.map((mediaPath) => {
@@ -38,58 +39,74 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath, caption}) {
         }
     };
 
-    function turnActionOn(e) {
-        const action = e.target;
-        
-    }
+    const turnActionOn = (e) => {
+        // const action = e.target;
+    };
+
+    const slideToLeft = () => {
+        setCurrentMediaIndex((prevIndex) => (prevIndex > 0 ? prevIndex - 1 : medias.length - 1));
+    };
+
+    const slideToRight = () => {
+        setCurrentMediaIndex((prevIndex) => (prevIndex < medias.length - 1 ? prevIndex + 1 : 0));
+    };
 
     return (
         <div className={styles.post}>
             <div className={styles.first_post_container}>
-                <div className={styles.post_info}>
+                <div className={styles.post_author_container}>
                     <span>
                         <div className={styles.perfil_photo_container}>
                             <img src={authorPhotoPath} alt="Profile"/>
                         </div>
                         {authorUserName}
                     </span>
-
-                    <span>{moment}</span>
                 </div>
 
-                <div className={styles.medias}>
-                    {medias.map((media, index) => (
-                        <div id={`media${index}`}>
-                            <p>{`${index + 1}/${medias.length}`}</p>
+                <div className={styles.medias} id="medias">
+                    {medias.length > 0 && (
+                        <div id={`media${currentMediaIndex}`}>
+                            <div className={styles.media_controls}>
+                                <p>{`${currentMediaIndex + 1}/${medias.length}`}</p>
+                                {medias[currentMediaIndex].duration && <p>{medias[currentMediaIndex].duration}</p>}
+                            </div>
 
-                            {media.type === 'image' ? (
-                                <img key={index} src={media.path} alt={`Media ${index + 1}`} />
-                            ) : media.type === 'video' ? (
-                                <>
-                                    <p key={index}>{media.duration}</p>
+                            <div className={styles.slide_container}>
+                                <div className={styles.slide_left} onClick={slideToLeft}></div>
+                                <div className={styles.slide_right} onClick={slideToRight}></div>
+                            </div>
 
-                                    <video 
-                                        key={index} 
-                                        controls
-                                        onLoadedMetadata={(e) => handleVideoLoad(index, e.target)}
-                                    >
-                                        <source src={media.path} type="video/mp4" />
-                                        Seu navegador não suporta a tag de vídeo.
-                                    </video>
-                                </>
+                            {medias[currentMediaIndex].type === 'image' ? (
+                                <img src={medias[currentMediaIndex].path} alt={`Media ${currentMediaIndex + 1}`} />
+                            ) : medias[currentMediaIndex].type === 'video' ? (
+                                <video 
+                                    controls
+                                    onLoadedMetadata={(e) => handleVideoLoad(currentMediaIndex, e.target)}
+                                >
+                                    <source src={medias[currentMediaIndex].path} type="video/mp4" />
+                                    Seu navegador não suporta a tag de vídeo.
+                                </video>
                             ) : null}
                         </div>
-                    ))}
+                    )}
                 </div>
             </div>
 
+            <div className={styles.container_divisor}></div>
+
             <div className={styles.second_post_container}>    
+                <span className={styles.date}>{moment}</span>
+
+                <div className={styles.caption}>
+                    <p><span>{authorUserName}:</span> {caption}</p>
+                </div>
+
                 <div className={styles.post_actions}>
                     <ul>
                         <div>
                             <li><img src={likeIcon} alt="Like" onClick={turnActionOn}/></li>
-                            <li><img src={commentIcon} alt="Comment"/></li>
                             <li><img src={shareIcon} alt="Share" onClick={turnActionOn}/></li>
+                            <li><img src={commentIcon} alt="Comment"/></li>
                         </div>
 
                         <div>
@@ -99,10 +116,6 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath, caption}) {
 
                         <li><img src={complaintIcon} alt="Complaint" onClick={turnActionOn}/></li>
                     </ul>
-                </div>
-
-                <div className={styles.caption}>
-                    <p><span>{authorUserName}:</span> {caption}</p>
                 </div>
             </div>
                 

@@ -8,17 +8,17 @@
 
 .flashes_section ul {
     list-style: none;
-    padding: 1em;
+    padding: 1em 0.7em;
     align-items: center;
     gap: 1em;
-    border: 1px solid var(--ligth-font-color);
 }
 
 .flashes_section {
+    border-right: 1px solid var(--ligth-font-color);
     overflow-y: auto;
     position: fixed;
-    top: calc(4.8em + 1px);
-    bottom: 4.8em;
+    top: calc(4.6em + 1px);
+    bottom: 4em;
     /* Para Firefox */
     /* scrollbar-width: thin; 
     scrollbar-color: var(--dark-theme-color) var(--white-bg-color); */
@@ -91,4 +91,31 @@
     height: 1.8em;
     width: 1.8em;
     display: block;
+}
+
+@media screen and (max-width: 663px) {
+    .flashes_section,
+    .flashes_section ul {
+        flex-direction: row;
+        width: unset;
+        height: max-content;
+    }
+    
+    .flashes_section ul {
+        padding: 0.7em 1em;
+        gap: 0.8em;
+    }
+    
+    .flashes_section {
+        border-bottom: 1px solid var(--ligth-font-color);
+        border-right: unset;
+        overflow-y: unset;
+        overflow-x: auto;
+        position: relative;
+        top: unset;
+        bottom: unset;
+        /* Para Firefox */
+        /* scrollbar-width: thin; 
+        scrollbar-color: var(--dark-theme-color) var(--white-bg-color); */
+    }
 }

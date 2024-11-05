@@ -14,7 +14,7 @@
 
 .app_nav_bar ul {
     list-style: none;
-    padding: 0.8em;
+    padding: 0.6em;
     align-items: center;
     justify-content: space-around;
 }
@@ -31,6 +31,6 @@
 }
 
 .app_nav_bar ul li img {
-    height: 2em;
+    height: 1.5em;
     display: block;
 }
