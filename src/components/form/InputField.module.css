@@ -20,6 +20,7 @@
     background-color: transparent;
     padding: 0 1em;
     letter-spacing: 0.5px;
+    outline: none;
 }
 
 .inputField span {
@@ -40,5 +41,6 @@
     margin: 0.1em 0.5em 0;
     text-align: justify;
     color: var(--alert-color);
+    letter-spacing: 0.4px;
     /* visibility: hidden; */
 }

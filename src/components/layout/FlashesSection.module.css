@@ -42,45 +42,15 @@
     background-color: var(--ligth-theme-color); /* Cor ao passar o mouse */
 }
 
-.flashes_section ul li {
-    cursor: pointer;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 3.5em;
-    width: 3.5em;
-    overflow: hidden;
-    background-color: var(--ligth-bg-color);
-    border: 3px solid var(--dark-theme-color);
-    transition: border 0.15s ease-in-out;
-}
-
-.flashes_section ul li:not(.add_flash):hover {
-    border: 3px solid var(--ligth-theme-color);
-}
-
-
-.flashes_section ul li img {
-    height: 100%;
-    width: 100%;
-    display: block;
-    object-fit: cover;
-    transition: all 0.25s ease-in-out;
-}
-
-.flashes_section ul li:not(.add_flash):hover img {
-    filter: brightness(0.6);
-    transform: scale(1.2);
-}
-
 .flashes_section ul li.add_flash {
     border: none;
     background-color: var(--ligth-bg-color);
     height: max-content;
     width: max-content;
     transition: background-color 0.2s ease-in-out;
+    border-radius: 50%;
     padding: 0.6em;
+    cursor: pointer;
 }
 
 .flashes_section ul li.add_flash:hover {

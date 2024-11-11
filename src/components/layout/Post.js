@@ -6,6 +6,7 @@ import shareIcon from "../../img/sharedIcon.png";
 import complaintIcon from "../../img/complaintedIcon.png";
 import tagsIcon from "../../img/tagsIcon.png";
 import hashtagsIcon from "../../img/hashtagsIcon.png";
+import ProfilePhotoContainer from "./ProfilePhotoContainer";
 
 function Post({authorUserName, authorPhotoPath, moment, mediasPath, caption}) {
     const [medias, setMedias] = useState([]);
@@ -56,9 +57,9 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath, caption}) {
             <div className={styles.first_post_container}>
                 <div className={styles.post_author_container}>
                     <span>
-                        <div className={styles.perfil_photo_container}>
-                            <img src={authorPhotoPath} alt="Profile"/>
-                        </div>
+                        <ul>
+                            <ProfilePhotoContainer profilePhotoPath={authorPhotoPath}/>
+                        </ul>
                         {authorUserName}
                     </span>
                 </div>

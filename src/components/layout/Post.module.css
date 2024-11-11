@@ -60,34 +60,16 @@
     cursor: pointer;
 }
 
+.post_author_container span ul {
+    list-style: none;
+}
+
 .date {
     color: var(--ligth-bg-color);
     font-size: 0.8em;
     width: max-content;
     margin-left: auto;
 }
-
-.perfil_photo_container {
-    height: 3em;
-    aspect-ratio: 1 / 1;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 50%;
-    border: 3px solid var(--dark-theme-color);
-    cursor: pointer;
-    transition: border 0.15s ease-in-out;
-}
-
-.perfil_photo_container:hover {
-    border: 3px solid var(--ligth-theme-color);
-}
-
-.perfil_photo_container:hover img {
-    transform: scale(1.15);
-}
-
 
 .medias {
     width: 100%;
@@ -173,7 +155,6 @@
 .caption {
     height: 100%;
     width: 100%;
-    font-size: 0.70em;
     letter-spacing: 0.6px;
     overflow-y: auto;
     border-top: 1px solid var(--ligth-font-color);
@@ -277,5 +258,6 @@ div.slide_right {
 
     .caption {
         aspect-ratio: 4 / 1;
+        font-size: 0.7em;
     }
 }
