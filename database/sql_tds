@@ -1,7 +1,7 @@
 /* logico_tds: */
 
 CREATE TABLE formacao (
-    id_formacao int PRIMARY KEY,
+    id_formacao int PRIMARY KEY AUTO_INCREMENT,
     inicio date,
     conclusao date,
     fk_grau_formacao_id_grau_formacao int,
@@ -10,7 +10,7 @@ CREATE TABLE formacao (
 );
 
 CREATE TABLE perfil (
-    id_perfil int PRIMARY KEY,
+    id_perfil int PRIMARY KEY AUTO_INCREMENT,
     email varchar(255),
     senha varchar(20),
     nome varchar(30),
@@ -21,7 +21,7 @@ CREATE TABLE perfil (
 );
 
 CREATE TABLE marca (
-    id_marca int PRIMARY KEY,
+    id_marca int PRIMARY KEY AUTO_INCREMENT,
     nome_legal varchar(100),
     nome_fantasia varchar(100),
     descricao varchar(255),
@@ -35,14 +35,14 @@ CREATE TABLE marca (
 );
 
 CREATE TABLE esporte (
-    id_esporte int PRIMARY KEY,
+    id_esporte int PRIMARY KEY AUTO_INCREMENT,
     nome varchar(50),
     descricao varchar(255),
     fk_midia_id_icone int
 );
 
 CREATE TABLE endereco (
-    id_endereco int PRIMARY KEY,
+    id_endereco int PRIMARY KEY AUTO_INCREMENT,
     logradouro varchar(100),
     numero varchar(10),
     complemento varchar(50),
@@ -55,34 +55,34 @@ CREATE TABLE endereco (
 );
 
 CREATE TABLE categoria_esporte (
-    id_categoria_esporte int PRIMARY KEY,
+    id_categoria_esporte int PRIMARY KEY AUTO_INCREMENT,
     nome varchar(50),
     descricao varchar(100)
 );
 
 CREATE TABLE compartilhamento (
-    id_compartilhamento int PRIMARY KEY,
+    id_compartilhamento int PRIMARY KEY AUTO_INCREMENT,
     legenda varchar(255),
     fk_postagem_id_postagem int,
     fk_perfil_id_perfil int
 );
 
 CREATE TABLE comentario (
-    id_comentario int PRIMARY KEY,
+    id_comentario int PRIMARY KEY AUTO_INCREMENT,
     texto varchar(255),
     fk_postagem_id_postagem int,
     fk_perfil_id_perfil int
 );
 
 CREATE TABLE postagem (
-    id_postagem int PRIMARY KEY,
+    id_postagem int PRIMARY KEY AUTO_INCREMENT,
     legenda text,
     data_publicacao datetime,
     fk_perfil_id_perfil int
 );
 
 CREATE TABLE midia (
-    id_midia int PRIMARY KEY,
+    id_midia int PRIMARY KEY AUTO_INCREMENT,
     caminho varchar(255),
     tipo varchar(10),
     formato varchar(10),
@@ -90,35 +90,35 @@ CREATE TABLE midia (
 );
 
 CREATE TABLE instituicao (
-    id_instituicao int PRIMARY KEY,
+    id_instituicao int PRIMARY KEY AUTO_INCREMENT,
     nome varchar(100),
     estado char(2),
     cidade varchar(50)
 );
 
 CREATE TABLE curso (
-    id_curso int PRIMARY KEY,
+    id_curso int PRIMARY KEY AUTO_INCREMENT,
     nome varchar(100)
 );
 
 CREATE TABLE hashtag (
-    id_hashtag int PRIMARY KEY,
+    id_hashtag int PRIMARY KEY AUTO_INCREMENT,
     nome varchar(50)
 );
 
 CREATE TABLE usuario (
-    id_usuario int PRIMARY KEY,
+    id_usuario int PRIMARY KEY AUTO_INCREMENT,
     fk_perfil_id_perfil int
 );
 
 CREATE TABLE pesquisa (
-    id_pesquisa int PRIMARY KEY,
+    id_pesquisa int PRIMARY KEY AUTO_INCREMENT,
     texto varchar(50),
     fk_perfil_id_perfil int
 );
 
 CREATE TABLE denuncia (
-    id_denuncia int PRIMARY KEY,
+    id_denuncia int PRIMARY KEY AUTO_INCREMENT,
     descricao varchar(255),
     fk_perfil_id_autor int,
     fk_perfil_id_denunciado int,
@@ -126,7 +126,7 @@ CREATE TABLE denuncia (
 );
 
 CREATE TABLE motivo_denuncia (
-    id_motivo_denuncia int PRIMARY KEY,
+    id_motivo_denuncia int PRIMARY KEY AUTO_INCREMENT,
     motivo varchar(30)
 );
 
@@ -211,19 +211,19 @@ CREATE TABLE curte (
 );
 
 CREATE TABLE grau_formacao (
-    id_grau_formacao int PRIMARY KEY,
+    id_grau_formacao int PRIMARY KEY AUTO_INCREMENT,
     grau varchar(50)
 );
 
 CREATE TABLE notificacao (
-    id_notificacao int PRIMARY KEY,
+    id_notificacao int PRIMARY KEY AUTO_INCREMENT,
     mensagem varchar(50),
     lancamento datetime,
     fk_perfil_id_perfil int
 );
 
 CREATE TABLE evento (
-    id_evento int PRIMARY KEY,
+    id_evento int PRIMARY KEY AUTO_INCREMENT,
     nome varchar(100),
     descricao text,
     inicio datetime,
@@ -232,14 +232,14 @@ CREATE TABLE evento (
 );
 
 CREATE TABLE story (
-    id_story int PRIMARY KEY,
+    id_story int PRIMARY KEY AUTO_INCREMENT,
     duracao_horas tinyint,
     fk_perfil_id_perfil int,
     fk_midia_id_midia int
 );
 
 CREATE TABLE interacao (
-    id_interacao int PRIMARY KEY,
+    id_interacao int PRIMARY KEY AUTO_INCREMENT,
     texto varchar(255),
     momento datetime,
     fk_perfil_id_perfil int,
@@ -247,7 +247,7 @@ CREATE TABLE interacao (
 );
 
 CREATE TABLE configuracao (
-    id_configuracao int PRIMARY KEY,
+    id_configuracao int PRIMARY KEY AUTO_INCREMENT,
     permissao_camera boolean,
     permissao_microfone boolean,
     permissao_fotos_videos boolean,
@@ -266,7 +266,7 @@ CREATE TABLE configuracao (
 );
 
 CREATE TABLE live (
-    id_live int PRIMARY KEY,
+    id_live int PRIMARY KEY AUTO_INCREMENT,
     inicio datetime,
     fim datetime,
     curtidas_totais int,
