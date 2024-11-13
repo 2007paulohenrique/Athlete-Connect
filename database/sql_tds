@@ -1,4 +1,3 @@
-/* logico_tds: */
 
 CREATE TABLE formacao (
     id_formacao int PRIMARY KEY AUTO_INCREMENT,
@@ -231,8 +230,8 @@ CREATE TABLE evento (
     fk_marca_id_marca int
 );
 
-CREATE TABLE story (
-    id_story int PRIMARY KEY AUTO_INCREMENT,
+CREATE TABLE flash (
+    id_flash int PRIMARY KEY AUTO_INCREMENT,
     duracao_horas tinyint,
     fk_perfil_id_perfil int,
     fk_midia_id_midia int
@@ -516,12 +515,12 @@ ALTER TABLE evento ADD CONSTRAINT FK_evento_2
     REFERENCES marca (id_marca)
     ON DELETE CASCADE;
  
-ALTER TABLE story ADD CONSTRAINT FK_story_2
+ALTER TABLE flash ADD CONSTRAINT FK_flash_2
     FOREIGN KEY (fk_perfil_id_perfil)
     REFERENCES perfil (id_perfil)
     ON DELETE CASCADE;
  
-ALTER TABLE story ADD CONSTRAINT FK_story_3
+ALTER TABLE flash ADD CONSTRAINT FK_flash_3
     FOREIGN KEY (fk_midia_id_midia)
     REFERENCES midia (id_midia)
     ON DELETE CASCADE;

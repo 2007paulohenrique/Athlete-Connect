@@ -4,6 +4,14 @@ import styles from "./Login.module.css";
 
 function Login() {
     const [isLogin, setIsLogin] = useState(false);
+    const [perfis, setPerfis] = useState([]);
+
+    useEffect(() => {
+        fetch("http://localhost:5000//api/perfis", {method: "GET"})
+        .then(resp => resp.json())
+        .then(data => setPerfis(data))
+        .catch(err => console.log(err))
+    }, []);
 
     function changeForm() {
         setIsLogin(!isLogin)

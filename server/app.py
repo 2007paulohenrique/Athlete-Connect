@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 from queries import *
 from conection import *
 
@@ -11,3 +11,14 @@ con_params = ("localhost", "estudante1", "estudante1", "athlete_connect")
 con = conexao_abrir(*con_params)
 criarBanco(con)
 conexao_fechar(con)
+
+@app.route("/api/perfis", methods=["GET"])
+def obter_perfis():
+    con = conexao_abrir(*con_params)
+    perfil = obterPerfis(con)
+    conexao_fechar(con)
+
+    return jsonify(perfil)
+
+if __name__ == "__main__":
+    app.run(debug=True)

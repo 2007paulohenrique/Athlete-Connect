@@ -10,6 +10,5 @@ def conexao_abrir(host, usuario, senha, banco):
     #     print(f"Erro ao conectar: {e}")
     #     return None
 
-# Função para fechar a conexão com o banco
 def conexao_fechar(con):
     con.close
