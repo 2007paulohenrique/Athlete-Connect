@@ -1,0 +1,31 @@
+.profile_photo_container {
+    cursor: pointer;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 3.5em;
+    width: 3.5em;
+    overflow: hidden;
+    background-color: var(--ligth-bg-color);
+    border: 3px solid var(--dark-theme-color);
+    transition: border 0.15s ease-in-out;
+}
+
+.profile_photo_container:hover {
+    border: 3px solid var(--ligth-theme-color);
+}
+
+
+.profile_photo_container img {
+    height: 100%;
+    width: 100%;
+    display: block;
+    object-fit: cover;
+    transition: all 0.25s ease-in-out;
+}
+
+.profile_photo_container:hover img {
+    filter: brightness(0.6);
+    transform: scale(1.2);
+}

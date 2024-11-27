@@ -1,0 +1,91 @@
+.flashes_section,
+.flashes_section ul {
+    display: flex;
+    flex-direction: column;
+    width: max-content;
+    background-color: var(--dark-bg-color);
+}
+
+.flashes_section ul {
+    list-style: none;
+    padding: 1em 0.7em;
+    align-items: center;
+    gap: 1em;
+}
+
+.flashes_section {
+    border-right: 1px solid var(--ligth-font-color);
+    overflow-y: auto;
+    position: fixed;
+    top: calc(4.6em + 1px);
+    bottom: 4em;
+    /* Para Firefox */
+    /* scrollbar-width: thin; 
+    scrollbar-color: var(--dark-theme-color) var(--white-bg-color); */
+}
+
+/* Estilos específicos para a barra de rolagem no Chrome, Edge e Safari */
+.flashes_section::-webkit-scrollbar {
+    width: 10px; /* Largura da barra de rolagem */
+}
+
+.flashes_section::-webkit-scrollbar-track {
+    background: var(--ligth-bg-color); /* Cor do fundo da barra */
+}
+
+.flashes_section::-webkit-scrollbar-thumb {
+    background-color: var(--dark-theme-color); /* Cor da barra de rolagem */
+    border-radius: 10px; /* Bordas arredondadas */
+}
+
+.flashes_section::-webkit-scrollbar-thumb:hover {
+    background-color: var(--ligth-theme-color); /* Cor ao passar o mouse */
+}
+
+.flashes_section ul li.add_flash {
+    border: none;
+    background-color: var(--ligth-bg-color);
+    height: max-content;
+    width: max-content;
+    transition: background-color 0.2s ease-in-out;
+    border-radius: 50%;
+    padding: 0.6em;
+    cursor: pointer;
+}
+
+.flashes_section ul li.add_flash:hover {
+    background-color: var(--white-bg-color);
+}
+
+.flashes_section ul li.add_flash img {
+    height: 1.8em;
+    width: 1.8em;
+    display: block;
+}
+
+@media screen and (max-width: 663px) {
+    .flashes_section,
+    .flashes_section ul {
+        flex-direction: row;
+        width: unset;
+        height: max-content;
+    }
+    
+    .flashes_section ul {
+        padding: 0.7em 1em;
+        gap: 0.8em;
+    }
+    
+    .flashes_section {
+        border-bottom: 1px solid var(--ligth-font-color);
+        border-right: unset;
+        overflow-y: unset;
+        overflow-x: auto;
+        position: relative;
+        top: unset;
+        bottom: unset;
+        /* Para Firefox */
+        /* scrollbar-width: thin; 
+        scrollbar-color: var(--dark-theme-color) var(--white-bg-color); */
+    }
+}

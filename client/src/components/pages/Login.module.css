@@ -1,0 +1,85 @@
+.login_page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ligth-theme-color) url(../../img/bgLogin.svg) center;
+    height: 100%;
+    background-size: cover;
+}
+
+.login_container {
+    border: 3px solid var(--ligth-font-color);
+    border-radius: 1.5em;
+    padding: 1em;
+    backdrop-filter: brightness(0.2);
+    height: max-content;
+    width: max-content;
+    display: flex;
+    overflow: hidden;
+}
+
+.forms_container {
+    display: flex;
+    align-items: center;
+    gap: 2em;
+}
+
+.welcome_container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    gap: 4em;
+    position: absolute;
+    width: 50%;
+    height: 100%;
+    top: 0;
+    right: 0;
+    border-radius: inherit;
+    background-image: linear-gradient(to top, var(--ligth-theme-color), var(--dark-theme-color));
+    padding: 3em;
+    transition: all 0.8s ease-in-out;
+}
+
+.welcome_login {
+    transform: translateX(-100%);
+}
+
+.welcome_signup {
+    transform: translateX(0);
+}
+
+.welcome_container * {
+    color: var(--dark-font-color);
+    letter-spacing: 1px;
+}
+
+.welcome_container h2 {
+    font-size: 2em;
+    text-wrap: nowrap;
+}
+
+.welcome_text {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+}
+
+@media screen and (max-width: 663px) {
+    .login_container {
+        height: max-content;
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
+        flex-direction: column;
+    }
+
+    .forms_container {
+        flex-direction: column;
+    }
+
+    .welcome_container {
+        display: none;
+    }
+}
