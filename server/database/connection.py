@@ -1,8 +1,8 @@
 import mysql.connector;
-import mariadb
+# import mariadb
 
-def conexao_abrir(host, usuario, senha, banco):
-    return mysql.connector.connect(host=host, user=usuario, password=senha, database=banco)
+def open_connection(host, user, password, database):
+    return mysql.connector.connect(host=host, user=user, password=password, database=database)
     # try:
     #     print("Deu certo!")
     #     return mariadb.connect(host=host, user=usuario, password=senha, database=banco)
@@ -10,5 +10,5 @@ def conexao_abrir(host, usuario, senha, banco):
     #     print(f"Erro ao conectar: {e}")
     #     return None
 
-def conexao_fechar(con):
+def close_connection(con):
     con.close

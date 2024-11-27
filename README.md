@@ -1,70 +1,17 @@
-# Getting Started with Create React App
+# Instalação
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+1. clone o repositório com `git clone https://github.com/athlete-connect/athlete-connect-code.git`
+2. Vá para o terminal e abra o repositório remoto
+3. No terminal, execute `python -m venv venv` para windows, ou `python3 -m venv venv` para linux, e em seguida `venv\Scripts\activate` no windows, ou `source venv/bin/activate` para linux. Isso irá criar o ambiente virtual venv e ativá-lo para isolar as dependências do projeto
+4. Abra a paleta de comando com `ctrl + shift + p`, pesquise por `Python: Select Interpreter` e selecione o interpretador python do ambiente virtual criado (venv)
+5. Execute `pip install -r server/requirements.txt` para instalar as dependências do back-end
+6. Instale o driver do mysql com `pip install mysql-connector-python` ou o do mariadb com `pip install mariadb`
+7. Instale o [Node.js](https://nodejs.org/) caso ainda não o tenha instalado, dessa forma. O npm será instalado automaticamente junto com o Node.js.
+8. Confirme a instalação do Node.js e do npm executando `node -v` e `npm -v`. Caso apareça suas versões, a instalação foi concluida com sucesso. 
+9. Instale as dependências do front-end indo até o diretório "client" dentro do projeto pelo terminal do vscodde e executando o comando `npm install`.
+10. habilite o serviço do mysql
+11. crie a database "athleteconnect" no mysql
+12. caso necessário, mude os parâmetros da conexão no arquivo `app.py` na pasta `/server`
+13. pelo terminal do vscode, vá até o diretório `/server` e execute `python app.py`, em seguida, vá até o diretório `/client` e execute o comando `npm start`
 
-## Available Scripts
-
-In the project directory, you can run:
-
-### `npm start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+obs: verifique se a extensão do python está instalada no vscode

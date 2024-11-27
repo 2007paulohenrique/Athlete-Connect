@@ -1,5 +1,5 @@
 
-CREATE TABLE formacao (
+CREATE TABLE IF NOT EXISTS formacao (
     id_formacao int PRIMARY KEY AUTO_INCREMENT,
     inicio date,
     conclusao date,
@@ -8,7 +8,7 @@ CREATE TABLE formacao (
     fk_curso_id_curso int
 );
 
-CREATE TABLE perfil (
+CREATE TABLE IF NOT EXISTS perfil (
     id_perfil int PRIMARY KEY AUTO_INCREMENT,
     email varchar(255),
     senha varchar(20),
@@ -16,10 +16,11 @@ CREATE TABLE perfil (
     verificado boolean,
     biografia varchar(150),
     ativo boolean,
-    privado boolean
+    privado boolean,
+    fk_midia_id_midia int
 );
 
-CREATE TABLE marca (
+CREATE TABLE IF NOT EXISTS marca (
     id_marca int PRIMARY KEY AUTO_INCREMENT,
     nome_legal varchar(100),
     nome_fantasia varchar(100),
@@ -33,14 +34,14 @@ CREATE TABLE marca (
     fk_perfil_id_perfil int
 );
 
-CREATE TABLE esporte (
+CREATE TABLE IF NOT EXISTS esporte (
     id_esporte int PRIMARY KEY AUTO_INCREMENT,
     nome varchar(50),
     descricao varchar(255),
     fk_midia_id_icone int
 );
 
-CREATE TABLE endereco (
+CREATE TABLE IF NOT EXISTS endereco (
     id_endereco int PRIMARY KEY AUTO_INCREMENT,
     logradouro varchar(100),
     numero varchar(10),
@@ -53,34 +54,34 @@ CREATE TABLE endereco (
     descricao varchar(255)
 );
 
-CREATE TABLE categoria_esporte (
+CREATE TABLE IF NOT EXISTS categoria_esporte (
     id_categoria_esporte int PRIMARY KEY AUTO_INCREMENT,
     nome varchar(50),
     descricao varchar(100)
 );
 
-CREATE TABLE compartilhamento (
+CREATE TABLE IF NOT EXISTS compartilhamento (
     id_compartilhamento int PRIMARY KEY AUTO_INCREMENT,
     legenda varchar(255),
     fk_postagem_id_postagem int,
     fk_perfil_id_perfil int
 );
 
-CREATE TABLE comentario (
+CREATE TABLE IF NOT EXISTS comentario (
     id_comentario int PRIMARY KEY AUTO_INCREMENT,
     texto varchar(255),
     fk_postagem_id_postagem int,
     fk_perfil_id_perfil int
 );
 
-CREATE TABLE postagem (
+CREATE TABLE IF NOT EXISTS postagem (
     id_postagem int PRIMARY KEY AUTO_INCREMENT,
     legenda text,
     data_publicacao datetime,
     fk_perfil_id_perfil int
 );
 
-CREATE TABLE midia (
+CREATE TABLE IF NOT EXISTS midia (
     id_midia int PRIMARY KEY AUTO_INCREMENT,
     caminho varchar(255),
     tipo varchar(10),
@@ -88,35 +89,35 @@ CREATE TABLE midia (
     fk_postagem_id_postagem int
 );
 
-CREATE TABLE instituicao (
+CREATE TABLE IF NOT EXISTS instituicao (
     id_instituicao int PRIMARY KEY AUTO_INCREMENT,
     nome varchar(100),
     estado char(2),
     cidade varchar(50)
 );
 
-CREATE TABLE curso (
+CREATE TABLE IF NOT EXISTS curso (
     id_curso int PRIMARY KEY AUTO_INCREMENT,
     nome varchar(100)
 );
 
-CREATE TABLE hashtag (
+CREATE TABLE IF NOT EXISTS hashtag (
     id_hashtag int PRIMARY KEY AUTO_INCREMENT,
     nome varchar(50)
 );
 
-CREATE TABLE usuario (
+CREATE TABLE IF NOT EXISTS usuario (
     id_usuario int PRIMARY KEY AUTO_INCREMENT,
     fk_perfil_id_perfil int
 );
 
-CREATE TABLE pesquisa (
+CREATE TABLE IF NOT EXISTS pesquisa (
     id_pesquisa int PRIMARY KEY AUTO_INCREMENT,
     texto varchar(50),
     fk_perfil_id_perfil int
 );
 
-CREATE TABLE denuncia (
+CREATE TABLE IF NOT EXISTS denuncia (
     id_denuncia int PRIMARY KEY AUTO_INCREMENT,
     descricao varchar(255),
     fk_perfil_id_autor int,
@@ -124,104 +125,104 @@ CREATE TABLE denuncia (
     fk_postagem_id_postagem int
 );
 
-CREATE TABLE motivo_denuncia (
+CREATE TABLE IF NOT EXISTS motivo_denuncia (
     id_motivo_denuncia int PRIMARY KEY AUTO_INCREMENT,
     motivo varchar(30)
 );
 
-CREATE TABLE segue (
+CREATE TABLE IF NOT EXISTS segue (
     fk_perfil_id_seguidor int,
     fk_perfil_id_seguido int
 );
 
-CREATE TABLE responde (
+CREATE TABLE IF NOT EXISTS responde (
     fk_comentario_id_resposta int,
     fk_comentario_id_respondido int
 );
 
-CREATE TABLE curso_instituicao (
+CREATE TABLE IF NOT EXISTS curso_instituicao (
     fk_instituicao_id_instituicao int,
     fk_curso_id_curso int
 );
 
-CREATE TABLE postagem_hashtag (
+CREATE TABLE IF NOT EXISTS postagem_hashtag (
     fk_postagem_id_postagem int,
     fk_hashtag_id_hashtag int
 );
 
-CREATE TABLE categorias_esporte (
+CREATE TABLE IF NOT EXISTS categorias_esporte (
     fk_categoria_esporte_id_categoria_esporte int,
     fk_esporte_id_esporte int
 );
 
-CREATE TABLE preferencia (
+CREATE TABLE IF NOT EXISTS preferencia (
     fk_usuario_id_usuario int,
     fk_esporte_id_esporte int
 );
 
-CREATE TABLE motivos_denuncia (
+CREATE TABLE IF NOT EXISTS motivos_denuncia (
     fk_motivo_denuncia_id_motivo_denuncia int,
     fk_denuncia_id_denuncia int
 );
 
-CREATE TABLE compartilhado (
+CREATE TABLE IF NOT EXISTS compartilhado (
     fk_perfil_id_perfil int,
     fk_compartilhamento_id_compartilhamento int
 );
 
-CREATE TABLE marcacao_comentario (
+CREATE TABLE IF NOT EXISTS marcacao_comentario (
     fk_comentario_id_comentario int,
     fk_perfil_id_perfil int
 );
 
-CREATE TABLE marcacao_postagem (
+CREATE TABLE IF NOT EXISTS marcacao_postagem (
     fk_perfil_id_perfil int,
     fk_postagem_id_postagem int
 );
 
-CREATE TABLE local_favorito (
+CREATE TABLE IF NOT EXISTS local_favorito (
     fk_usuario_id_usuario int,
     fk_endereco_id_endereco int
 );
 
-CREATE TABLE evento_endereco (
+CREATE TABLE IF NOT EXISTS evento_endereco (
     fk_endereco_id_endereco int,
     fk_evento_id_evento int
 );
 
-CREATE TABLE esporte_hashtag (
+CREATE TABLE IF NOT EXISTS esporte_hashtag (
     fk_esporte_id_esporte int,
     fk_hashtag_id_hashtag int
 );
 
-CREATE TABLE foto_perfil (
+CREATE TABLE IF NOT EXISTS foto_perfil (
     fk_midia_id_midia int,
     fk_perfil_id_perfil int
 );
 
-CREATE TABLE banner (
+CREATE TABLE IF NOT EXISTS banner (
     fk_midia_id_midia int,
     fk_evento_id_evento int
 );
 
-CREATE TABLE curte (
+CREATE TABLE IF NOT EXISTS curte (
     fk_perfil_id_perfil int,
     fk_postagem_id_postagem int
 );
 
-CREATE TABLE grau_formacao (
+CREATE TABLE IF NOT EXISTS grau_formacao (
     id_grau_formacao int PRIMARY KEY AUTO_INCREMENT,
     grau varchar(50)
 );
 
-CREATE TABLE notificacao (
+CREATE TABLE IF NOT EXISTS notificacao (
     id_notificacao int PRIMARY KEY AUTO_INCREMENT,
     mensagem varchar(50),
     lancamento datetime,
     fk_perfil_id_perfil int
 );
 
-CREATE TABLE evento (
+CREATE TABLE IF NOT EXISTS evento (
     id_evento int PRIMARY KEY AUTO_INCREMENT,
     nome varchar(100),
     descricao text,
@@ -230,14 +231,14 @@ CREATE TABLE evento (
     fk_marca_id_marca int
 );
 
-CREATE TABLE flash (
+CREATE TABLE IF NOT EXISTS flash (
     id_flash int PRIMARY KEY AUTO_INCREMENT,
     duracao_horas tinyint,
     fk_perfil_id_perfil int,
     fk_midia_id_midia int
 );
 
-CREATE TABLE interacao (
+CREATE TABLE IF NOT EXISTS interacao (
     id_interacao int PRIMARY KEY AUTO_INCREMENT,
     texto varchar(255),
     momento datetime,
@@ -245,7 +246,7 @@ CREATE TABLE interacao (
     fk_live_id_live int
 );
 
-CREATE TABLE configuracao (
+CREATE TABLE IF NOT EXISTS configuracao (
     id_configuracao int PRIMARY KEY AUTO_INCREMENT,
     permissao_camera boolean,
     permissao_microfone boolean,
@@ -264,7 +265,7 @@ CREATE TABLE configuracao (
     fk_perfil_id_perfil int
 );
 
-CREATE TABLE live (
+CREATE TABLE IF NOT EXISTS live (
     id_live int PRIMARY KEY AUTO_INCREMENT,
     inicio datetime,
     fim datetime,
