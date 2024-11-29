@@ -105,6 +105,14 @@ def create_database(con):
      with open("database/sql_tds.sql", "r") as file:
           sql = file.read()
 
+     commands = sql.split(";")
      cursor = con.cursor()
-     cursor.execute(sql)
+
+     for command in commands:
+          command = command.strip()
+
+          if command:
+               cursor.execute(command)
+               
+     con.commit()
      cursor.close()

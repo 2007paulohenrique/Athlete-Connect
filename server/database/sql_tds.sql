@@ -1,543 +1,329 @@
-
-CREATE TABLE IF NOT EXISTS formacao (
-    id_formacao int PRIMARY KEY AUTO_INCREMENT,
-    inicio date,
-    conclusao date,
-    fk_grau_formacao_id_grau_formacao int,
-    fk_usuario_id_usuario int,
-    fk_curso_id_curso int
-);
-
 CREATE TABLE IF NOT EXISTS perfil (
     id_perfil int PRIMARY KEY AUTO_INCREMENT,
-    email varchar(255),
-    senha varchar(20),
-    nome varchar(30),
-    verificado boolean,
+    email varchar(255) NOT NULL,
+    senha varchar(20) NOT NULL,
+    nome varchar(30) NOT NULL,
+    verificado boolean NOT NULL,
     biografia varchar(150),
-    ativo boolean,
-    privado boolean,
-    fk_midia_id_midia int
-);
-
-CREATE TABLE IF NOT EXISTS marca (
-    id_marca int PRIMARY KEY AUTO_INCREMENT,
-    nome_legal varchar(100),
-    nome_fantasia varchar(100),
-    descricao varchar(255),
-    website varchar(255),
-    ativo boolean,
-    numero_processo varchar(50),
-    nome_titular varchar(100),
-    cnpj_cpf_titular varchar(14),
-    data_registro date,
-    fk_perfil_id_perfil int
-);
-
-CREATE TABLE IF NOT EXISTS esporte (
-    id_esporte int PRIMARY KEY AUTO_INCREMENT,
-    nome varchar(50),
-    descricao varchar(255),
-    fk_midia_id_icone int
-);
-
-CREATE TABLE IF NOT EXISTS endereco (
-    id_endereco int PRIMARY KEY AUTO_INCREMENT,
-    logradouro varchar(100),
-    numero varchar(10),
-    complemento varchar(50),
-    bairro varchar(50),
-    cidade varchar(50),
-    estado char(2),
-    pais char(2),
-    cep char(8),
-    descricao varchar(255)
-);
-
-CREATE TABLE IF NOT EXISTS categoria_esporte (
-    id_categoria_esporte int PRIMARY KEY AUTO_INCREMENT,
-    nome varchar(50),
-    descricao varchar(100)
-);
-
-CREATE TABLE IF NOT EXISTS compartilhamento (
-    id_compartilhamento int PRIMARY KEY AUTO_INCREMENT,
-    legenda varchar(255),
-    fk_postagem_id_postagem int,
-    fk_perfil_id_perfil int
-);
-
-CREATE TABLE IF NOT EXISTS comentario (
-    id_comentario int PRIMARY KEY AUTO_INCREMENT,
-    texto varchar(255),
-    fk_postagem_id_postagem int,
-    fk_perfil_id_perfil int
+    ativo boolean NOT NULL,
+    privado boolean NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS postagem (
     id_postagem int PRIMARY KEY AUTO_INCREMENT,
     legenda text,
-    data_publicacao datetime,
-    fk_perfil_id_perfil int
+    data_publicacao datetime NOT NULL,
+    fk_perfil_id_perfil int NOT NULL,
+    FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil)
 );
 
 CREATE TABLE IF NOT EXISTS midia (
     id_midia int PRIMARY KEY AUTO_INCREMENT,
-    caminho varchar(255),
-    tipo varchar(10),
-    formato varchar(10),
-    fk_postagem_id_postagem int
+    caminho varchar(255) NOT NULL,
+    tipo varchar(10) NOT NULL,
+    formato varchar(10) NOT NULL,
+    fk_postagem_id_postagem int,
+    fk_perfil_id_perfil int,
+    FOREIGN KEY (fk_postagem_id_postagem) REFERENCES postagem(id_postagem),
+    FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil)
+);
+
+CREATE TABLE IF NOT EXISTS marca (
+    id_marca int PRIMARY KEY AUTO_INCREMENT,
+    nome_legal varchar(100) NOT NULL,
+    nome_fantasia varchar(100) NOT NULL,
+    descricao varchar(255),
+    website varchar(255),
+    ativo boolean NOT NULL,
+    numero_processo varchar(50) NOT NULL,
+    nome_titular varchar(100) NOT NULL,
+    cnpj_cpf_titular varchar(14) NOT NULL,
+    data_registro date NOT NULL,
+    fk_perfil_id_perfil int NOT NULL,
+    FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil)
+);
+
+CREATE TABLE IF NOT EXISTS esporte (
+    id_esporte int PRIMARY KEY AUTO_INCREMENT,
+    nome varchar(50) NOT NULL,
+    descricao varchar(255) NOT NULL,
+    fk_midia_id_icone int NOT NULL,
+    FOREIGN KEY (fk_midia_id_icone) REFERENCES midia(id_midia)
+);
+
+CREATE TABLE IF NOT EXISTS endereco (
+    id_endereco int PRIMARY KEY AUTO_INCREMENT,
+    logradouro varchar(100) NOT NULL,
+    numero varchar(10) NOT NULL,
+    complemento varchar(50),
+    bairro varchar(50),
+    cidade varchar(50) NOT NULL,
+    estado char(2) NOT NULL,
+    pais char(2) NOT NULL,
+    cep char(8),
+    descricao varchar(255) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS categoria_esporte (
+    id_categoria_esporte int PRIMARY KEY AUTO_INCREMENT,
+    nome varchar(50) NOT NULL,
+    descricao varchar(100) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS compartilhamento (
+    id_compartilhamento int PRIMARY KEY AUTO_INCREMENT,
+    legenda varchar(255),
+    fk_postagem_id_postagem int NOT NULL,
+    fk_perfil_id_perfil int NOT NULL,
+    FOREIGN KEY (fk_postagem_id_postagem) REFERENCES postagem(id_postagem),
+    FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil)
+);
+
+CREATE TABLE IF NOT EXISTS comentario (
+    id_comentario int PRIMARY KEY AUTO_INCREMENT,
+    texto varchar(255) NOT NULL,
+    fk_postagem_id_postagem int NOT NULL,
+    fk_perfil_id_perfil int NOT NULL,
+    FOREIGN KEY (fk_postagem_id_postagem) REFERENCES postagem(id_postagem),
+    FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil)
 );
 
 CREATE TABLE IF NOT EXISTS instituicao (
     id_instituicao int PRIMARY KEY AUTO_INCREMENT,
-    nome varchar(100),
-    estado char(2),
-    cidade varchar(50)
+    nome varchar(100) NOT NULL,
+    estado char(2) NOT NULL,
+    cidade varchar(50) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS curso (
     id_curso int PRIMARY KEY AUTO_INCREMENT,
-    nome varchar(100)
+    nome varchar(100) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS hashtag (
     id_hashtag int PRIMARY KEY AUTO_INCREMENT,
-    nome varchar(50)
+    nome varchar(50) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS usuario (
     id_usuario int PRIMARY KEY AUTO_INCREMENT,
-    fk_perfil_id_perfil int
+    fk_perfil_id_perfil int NOT NULL,
+    FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil)
 );
 
 CREATE TABLE IF NOT EXISTS pesquisa (
     id_pesquisa int PRIMARY KEY AUTO_INCREMENT,
-    texto varchar(50),
-    fk_perfil_id_perfil int
+    texto varchar(50) NOT NULL,
+    fk_perfil_id_perfil int NOT NULL,
+    FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil)
 );
 
 CREATE TABLE IF NOT EXISTS denuncia (
     id_denuncia int PRIMARY KEY AUTO_INCREMENT,
     descricao varchar(255),
-    fk_perfil_id_autor int,
+    fk_perfil_id_autor int NOT NULL,
     fk_perfil_id_denunciado int,
-    fk_postagem_id_postagem int
+    fk_postagem_id_postagem int,
+    FOREIGN KEY (fk_perfil_id_autor) REFERENCES perfil(id_perfil),
+    FOREIGN KEY (fk_perfil_id_denunciado) REFERENCES perfil(id_perfil),
+    FOREIGN KEY (fk_postagem_id_postagem) REFERENCES postagem(id_postagem)
 );
 
 CREATE TABLE IF NOT EXISTS motivo_denuncia (
     id_motivo_denuncia int PRIMARY KEY AUTO_INCREMENT,
-    motivo varchar(30)
+    motivo varchar(30) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS segue (
-    fk_perfil_id_seguidor int,
-    fk_perfil_id_seguido int
+    fk_perfil_id_seguidor int NOT NULL,
+    fk_perfil_id_seguido int NOT NULL,
+    FOREIGN KEY (fk_perfil_id_seguidor) REFERENCES perfil(id_perfil),
+    FOREIGN KEY (fk_perfil_id_seguido) REFERENCES perfil(id_perfil)
 );
 
 CREATE TABLE IF NOT EXISTS responde (
-    fk_comentario_id_resposta int,
-    fk_comentario_id_respondido int
+    fk_comentario_id_resposta int NOT NULL,
+    fk_comentario_id_respondido int NOT NULL,
+    FOREIGN KEY (fk_comentario_id_resposta) REFERENCES comentario(id_comentario),
+    FOREIGN KEY (fk_comentario_id_respondido) REFERENCES comentario(id_comentario)
 );
 
 CREATE TABLE IF NOT EXISTS curso_instituicao (
-    fk_instituicao_id_instituicao int,
-    fk_curso_id_curso int
+    fk_instituicao_id_instituicao int NOT NULL,
+    fk_curso_id_curso int NOT NULL,
+    FOREIGN KEY (fk_instituicao_id_instituicao) REFERENCES instituicao(id_instituicao),
+    FOREIGN KEY (fk_curso_id_curso) REFERENCES curso(id_curso)
 );
 
 CREATE TABLE IF NOT EXISTS postagem_hashtag (
-    fk_postagem_id_postagem int,
-    fk_hashtag_id_hashtag int
+    fk_postagem_id_postagem int NOT NULL,
+    fk_hashtag_id_hashtag int NOT NULL,
+    FOREIGN KEY (fk_postagem_id_postagem) REFERENCES postagem(id_postagem),
+    FOREIGN KEY (fk_hashtag_id_hashtag) REFERENCES hashtag(id_hashtag)
 );
 
 CREATE TABLE IF NOT EXISTS categorias_esporte (
-    fk_categoria_esporte_id_categoria_esporte int,
-    fk_esporte_id_esporte int
+    fk_categoria_esporte_id_categoria_esporte int NOT NULL,
+    fk_esporte_id_esporte int NOT NULL,
+    FOREIGN KEY (fk_categoria_esporte_id_categoria_esporte) REFERENCES categoria_esporte(id_categoria_esporte),
+    FOREIGN KEY (fk_esporte_id_esporte) REFERENCES esporte(id_esporte)
 );
 
 CREATE TABLE IF NOT EXISTS preferencia (
-    fk_usuario_id_usuario int,
-    fk_esporte_id_esporte int
+    fk_usuario_id_usuario int NOT NULL,
+    fk_esporte_id_esporte int NOT NULL,
+    FOREIGN KEY (fk_usuario_id_usuario) REFERENCES usuario(id_usuario),
+    FOREIGN KEY (fk_esporte_id_esporte) REFERENCES esporte(id_esporte)
 );
 
 CREATE TABLE IF NOT EXISTS motivos_denuncia (
-    fk_motivo_denuncia_id_motivo_denuncia int,
-    fk_denuncia_id_denuncia int
+    fk_motivo_denuncia_id_motivo_denuncia int NOT NULL,
+    fk_denuncia_id_denuncia int NOT NULL,
+    FOREIGN KEY (fk_motivo_denuncia_id_motivo_denuncia) REFERENCES motivo_denuncia(id_motivo_denuncia),
+    FOREIGN KEY (fk_denuncia_id_denuncia) REFERENCES denuncia(id_denuncia)
 );
 
 CREATE TABLE IF NOT EXISTS compartilhado (
-    fk_perfil_id_perfil int,
-    fk_compartilhamento_id_compartilhamento int
+    fk_perfil_id_perfil int NOT NULL,
+    fk_compartilhamento_id_compartilhamento int NOT NULL,
+    FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil),
+    FOREIGN KEY (fk_compartilhamento_id_compartilhamento) REFERENCES compartilhamento(id_compartilhamento)
 );
 
 CREATE TABLE IF NOT EXISTS marcacao_comentario (
-    fk_comentario_id_comentario int,
-    fk_perfil_id_perfil int
+    fk_comentario_id_comentario int NOT NULL,
+    fk_perfil_id_perfil int NOT NULL,
+    FOREIGN KEY (fk_comentario_id_comentario) REFERENCES comentario(id_comentario),
+    FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil)
 );
 
 CREATE TABLE IF NOT EXISTS marcacao_postagem (
-    fk_perfil_id_perfil int,
-    fk_postagem_id_postagem int
+    fk_perfil_id_perfil int NOT NULL,
+    fk_postagem_id_postagem int NOT NULL,
+    FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil),
+    FOREIGN KEY (fk_postagem_id_postagem) REFERENCES postagem(id_postagem)
 );
 
 CREATE TABLE IF NOT EXISTS local_favorito (
-    fk_usuario_id_usuario int,
-    fk_endereco_id_endereco int
+    fk_usuario_id_usuario int NOT NULL,
+    fk_endereco_id_endereco int NOT NULL,
+    FOREIGN KEY (fk_usuario_id_usuario) REFERENCES usuario(id_usuario),
+    FOREIGN KEY (fk_endereco_id_endereco) REFERENCES endereco(id_endereco)
 );
 
 CREATE TABLE IF NOT EXISTS evento_endereco (
-    fk_endereco_id_endereco int,
-    fk_evento_id_evento int
+    fk_endereco_id_endereco int NOT NULL,
+    fk_evento_id_evento int NOT NULL,
+    FOREIGN KEY (fk_endereco_id_endereco) REFERENCES endereco(id_endereco)
 );
 
 CREATE TABLE IF NOT EXISTS esporte_hashtag (
-    fk_esporte_id_esporte int,
-    fk_hashtag_id_hashtag int
+    fk_esporte_id_esporte int NOT NULL,
+    fk_hashtag_id_hashtag int NOT NULL,
+    FOREIGN KEY (fk_esporte_id_esporte) REFERENCES esporte(id_esporte),
+    FOREIGN KEY (fk_hashtag_id_hashtag) REFERENCES hashtag(id_hashtag)
 );
 
 CREATE TABLE IF NOT EXISTS foto_perfil (
-    fk_midia_id_midia int,
-    fk_perfil_id_perfil int
-);
-
-CREATE TABLE IF NOT EXISTS banner (
-    fk_midia_id_midia int,
-    fk_evento_id_evento int
-);
-
-CREATE TABLE IF NOT EXISTS curte (
-    fk_perfil_id_perfil int,
-    fk_postagem_id_postagem int
-);
-
-CREATE TABLE IF NOT EXISTS grau_formacao (
-    id_grau_formacao int PRIMARY KEY AUTO_INCREMENT,
-    grau varchar(50)
-);
-
-CREATE TABLE IF NOT EXISTS notificacao (
-    id_notificacao int PRIMARY KEY AUTO_INCREMENT,
-    mensagem varchar(50),
-    lancamento datetime,
-    fk_perfil_id_perfil int
+    fk_midia_id_midia int NOT NULL,
+    fk_perfil_id_perfil int NOT NULL,
+    FOREIGN KEY (fk_midia_id_midia) REFERENCES midia(id_midia),
+    FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil)
 );
 
 CREATE TABLE IF NOT EXISTS evento (
     id_evento int PRIMARY KEY AUTO_INCREMENT,
-    nome varchar(100),
-    descricao text,
-    inicio datetime,
+    nome varchar(100) NOT NULL,
+    descricao text NOT NULL,
+    inicio datetime NOT NULL,
     fim datetime,
-    fk_marca_id_marca int
+    fk_marca_id_marca int NOT NULL,
+    FOREIGN KEY (fk_marca_id_marca) REFERENCES marca(id_marca)
+);
+
+CREATE TABLE IF NOT EXISTS banner (
+    fk_midia_id_midia int NOT NULL,
+    fk_evento_id_evento int NOT NULL,
+    FOREIGN KEY (fk_midia_id_midia) REFERENCES midia(id_midia),
+    FOREIGN KEY (fk_evento_id_evento) REFERENCES evento(id_evento)
+);
+
+CREATE TABLE IF NOT EXISTS curte (
+    fk_perfil_id_perfil int NOT NULL,
+    fk_postagem_id_postagem int NOT NULL,
+    FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil),
+    FOREIGN KEY (fk_postagem_id_postagem) REFERENCES postagem(id_postagem)
+);
+
+CREATE TABLE IF NOT EXISTS grau_formacao (
+    id_grau_formacao int PRIMARY KEY AUTO_INCREMENT,
+    grau varchar(50) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS notificacao (
+    id_notificacao int PRIMARY KEY AUTO_INCREMENT,
+    mensagem varchar(50) NOT NULL,
+    lancamento datetime NOT NULL,
+    fk_perfil_id_perfil int NOT NULL,
+    FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil)
 );
 
 CREATE TABLE IF NOT EXISTS flash (
     id_flash int PRIMARY KEY AUTO_INCREMENT,
-    duracao_horas tinyint,
-    fk_perfil_id_perfil int,
-    fk_midia_id_midia int
-);
-
-CREATE TABLE IF NOT EXISTS interacao (
-    id_interacao int PRIMARY KEY AUTO_INCREMENT,
-    texto varchar(255),
-    momento datetime,
-    fk_perfil_id_perfil int,
-    fk_live_id_live int
-);
-
-CREATE TABLE IF NOT EXISTS configuracao (
-    id_configuracao int PRIMARY KEY AUTO_INCREMENT,
-    permissao_camera boolean,
-    permissao_microfone boolean,
-    permissao_fotos_videos boolean,
-    permissao_localizacao boolean,
-    visibilidade_curtidas boolean,
-    visibilidade_compartilhamentos boolean,
-    visibilidade_comentarios boolean,
-    visibilidade_seguidores boolean,
-    visibilidade_seguindo boolean,
-    permissao_marcacao varchar(20),
-    permissao_compartilhamento varchar(20),
-    permissao_comentario varchar(20),
-    notificacoes boolean,
-    notificacoes_email boolean,
-    fk_perfil_id_perfil int
+    duracao_horas tinyint NOT NULL,
+    fk_perfil_id_perfil int NOT NULL,
+    fk_midia_id_midia int NOT NULL,
+    FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil),
+    FOREIGN KEY (fk_midia_id_midia) REFERENCES midia(id_midia)
 );
 
 CREATE TABLE IF NOT EXISTS live (
     id_live int PRIMARY KEY AUTO_INCREMENT,
-    inicio datetime,
+    inicio datetime NOT NULL,
     fim datetime,
     curtidas_totais int,
-    fk_perfil_id_perfil int
+    fk_perfil_id_perfil int NOT NULL,
+    FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil)
 );
- 
-ALTER TABLE formacao ADD CONSTRAINT FK_formacao_2
-    FOREIGN KEY (fk_usuario_id_usuario)
-    REFERENCES usuario (id_usuario)
-    ON DELETE CASCADE;
- 
-ALTER TABLE formacao ADD CONSTRAINT FK_formacao_3
-    FOREIGN KEY (fk_curso_id_curso)
-    REFERENCES curso (id_curso)
-    ON DELETE CASCADE;
- 
-ALTER TABLE formacao ADD CONSTRAINT FK_formacao_4
-    FOREIGN KEY (fk_grau_formacao_id_grau_formacao)
-    REFERENCES grau_formacao (id_grau_formacao);
- 
-ALTER TABLE marca ADD CONSTRAINT FK_marca_2
-    FOREIGN KEY (fk_perfil_id_perfil)
-    REFERENCES perfil (id_perfil)
-    ON DELETE CASCADE;
- 
-ALTER TABLE esporte ADD CONSTRAINT FK_esporte_2
-    FOREIGN KEY (fk_midia_id_icone)
-    REFERENCES midia (id_midia)
-    ON DELETE CASCADE;
- 
-ALTER TABLE compartilhamento ADD CONSTRAINT FK_compartilhamento_2
-    FOREIGN KEY (fk_postagem_id_postagem)
-    REFERENCES postagem (id_postagem)
-    ON DELETE CASCADE;
- 
-ALTER TABLE compartilhamento ADD CONSTRAINT FK_compartilhamento_3
-    FOREIGN KEY (fk_perfil_id_perfil)
-    REFERENCES perfil (id_perfil)
-    ON DELETE CASCADE;
- 
-ALTER TABLE comentario ADD CONSTRAINT FK_comentario_2
-    FOREIGN KEY (fk_postagem_id_postagem)
-    REFERENCES postagem (id_postagem)
-    ON DELETE CASCADE;
- 
-ALTER TABLE comentario ADD CONSTRAINT FK_comentario_3
-    FOREIGN KEY (fk_perfil_id_perfil)
-    REFERENCES perfil (id_perfil)
-    ON DELETE CASCADE;
- 
-ALTER TABLE postagem ADD CONSTRAINT FK_postagem_2
-    FOREIGN KEY (fk_perfil_id_perfil)
-    REFERENCES perfil (id_perfil)
-    ON DELETE CASCADE;
- 
-ALTER TABLE midia ADD CONSTRAINT FK_midia_2
-    FOREIGN KEY (fk_postagem_id_postagem)
-    REFERENCES postagem (id_postagem)
-    ON DELETE CASCADE;
- 
-ALTER TABLE usuario ADD CONSTRAINT FK_usuario_2
-    FOREIGN KEY (fk_perfil_id_perfil)
-    REFERENCES perfil (id_perfil)
-    ON DELETE CASCADE;
- 
-ALTER TABLE pesquisa ADD CONSTRAINT FK_pesquisa_2
-    FOREIGN KEY (fk_perfil_id_perfil)
-    REFERENCES perfil (id_perfil)
-    ON DELETE CASCADE;
- 
-ALTER TABLE denuncia ADD CONSTRAINT FK_denuncia_2
-    FOREIGN KEY (fk_perfil_id_autor, fk_perfil_id_denunciado)
-    REFERENCES perfil (id_perfil, id_perfil)
-    ON DELETE CASCADE;
- 
-ALTER TABLE denuncia ADD CONSTRAINT FK_denuncia_3
-    FOREIGN KEY (fk_postagem_id_postagem)
-    REFERENCES postagem (id_postagem)
-    ON DELETE SET NULL;
- 
-ALTER TABLE segue ADD CONSTRAINT FK_segue_1
-    FOREIGN KEY (fk_perfil_id_seguidor)
-    REFERENCES perfil (id_perfil)
-    ON DELETE CASCADE;
- 
-ALTER TABLE segue ADD CONSTRAINT FK_segue_2
-    FOREIGN KEY (fk_perfil_id_seguido)
-    REFERENCES perfil (id_perfil)
-    ON DELETE CASCADE;
- 
-ALTER TABLE responde ADD CONSTRAINT FK_responde_1
-    FOREIGN KEY (fk_comentario_id_resposta)
-    REFERENCES comentario (id_comentario)
-    ON DELETE CASCADE;
- 
-ALTER TABLE responde ADD CONSTRAINT FK_responde_2
-    FOREIGN KEY (fk_comentario_id_respondido)
-    REFERENCES comentario (id_comentario)
-    ON DELETE CASCADE;
- 
-ALTER TABLE curso_instituicao ADD CONSTRAINT FK_curso_instituicao_1
-    FOREIGN KEY (fk_instituicao_id_instituicao)
-    REFERENCES instituicao (id_instituicao)
-    ON DELETE RESTRICT;
- 
-ALTER TABLE curso_instituicao ADD CONSTRAINT FK_curso_instituicao_2
-    FOREIGN KEY (fk_curso_id_curso)
-    REFERENCES curso (id_curso)
-    ON DELETE SET NULL;
- 
-ALTER TABLE postagem_hashtag ADD CONSTRAINT FK_postagem_hashtag_1
-    FOREIGN KEY (fk_postagem_id_postagem)
-    REFERENCES postagem (id_postagem)
-    ON DELETE SET NULL;
- 
-ALTER TABLE postagem_hashtag ADD CONSTRAINT FK_postagem_hashtag_2
-    FOREIGN KEY (fk_hashtag_id_hashtag)
-    REFERENCES hashtag (id_hashtag)
-    ON DELETE SET NULL;
- 
-ALTER TABLE categorias_esporte ADD CONSTRAINT FK_categorias_esporte_1
-    FOREIGN KEY (fk_categoria_esporte_id_categoria_esporte)
-    REFERENCES categoria_esporte (id_categoria_esporte)
-    ON DELETE RESTRICT;
- 
-ALTER TABLE categorias_esporte ADD CONSTRAINT FK_categorias_esporte_2
-    FOREIGN KEY (fk_esporte_id_esporte)
-    REFERENCES esporte (id_esporte)
-    ON DELETE SET NULL;
- 
-ALTER TABLE preferencia ADD CONSTRAINT FK_preferencia_1
-    FOREIGN KEY (fk_usuario_id_usuario)
-    REFERENCES usuario (id_usuario)
-    ON DELETE SET NULL;
- 
-ALTER TABLE preferencia ADD CONSTRAINT FK_preferencia_2
-    FOREIGN KEY (fk_esporte_id_esporte)
-    REFERENCES esporte (id_esporte)
-    ON DELETE SET NULL;
- 
-ALTER TABLE motivos_denuncia ADD CONSTRAINT FK_motivos_denuncia_1
-    FOREIGN KEY (fk_motivo_denuncia_id_motivo_denuncia)
-    REFERENCES motivo_denuncia (id_motivo_denuncia)
-    ON DELETE RESTRICT;
- 
-ALTER TABLE motivos_denuncia ADD CONSTRAINT FK_motivos_denuncia_2
-    FOREIGN KEY (fk_denuncia_id_denuncia)
-    REFERENCES denuncia (id_denuncia)
-    ON DELETE SET NULL;
- 
-ALTER TABLE compartilhado ADD CONSTRAINT FK_compartilhado_1
-    FOREIGN KEY (fk_perfil_id_perfil)
-    REFERENCES perfil (id_perfil)
-    ON DELETE RESTRICT;
- 
-ALTER TABLE compartilhado ADD CONSTRAINT FK_compartilhado_2
-    FOREIGN KEY (fk_compartilhamento_id_compartilhamento)
-    REFERENCES compartilhamento (id_compartilhamento)
-    ON DELETE SET NULL;
- 
-ALTER TABLE marcacao_comentario ADD CONSTRAINT FK_marcacao_comentario_1
-    FOREIGN KEY (fk_comentario_id_comentario)
-    REFERENCES comentario (id_comentario)
-    ON DELETE SET NULL;
- 
-ALTER TABLE marcacao_comentario ADD CONSTRAINT FK_marcacao_comentario_2
-    FOREIGN KEY (fk_perfil_id_perfil)
-    REFERENCES perfil (id_perfil)
-    ON DELETE SET NULL;
- 
-ALTER TABLE marcacao_postagem ADD CONSTRAINT FK_marcacao_postagem_1
-    FOREIGN KEY (fk_perfil_id_perfil)
-    REFERENCES perfil (id_perfil)
-    ON DELETE SET NULL;
- 
-ALTER TABLE marcacao_postagem ADD CONSTRAINT FK_marcacao_postagem_2
-    FOREIGN KEY (fk_postagem_id_postagem)
-    REFERENCES postagem (id_postagem)
-    ON DELETE SET NULL;
- 
-ALTER TABLE local_favorito ADD CONSTRAINT FK_local_favorito_1
-    FOREIGN KEY (fk_usuario_id_usuario)
-    REFERENCES usuario (id_usuario)
-    ON DELETE SET NULL;
- 
-ALTER TABLE local_favorito ADD CONSTRAINT FK_local_favorito_2
-    FOREIGN KEY (fk_endereco_id_endereco)
-    REFERENCES endereco (id_endereco)
-    ON DELETE SET NULL;
- 
-ALTER TABLE evento_endereco ADD CONSTRAINT FK_evento_endereco_1
-    FOREIGN KEY (fk_endereco_id_endereco)
-    REFERENCES endereco (id_endereco)
-    ON DELETE RESTRICT;
- 
-ALTER TABLE evento_endereco ADD CONSTRAINT FK_evento_endereco_2
-    FOREIGN KEY (fk_evento_id_evento)
-    REFERENCES evento (id_evento)
-    ON DELETE SET NULL;
- 
-ALTER TABLE esporte_hashtag ADD CONSTRAINT FK_esporte_hashtag_1
-    FOREIGN KEY (fk_esporte_id_esporte)
-    REFERENCES esporte (id_esporte)
-    ON DELETE RESTRICT;
- 
-ALTER TABLE esporte_hashtag ADD CONSTRAINT FK_esporte_hashtag_2
-    FOREIGN KEY (fk_hashtag_id_hashtag)
-    REFERENCES hashtag (id_hashtag)
-    ON DELETE SET NULL;
- 
-ALTER TABLE foto_perfil ADD CONSTRAINT FK_foto_perfil_1
-    FOREIGN KEY (fk_midia_id_midia)
-    REFERENCES midia (id_midia)
-    ON DELETE SET NULL;
- 
-ALTER TABLE foto_perfil ADD CONSTRAINT FK_foto_perfil_2
-    FOREIGN KEY (fk_perfil_id_perfil)
-    REFERENCES perfil (id_perfil)
-    ON DELETE SET NULL;
- 
-ALTER TABLE banner ADD CONSTRAINT FK_banner_1
-    FOREIGN KEY (fk_midia_id_midia)
-    REFERENCES midia (id_midia)
-    ON DELETE SET NULL;
- 
-ALTER TABLE banner ADD CONSTRAINT FK_banner_2
-    FOREIGN KEY (fk_evento_id_evento)
-    REFERENCES evento (id_evento)
-    ON DELETE SET NULL;
- 
-ALTER TABLE curte ADD CONSTRAINT FK_curte_1
-    FOREIGN KEY (fk_perfil_id_perfil)
-    REFERENCES perfil (id_perfil)
-    ON DELETE SET NULL;
- 
-ALTER TABLE curte ADD CONSTRAINT FK_curte_2
-    FOREIGN KEY (fk_postagem_id_postagem)
-    REFERENCES postagem (id_postagem)
-    ON DELETE SET NULL;
- 
-ALTER TABLE notificacao ADD CONSTRAINT FK_notificacao_2
-    FOREIGN KEY (fk_perfil_id_perfil)
-    REFERENCES perfil (id_perfil);
- 
-ALTER TABLE evento ADD CONSTRAINT FK_evento_2
-    FOREIGN KEY (fk_marca_id_marca)
-    REFERENCES marca (id_marca)
-    ON DELETE CASCADE;
- 
-ALTER TABLE flash ADD CONSTRAINT FK_flash_2
-    FOREIGN KEY (fk_perfil_id_perfil)
-    REFERENCES perfil (id_perfil)
-    ON DELETE CASCADE;
- 
-ALTER TABLE flash ADD CONSTRAINT FK_flash_3
-    FOREIGN KEY (fk_midia_id_midia)
-    REFERENCES midia (id_midia)
-    ON DELETE CASCADE;
- 
-ALTER TABLE interacao ADD CONSTRAINT FK_interacao_2
-    FOREIGN KEY (fk_perfil_id_perfil)
-    REFERENCES perfil (id_perfil);
- 
-ALTER TABLE interacao ADD CONSTRAINT FK_interacao_3
-    FOREIGN KEY (fk_live_id_live)
-    REFERENCES live (id_live);
- 
-ALTER TABLE configuracao ADD CONSTRAINT FK_configuracao_1
-    FOREIGN KEY (fk_perfil_id_perfil)
-    REFERENCES perfil (id_perfil);
- 
-ALTER TABLE live ADD CONSTRAINT FK_live_2
-    FOREIGN KEY (fk_perfil_id_perfil)
-    REFERENCES perfil (id_perfil);
+
+CREATE TABLE IF NOT EXISTS interacao (
+    id_interacao int PRIMARY KEY AUTO_INCREMENT,
+    texto varchar(255) NOT NULL,
+    momento datetime NOT NULL,
+    fk_perfil_id_perfil int NOT NULL,
+    fk_live_id_live int NOT NULL,
+    FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil),
+    FOREIGN KEY (fk_live_id_live) REFERENCES live(id_live)
+);
+
+CREATE TABLE IF NOT EXISTS configuracao (
+    id_configuracao int PRIMARY KEY AUTO_INCREMENT,
+    permissao_camera boolean NOT NULL,
+    permissao_microfone boolean NOT NULL,
+    permissao_fotos_videos boolean NOT NULL,
+    permissao_localizacao boolean NOT NULL,
+    visibilidade_curtidas boolean NOT NULL,
+    visibilidade_compartilhamentos boolean NOT NULL,
+    visibilidade_comentarios boolean NOT NULL,
+    visibilidade_seguidores boolean NOT NULL,
+    visibilidade_seguindo boolean NOT NULL,
+    permissao_marcacao varchar(20) NOT NULL,
+    permissao_compartilhamento varchar(20) NOT NULL,
+    permissao_comentario varchar(20) NOT NULL,
+    notificacoes boolean NOT NULL,
+    notificacoes_email boolean NOT NULL,
+    fk_perfil_id_perfil int NOT NULL,
+    FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil)
+);
+
+CREATE TABLE IF NOT EXISTS formacao (
+    id_formacao int PRIMARY KEY AUTO_INCREMENT,
+    inicio date NOT NULL,
+    conclusao date NOT NULL,
+    fk_grau_formacao_id_grau_formacao int NOT NULL,
+    fk_usuario_id_usuario int NOT NULL,
+    fk_curso_id_curso int NOT NULL,
+    FOREIGN KEY (fk_grau_formacao_id_grau_formacao) REFERENCES grau_formacao(id_grau_formacao),
+    FOREIGN KEY (fk_usuario_id_usuario) REFERENCES usuario(id_usuario),
+    FOREIGN KEY (fk_curso_id_curso) REFERENCES curso(id_curso)
+);
