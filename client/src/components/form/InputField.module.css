@@ -1,14 +1,23 @@
-.inputField {
+.inputField,
+.checkbox_input {
     display: flex;
-    flex-direction: column;
     width: 100%;
     height: max-content;
+    flex-direction: column;
 }
 
-.inputField label {
+.checkbox_input {
+    align-items: start;
+}
+
+:where(.inputField, .checkbox_input) label {
     height: max-content;
     letter-spacing: 0.5px;
     width: max-content;
+    font-size: 0.8em;
+}
+
+.inputField label {
     margin-bottom: 0.5em;
     font-size: 1.2em;
 }
@@ -21,6 +30,11 @@
     padding: 0 1em;
     letter-spacing: 0.5px;
     outline: none;
+}
+
+.checkbox_input input {
+    outline: none;
+    margin-top: 0.4em;
 }
 
 .inputField span {

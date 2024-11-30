@@ -7,7 +7,7 @@ import userIcon from "../../img/userIcon.png";
 import emailIcon from "../../img/emailIcon.png";
 import passwordIcon from "../../img/passwordIcon.png";
 
-function LoginForm({ isLoginForm, handleSubmit, handleChangeForm, isLogin, profile, setProfile, validateLogin, validatePasswordLogin }) {
+function LoginForm({ isLoginForm, handleSubmit, handleChangeForm, isLogin, profile, setProfile, validateLogin, validatePasswordLogin, resetErrors}) {
     const [haveError, setHaveError] = useState(false);
     
     const loginFormRef = useRef(null);
@@ -15,6 +15,12 @@ function LoginForm({ isLoginForm, handleSubmit, handleChangeForm, isLogin, profi
 
     function handleOnChange(e) {
         setProfile({ ...profile, [e.target.name]: e.target.value });
+        console.log(profile)
+    }
+
+    function handleOnChangeLogin(e) {
+        setProfile({ ...profile, [e.target.name]: e.target.value });
+        resetErrors();
     }
 
     function handleOnChangeForm() {
@@ -35,7 +41,6 @@ function LoginForm({ isLoginForm, handleSubmit, handleChangeForm, isLogin, profi
 
     useEffect(() => {
         setHaveError(!(validateName() && validateEmail() && validatePassword()));
-        console.log(profile, haveError);
     }, [profile]);
 
     return (
@@ -58,8 +63,8 @@ function LoginForm({ isLoginForm, handleSubmit, handleChangeForm, isLogin, profi
                             alertMessage="Não foi encontrado nenhum perfil com esses dados." 
                             inputIcon={userIcon}
                             inputIconAlt="User icon"
-                            handleChange={handleOnChange} 
-                            showAlert={!validateLogin() && profile["nameOrEmailLogin"]}
+                            handleChange={handleOnChangeLogin} 
+                            showAlert={validateLogin && profile["nameOrEmailLogin"]}
                         />
             
                         <InputField 
@@ -70,15 +75,16 @@ function LoginForm({ isLoginForm, handleSubmit, handleChangeForm, isLogin, profi
                             alertMessage="Senha incorreta." 
                             inputIcon={passwordIcon}
                             inputIconAlt="Password icon"
-                            handleChange={handleOnChange} 
-                            showAlert={!validatePasswordLogin() && profile["passwordLogin"]}
+                            handleChange={handleOnChangeLogin} 
+                            showAlert={validatePasswordLogin && profile["passwordLogin"]}
                         />
                     </div>
 
                     <div className={styles.buttons_container}>
-                        <SubmitButton text="Entrar na conta" haveError={!validateLogin || !validatePasswordLogin}/>
-                        <p className={styles.change_form} onClick={handleOnChangeForm}>Criar conta</p>
+                        <SubmitButton text="Entrar na conta" haveError={validateLogin && validatePasswordLogin}/>
+                        <p className={styles.change_form} onClick={handleOnChangeForm}>Criar perfil</p>
                     </div>
+                    <p className={styles.forget_password}>Esqueci minha senha</p>
                 </form>
             ) : (
                 <form ref={signupFormRef} onSubmit={handleSubmit} className={`${styles.loginForm} ${!isLogin ? styles.form_visible : styles.form_hidden}`}>

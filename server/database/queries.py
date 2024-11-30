@@ -9,10 +9,10 @@ def get_profiles(con):
      cursor.close()
      return result
 
-def insert_profile(con, email, password, name):
+def insert_profile(con, email, password, name, bio, private):
      cursor = con.cursor()
-     sql = "INSERT INTO perfil (email, senha, nome, verificado, ativo, privado) VALUES (%s, %s, %s, %s, %s, %s)"
-     cursor.execute(sql, (email, password, name, 0, 1, 0))
+     sql = "INSERT INTO perfil (email, senha, nome, verificado, ativo, privado, biografia) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+     cursor.execute(sql, (email, password, name, 0, 1, 1 if private else 0, bio))
      con.commit() 
      profile_id = cursor.lastrowid
      cursor.close()
@@ -29,7 +29,7 @@ def insert_post(con, caption, profile_id):
 def check_followeds(con, follower_profile):
      cursor = con.cursor()
      sql = "SELECT * FROM segue WHERE fk_perfil_id_seguidor = %s"
-     cursor.execute(sql, (follower_profile))
+     cursor.execute(sql, (follower_profile,))
      result = cursor.fetchall()
      cursor.close()
 
@@ -44,7 +44,7 @@ def check_followeds(con, follower_profile):
 def get_post_medias(con, post_id):
      cursor = con.cursor(dictionary=True)
      sql = "SELECT * FROM midia WHERE fk_postagem_id_postagem = %s"
-     cursor.execute(sql, (post_id))
+     cursor.execute(sql, (post_id,))
      result = cursor.fetchall()
      cursor.close()
 
@@ -53,7 +53,7 @@ def get_post_medias(con, post_id):
 def get_post_author(con, profile_id):
      cursor = con.cursor(dictionary=True)
      sql = "SELECT * FROM perfil WHERE id_perfil = %s"
-     cursor.execute(sql, (profile_id))
+     cursor.execute(sql, (profile_id,))
      result = cursor.fetchone()
      cursor.close()
 
@@ -113,6 +113,6 @@ def create_database(con):
 
           if command:
                cursor.execute(command)
-               
+
      con.commit()
      cursor.close()

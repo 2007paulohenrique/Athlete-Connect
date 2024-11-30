@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom";
 
 function Login() {
     const [isLogin, setIsLogin] = useState(false);
+    const [loginError, setLoginError] = useState(false);
+    const [loginPasswordError, setLoginPasswordError] = useState(false);
     const [profiles, setProfiles] = useState([]);
     const [profile, setProfile] = useState({});
     const navigate = useNavigate();
@@ -30,7 +32,6 @@ function Login() {
             ((p["email"] === profile["nameOrEmailLogin"] || p["nome"] === profile["nameOrEmailLogin"]))
         )
 
-        console.log(profiles, profileLogin)
         return profileLogin
     }
 
@@ -48,29 +49,37 @@ function Login() {
 
     function signUpSubmit(e) {
         e.preventDefault();
-        console.log(profile);
 
         if (!profileMatch()) {
-            axios.post("http://localhost:5000/profiles", profile)
-            .then(resp => sessionStorage.setItem("profileId", resp.data.profileId))
-            .catch(err => {
-                console.error('Erro ao fazer a requisição:', err);
-            });
-
-            navigate("/home")
+            console.log(profile);
+            navigate("/editProfile", {state: {profile: profile}})
         }
-
     }
 
     function loginSubmit(e) {  
         e.preventDefault();
 
-        const loggedInProfile = validatePasswordLogin();  
+        if (validateLogin()) {
+            setLoginError(false);
 
-        if (loggedInProfile) {
+            if (!validatePasswordLogin()) {
+                setLoginPasswordError(true);
+                return;
+            }
+
+            setLoginPasswordError(false);
+            const loggedInProfile = validatePasswordLogin();
             sessionStorage.setItem("profileId", loggedInProfile["id_perfil"]);
+
             navigate("/home");
-        }
+        } else {
+            setLoginError(true);
+        }   
+    }
+
+    function resetErrors() {
+        setLoginError(false);
+        setLoginPasswordError(false);
     }
 
     return (
@@ -92,8 +101,9 @@ function Login() {
                         profile={profile}
                         setProfile={setProfile}
                         isLogin={isLogin}
-                        validateLogin={validateLogin}
-                        validatePasswordLogin={validatePasswordLogin}
+                        validateLogin={loginError}
+                        validatePasswordLogin={loginPasswordError}
+                        resetErrors={resetErrors}
                     />
                 </div>
                 <div className={`${styles.welcome_container} ${isLogin ? styles.welcome_login : styles.welcome_signup}`} id="welcome_container">

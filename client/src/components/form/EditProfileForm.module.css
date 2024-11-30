@@ -1,0 +1,72 @@
+.edit_profile_form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    width: 20em;
+    height: 100%;
+    min-height: 39em;
+    transition: all 1s ease;
+    overflow: auto;
+    border: 3px solid var(--ligth-font-color);
+    border-radius: 1.5em;
+    padding: 1em;
+    backdrop-filter: brightness(0.2);
+    height: max-content;
+    display: flex;
+}
+
+.inputs_container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 1em;
+}
+
+.buttons_container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1em;
+}
+
+.edit_profile_form img {
+    height: 2.5em;
+    width: 2.5em;
+    display: block;
+    margin-bottom: 0.4em;
+}
+
+.edit_profile_form h2 {
+    font-size: 2em;
+    letter-spacing: 1px;
+    color: var(--ligth-theme-color);
+    margin-bottom: 1em;
+}
+
+.empty_field_alert {
+    width: 100%;
+    text-align: left;
+    font-size: 0.8em;
+    color: var(--alert-color);
+    letter-spacing: 1px;
+}
+
+@media screen and (max-width: 720px) {
+    .edit_profile_form {
+        width: 100%;
+        height: 100%;
+        transition: opacity 1s ease, transform 1s ease 1s;
+        position: absolute;
+        left: 0;
+        top: 0;
+        padding: 1em;
+        overflow: auto;
+    }
+
+    .edit_profile_form h2 {
+        font-size: 2em;
+        letter-spacing: 1px;
+        color: var(--ligth-theme-color);
+    }
+}

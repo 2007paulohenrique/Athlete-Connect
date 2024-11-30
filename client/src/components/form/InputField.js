@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import styles from "./InputField.module.css";
 
-function InputField({ type, name, labelText, placeholder, alertMessage, handleChange, showAlert, inputIcon, inputIconAlt }) {
+function InputField({ type, name, labelText, placeholder, alertMessage, handleChange, showAlert, inputIcon, inputIconAlt, value }) {
     const alertRef = useRef(null);
 
     useEffect(() => {
@@ -12,12 +12,12 @@ function InputField({ type, name, labelText, placeholder, alertMessage, handleCh
     }, [showAlert]);
 
     return (
-        <div className={styles.inputField}>
+        <div className={type === "checkbox" ? styles.checkbox_input : styles.inputField}>
             <span>
                 {inputIcon && <img src={inputIcon} alt={inputIconAlt} />}
                 <label htmlFor={name}>{labelText}</label>
             </span>
-            <input type={type} name={name} id={name} placeholder={placeholder} onChange={handleChange} />
+            <input type={type} name={name} id={name} placeholder={placeholder} onChange={handleChange} value={value}/>
             <p className={styles.alert} ref={alertRef}>{alertMessage}</p>
         </div>
     );

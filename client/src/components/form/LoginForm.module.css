@@ -2,9 +2,9 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 18em;
+    width: 20em;
     height: 100%;
-    gap: 2em;
+    gap: 1em;
     transition: all 1s ease;
     overflow: auto;
 }
@@ -31,6 +31,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    margin-bottom: 1em;
 }
 
 .loginForm img {
@@ -46,13 +47,20 @@
     color: var(--ligth-theme-color);
 }
 
-.change_form {
+.change_form,
+.forget_password {
     cursor: pointer;
     position: relative;
     letter-spacing: 1px;
+    font-weight: bold;
 }
 
-.change_form::before {
+.forget_password {
+    color: var(--alert-color);
+    font-size: 0.9em;
+}
+
+:where(.change_form, .forget_password)::before {
     content: "";
     background-color: var(--ligth-font-color);
     height: 1px;
@@ -63,7 +71,11 @@
     transition: width 0.3s ease-in-out;
 }
 
-.change_form:hover::before {
+.forget_password::before {
+    background-color: var(--alert-color);
+}
+
+:where(.change_form, .forget_password):hover::before {
     width: 100%;
 }
 
@@ -80,10 +92,12 @@
 .empty_field_alert {
     width: 100%;
     text-align: left;
-    font-size: 0.9em;
+    font-size: 0.8em;
+    color: var(--alert-color);
+    letter-spacing: 1px;
 }
 
-@media screen and (max-width: 663px) {
+@media screen and (max-width: 720px) {
     .loginForm {
         width: 100%;
         height: 100%;

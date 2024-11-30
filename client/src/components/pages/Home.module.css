@@ -40,7 +40,7 @@
     display: block;
 }
 
-@media screen and (max-width: 663px) {
+@media screen and (max-width: 720px) {
     .posts_section {
         padding: 0 0 4em 0;
     }
