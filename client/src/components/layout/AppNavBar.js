@@ -1,9 +1,9 @@
 import styles from "./AppNavBar.module.css";
-import homeIcon from "../../img/homeIcon.png";
-import newPostIcon from "../../img/newPostIcon.png";
-import favPlacesIcon from "../../img/favPlacesIcon.png";
-import eventIcon from "../../img/eventIcon.png";
-import profileIcon from "../../img/profileIcon.png";
+import homeIcon from "../../img/icons/socialMedia/homeIcon.png";
+import newPostIcon from "../../img/icons/socialMedia/newPostIcon.png";
+import favPlacesIcon from "../../img/icons/socialMedia/favPlacesIcon.png";
+import eventIcon from "../../img/icons/socialMedia/eventIcon.png";
+import profileIcon from "../../img/icons/socialMedia/profileIcon.png";
 
 function AppNavBar() {
     return (

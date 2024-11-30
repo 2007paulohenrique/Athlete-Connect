@@ -2,10 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import styles from "./LoginForm.module.css";
 import InputField from "./InputField";
 import SubmitButton from "./SubmitButton";
-import Icon from "../../img/icon.ico";
-import userIcon from "../../img/userIcon.png";
-import emailIcon from "../../img/emailIcon.png";
-import passwordIcon from "../../img/passwordIcon.png";
+import Icon from "../../img/icons/socialMedia/icon.ico";
+import userIcon from "../../img/icons/socialMedia/userIcon.png";
+import emailIcon from "../../img/icons/socialMedia/emailIcon.png";
+import passwordIcon from "../../img/icons/socialMedia/passwordIcon.png";
 
 function LoginForm({ isLoginForm, handleSubmit, handleChangeForm, isLogin, profile, setProfile, validateLogin, validatePasswordLogin, resetErrors}) {
     const [haveError, setHaveError] = useState(false);

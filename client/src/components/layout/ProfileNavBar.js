@@ -1,9 +1,9 @@
 import styles from "./ProfileNavBar.module.css";
-import settingsIcon from "../../img/settingsIcon.png";
-import searchIcon from "../../img/searchIcon.png";
-import notificationsIcon from "../../img/notificationsIcon.png";
-import sharingIcon from "../../img/sharingIcon.png";
-import logo from "../../img/logoNBG.png";
+import settingsIcon from "../../img/icons/socialMedia/settingsIcon.png";
+import searchIcon from "../../img/icons/socialMedia/searchIcon.png";
+import notificationsIcon from "../../img/icons/socialMedia/notificationsIcon.png";
+import sharingIcon from "../../img/icons/socialMedia/sharingIcon.png";
+import logo from "../../img/logo/logoNBG.png";
 
 function ProfileNavBar() {
     return (

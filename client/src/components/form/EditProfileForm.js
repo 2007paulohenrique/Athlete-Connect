@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 
-
 function EditProfileForm() {
     const [profile, setProfile] = useState({});
     const [privateProfile, setPrivateProfile] = useState(false);
@@ -64,7 +63,7 @@ function EditProfileForm() {
                     type="text" 
                     name="nameSignUp" 
                     placeholder="Insira o nome de usuário" 
-                    labelText="Nome de Usuário" 
+                    labelText="Nome de Usuário*" 
                     alertMessage='O nome de usuário deve ter entre 4 e 30 caracteres, sem espaços e símbolos diferentes de: "_", "@", "+","&" e ".".' 
                     handleChange={handleOnChange} 
                     showAlert={profile["nameSignUp"] && !validateName()}
@@ -84,7 +83,7 @@ function EditProfileForm() {
                 <InputField 
                     type="checkbox" 
                     name="private"  
-                    labelText="Ative para ter o perfil privado" 
+                    labelText="Clique na caixa abaixo para tornar seu perfil privado" 
                     handleChange={handleOnChangeCheckBox} 
                 />
             </div>

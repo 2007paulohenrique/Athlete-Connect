@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import styles from "./Post.module.css";
-import likeIcon from "../../img/likedIcon.png";
-import commentIcon from "../../img/commentIcon.png";
-import shareIcon from "../../img/sharedIcon.png";
-import complaintIcon from "../../img/complaintedIcon.png";
-import tagsIcon from "../../img/tagsIcon.png";
-import hashtagsIcon from "../../img/hashtagsIcon.png";
+import likeIcon from "../../img/icons/socialMedia/likedIcon.png";
+import commentIcon from "../../img/icons/socialMedia/commentIcon.png";
+import shareIcon from "../../img/icons/socialMedia/sharedIcon.png";
+import complaintIcon from "../../img/icons/socialMedia/complaintedIcon.png";
+import tagsIcon from "../../img/icons/socialMedia/tagsIcon.png";
+import hashtagsIcon from "../../img/icons/socialMedia/hashtagsIcon.png";
 import ProfilePhotoContainer from "./ProfilePhotoContainer";
 
 function Post({authorUserName, authorPhotoPath, moment, mediasPath, caption}) {

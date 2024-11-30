@@ -3,7 +3,7 @@ import FlashesSection from "../layout/FlashesSection";
 import Post from "../layout/Post";
 import ProfileNavBar from "../layout/ProfileNavBar";
 import styles from "./Home.module.css";
-import arrowIcon from "../../img/arrowIcon.png";
+import arrowIcon from "../../img/icons/socialMedia/arrowIcon.png";
 import { useEffect, useState } from "react";
 import axios from "axios";
 

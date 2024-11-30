@@ -2,25 +2,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--ligth-theme-color) url(../../img/bgLogin.svg) center;
+    background: var(--ligth-theme-color) url(../../img/background/bgLogin.svg) center;
     height: 100%;
     background-size: cover;
-}
-
-@media screen and (max-width: 720px) {
-    /* .login_container {
-        height: max-content;
-        width: 100%;
-        height: 100%;
-        border-radius: 0;
-        flex-direction: column;
-    } */
-/* 
-    .forms_container {
-        flex-direction: column;
-    }
-
-    .welcome_container {
-        display: none;
-    } */
+    border: 2px solid blue;
 }

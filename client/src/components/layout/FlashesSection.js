@@ -1,6 +1,6 @@
 import styles from "./FlashesSection.module.css";
-import userIcon from "../../img/userIcon.png";
-import addFlashIcon from "../../img/addFlashIcon.png"
+import userIcon from "../../img/icons/socialMedia/userIcon.png";
+import addFlashIcon from "../../img/icons/socialMedia/addFlashIcon.png"
 import ProfilePhotoContainer from "./ProfilePhotoContainer";
 
 function FlashesSection() {
