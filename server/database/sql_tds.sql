@@ -6,15 +6,15 @@ CREATE TABLE IF NOT EXISTS perfil (
     verificado boolean NOT NULL,
     biografia varchar(150),
     ativo boolean NOT NULL,
-    privado boolean NOT NULL
+    privado boolean NOT NULL,
+    fk_midia_id_midia int
 );
 
 CREATE TABLE IF NOT EXISTS postagem (
     id_postagem int PRIMARY KEY AUTO_INCREMENT,
     legenda text,
     data_publicacao datetime NOT NULL,
-    fk_perfil_id_perfil int NOT NULL,
-    FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil)
+    fk_perfil_id_perfil int NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS midia (
@@ -22,11 +22,17 @@ CREATE TABLE IF NOT EXISTS midia (
     caminho varchar(255) NOT NULL,
     tipo varchar(10) NOT NULL,
     formato varchar(10) NOT NULL,
-    fk_postagem_id_postagem int,
-    fk_perfil_id_perfil int,
-    FOREIGN KEY (fk_postagem_id_postagem) REFERENCES postagem(id_postagem),
-    FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil)
+    fk_postagem_id_postagem int
 );
+
+ALTER TABLE postagem
+ADD CONSTRAINT fk_postagem_perfil FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil);
+
+ALTER TABLE midia
+ADD CONSTRAINT fk_midia_postagem FOREIGN KEY (fk_postagem_id_postagem) REFERENCES postagem(id_postagem);
+
+ALTER TABLE perfil
+ADD CONSTRAINT fk_perfil_midia FOREIGN KEY (fk_midia_id_midia) REFERENCES midia(id_midia);
 
 CREATE TABLE IF NOT EXISTS marca (
     id_marca int PRIMARY KEY AUTO_INCREMENT,
@@ -163,8 +169,8 @@ CREATE TABLE IF NOT EXISTS postagem_hashtag (
 );
 
 CREATE TABLE IF NOT EXISTS categorias_esporte (
-    fk_categoria_esporte_id_categoria_esporte int NOT NULL,
     fk_esporte_id_esporte int NOT NULL,
+    fk_categoria_esporte_id_categoria_esporte int NOT NULL,
     FOREIGN KEY (fk_categoria_esporte_id_categoria_esporte) REFERENCES categoria_esporte(id_categoria_esporte),
     FOREIGN KEY (fk_esporte_id_esporte) REFERENCES esporte(id_esporte)
 );

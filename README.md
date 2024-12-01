@@ -5,7 +5,7 @@
 3. No terminal, execute `python -m venv venv` para windows, ou `python3 -m venv venv` para linux, e em seguida `venv\Scripts\activate` no windows, ou `source venv/bin/activate` para linux. Isso irá criar o ambiente virtual venv e ativá-lo para isolar as dependências do projeto
 4. Abra a paleta de comando com `ctrl + shift + p`, pesquise por `Python: Select Interpreter` e selecione o interpretador python do ambiente virtual criado (venv)
 5. Execute `pip install -r server/requirements.txt` para instalar as dependências do back-end
-6. Instale o driver do mysql com `pip install mysql-connector-python` ou o do mariadb com `pip install mariadb`
+6. Instale a biblioteca do mysql com `pip install mysql-connector-python` ou a do mariadb com `pip install mariadb`
 7. Instale o [Node.js](https://nodejs.org/) caso ainda não o tenha instalado, dessa forma. O npm será instalado automaticamente junto com o Node.js.
 8. Confirme a instalação do Node.js e do npm executando `node -v` e `npm -v`. Caso apareça suas versões, a instalação foi concluida com sucesso. 
 9. Instale as dependências do front-end indo até o diretório "client" dentro do projeto pelo terminal do vscodde e executando o comando `npm install`.
