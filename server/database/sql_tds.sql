@@ -1,13 +1,13 @@
 CREATE TABLE IF NOT EXISTS perfil (
     id_perfil int PRIMARY KEY AUTO_INCREMENT,
-    email varchar(255) NOT NULL,
+    email varchar(255) NOT NULL UNIQUE,
     senha varchar(20) NOT NULL,
-    nome varchar(30) NOT NULL,
+    nome varchar(30) NOT NULL UNIQUE,
     verificado boolean NOT NULL,
     biografia varchar(150),
     ativo boolean NOT NULL,
     privado boolean NOT NULL,
-    fk_midia_id_midia int
+    fk_midia_id_midia int UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS postagem (
@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS postagem (
 
 CREATE TABLE IF NOT EXISTS midia (
     id_midia int PRIMARY KEY AUTO_INCREMENT,
-    caminho varchar(255) NOT NULL,
+    caminho varchar(255) NOT NULL UNIQUE,
     tipo varchar(10) NOT NULL,
     formato varchar(10) NOT NULL,
     fk_postagem_id_postagem int
@@ -36,44 +36,31 @@ ADD CONSTRAINT fk_perfil_midia FOREIGN KEY (fk_midia_id_midia) REFERENCES midia(
 
 CREATE TABLE IF NOT EXISTS marca (
     id_marca int PRIMARY KEY AUTO_INCREMENT,
-    nome_legal varchar(100) NOT NULL,
-    nome_fantasia varchar(100) NOT NULL,
+    nome_legal varchar(100) NOT NULL UNIQUE,
+    nome_fantasia varchar(100) NOT NULL UNIQUE,
     descricao varchar(255),
-    website varchar(255),
+    website varchar(255) UNIQUE,
     ativo boolean NOT NULL,
-    numero_processo varchar(50) NOT NULL,
+    numero_processo varchar(50) NOT NULL UNIQUE,
     nome_titular varchar(100) NOT NULL,
     cnpj_cpf_titular varchar(14) NOT NULL,
     data_registro date NOT NULL,
-    fk_perfil_id_perfil int NOT NULL,
+    fk_perfil_id_perfil int NOT NULL UNIQUE,
     FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil)
 );
 
 CREATE TABLE IF NOT EXISTS esporte (
     id_esporte int PRIMARY KEY AUTO_INCREMENT,
-    nome varchar(50) NOT NULL,
-    descricao varchar(255) NOT NULL,
-    fk_midia_id_icone int NOT NULL,
+    nome varchar(50) NOT NULL UNIQUE,
+    descricao varchar(255) NOT NULL UNIQUE,
+    fk_midia_id_icone int NOT NULL UNIQUE,
     FOREIGN KEY (fk_midia_id_icone) REFERENCES midia(id_midia)
-);
-
-CREATE TABLE IF NOT EXISTS endereco (
-    id_endereco int PRIMARY KEY AUTO_INCREMENT,
-    logradouro varchar(100) NOT NULL,
-    numero varchar(10) NOT NULL,
-    complemento varchar(50),
-    bairro varchar(50),
-    cidade varchar(50) NOT NULL,
-    estado char(2) NOT NULL,
-    pais char(2) NOT NULL,
-    cep char(8),
-    descricao varchar(255) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS categoria_esporte (
     id_categoria_esporte int PRIMARY KEY AUTO_INCREMENT,
-    nome varchar(50) NOT NULL,
-    descricao varchar(100) NOT NULL
+    nome varchar(50) NOT NULL UNIQUE,
+    descricao varchar(100) NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS compartilhamento (
@@ -94,26 +81,39 @@ CREATE TABLE IF NOT EXISTS comentario (
     FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil)
 );
 
+CREATE TABLE IF NOT EXISTS estado (
+	id_estado int PRIMARY KEY AUTO_INCREMENT,
+    nome varchar(30) NOT NULL UNIQUE,
+    sigla char(2) NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS cidade (
+	id_cidade int PRIMARY KEY AUTO_INCREMENT,
+    nome varchar(100) NOT NULL UNIQUE,
+    fk_estado_id_estado int NOT NULL,
+    FOREIGN KEY (fk_estado_id_estado) REFERENCES estado(id_estado)
+);
+
 CREATE TABLE IF NOT EXISTS instituicao (
     id_instituicao int PRIMARY KEY AUTO_INCREMENT,
-    nome varchar(100) NOT NULL,
-    estado char(2) NOT NULL,
-    cidade varchar(50) NOT NULL
+    nome varchar(100) NOT NULL UNIQUE,
+	fk_cidade_id_cidade int NOT NULL,
+    FOREIGN KEY (fk_cidade_id_cidade) REFERENCES cidade(id_cidade)
 );
 
 CREATE TABLE IF NOT EXISTS curso (
     id_curso int PRIMARY KEY AUTO_INCREMENT,
-    nome varchar(100) NOT NULL
+    nome varchar(100) NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS hashtag (
     id_hashtag int PRIMARY KEY AUTO_INCREMENT,
-    nome varchar(50) NOT NULL
+    nome varchar(50) NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS usuario (
     id_usuario int PRIMARY KEY AUTO_INCREMENT,
-    fk_perfil_id_perfil int NOT NULL,
+    fk_perfil_id_perfil int NOT NULL UNIQUE,
     FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil)
 );
 
@@ -122,6 +122,18 @@ CREATE TABLE IF NOT EXISTS pesquisa (
     texto varchar(50) NOT NULL,
     fk_perfil_id_perfil int NOT NULL,
     FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil)
+);
+
+CREATE TABLE IF NOT EXISTS endereco (
+    id_endereco int PRIMARY KEY AUTO_INCREMENT,
+    logradouro varchar(100) NOT NULL,
+    numero varchar(10) NOT NULL,
+    complemento varchar(50),
+    bairro varchar(50),
+    cep char(8),
+    descricao varchar(255) NOT NULL,
+    fk_cidade_id_cidade int NOT NULL,
+    FOREIGN KEY (fk_cidade_id_cidade) REFERENCES cidade(id_cidade)
 );
 
 CREATE TABLE IF NOT EXISTS denuncia (
@@ -137,7 +149,7 @@ CREATE TABLE IF NOT EXISTS denuncia (
 
 CREATE TABLE IF NOT EXISTS motivo_denuncia (
     id_motivo_denuncia int PRIMARY KEY AUTO_INCREMENT,
-    motivo varchar(30) NOT NULL
+    motivo varchar(40) NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS segue (
@@ -230,28 +242,16 @@ CREATE TABLE IF NOT EXISTS esporte_hashtag (
     FOREIGN KEY (fk_hashtag_id_hashtag) REFERENCES hashtag(id_hashtag)
 );
 
-CREATE TABLE IF NOT EXISTS foto_perfil (
-    fk_midia_id_midia int NOT NULL,
-    fk_perfil_id_perfil int NOT NULL,
-    FOREIGN KEY (fk_midia_id_midia) REFERENCES midia(id_midia),
-    FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil)
-);
-
 CREATE TABLE IF NOT EXISTS evento (
     id_evento int PRIMARY KEY AUTO_INCREMENT,
-    nome varchar(100) NOT NULL,
+    nome varchar(100) NOT NULL UNIQUE,
     descricao text NOT NULL,
     inicio datetime NOT NULL,
     fim datetime,
     fk_marca_id_marca int NOT NULL,
-    FOREIGN KEY (fk_marca_id_marca) REFERENCES marca(id_marca)
-);
-
-CREATE TABLE IF NOT EXISTS banner (
-    fk_midia_id_midia int NOT NULL,
-    fk_evento_id_evento int NOT NULL,
-    FOREIGN KEY (fk_midia_id_midia) REFERENCES midia(id_midia),
-    FOREIGN KEY (fk_evento_id_evento) REFERENCES evento(id_evento)
+	fk_midia_id_midia int UNIQUE,
+    FOREIGN KEY (fk_marca_id_marca) REFERENCES marca(id_marca),
+    FOREIGN KEY (fk_midia_id_midia) REFERENCES midia(id_midia)
 );
 
 CREATE TABLE IF NOT EXISTS curte (
@@ -263,7 +263,7 @@ CREATE TABLE IF NOT EXISTS curte (
 
 CREATE TABLE IF NOT EXISTS grau_formacao (
     id_grau_formacao int PRIMARY KEY AUTO_INCREMENT,
-    grau varchar(50) NOT NULL
+    grau varchar(50) NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS notificacao (
@@ -278,7 +278,7 @@ CREATE TABLE IF NOT EXISTS flash (
     id_flash int PRIMARY KEY AUTO_INCREMENT,
     duracao_horas tinyint NOT NULL,
     fk_perfil_id_perfil int NOT NULL,
-    fk_midia_id_midia int NOT NULL,
+    fk_midia_id_midia int NOT NULL UNIQUE,
     FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil),
     FOREIGN KEY (fk_midia_id_midia) REFERENCES midia(id_midia)
 );
@@ -318,7 +318,7 @@ CREATE TABLE IF NOT EXISTS configuracao (
     permissao_comentario varchar(20) NOT NULL,
     notificacoes boolean NOT NULL,
     notificacoes_email boolean NOT NULL,
-    fk_perfil_id_perfil int NOT NULL,
+    fk_perfil_id_perfil int NOT NULL UNIQUE,
     FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil)
 );
 
