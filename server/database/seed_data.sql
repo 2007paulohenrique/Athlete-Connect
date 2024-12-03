@@ -584,9 +584,6 @@ INSERT INTO grau_formacao (grau) VALUES
 ('Especialização'),
 ('Graduação em Educação a Distância (EAD)');
 
-
-
-
 INSERT INTO hashtag (nome) VALUES
 ('futebol'),
 ('basquete'),
@@ -888,8 +885,8 @@ INSERT INTO hashtag (nome) VALUES
 ('naodesista'),
 ('idolo');
 
-INSERT INTO esporte_hashtag (fk_esporte_id, fk_hashtag_id) VALUES
-(1, 1),  
+INSERT INTO esporte_hashtag (fk_esporte_id_esporte, fk_hashtag_id_hashtag) VALUES
+(1, 1),
 (2, 2),  
 (3, 3),  
 (4, 4),  

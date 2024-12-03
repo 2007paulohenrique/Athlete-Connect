@@ -10,10 +10,6 @@ CORS(app)
 con_params = ("localhost", "root", "1234", "athleteconnect")   
 # con_params = ("localhost", "troarmen", "0000", "reservasalas")   
 
-con = open_connection(*con_params)
-create_database(con)
-close_connection(con)
-
 @app.route('/profiles', methods=['GET'])
 def get_profiles_r():
     con = open_connection(*con_params)

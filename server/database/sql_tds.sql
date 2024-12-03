@@ -26,13 +26,13 @@ CREATE TABLE IF NOT EXISTS midia (
 );
 
 ALTER TABLE postagem
-ADD CONSTRAINT fk_postagem_perfil FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil);
+ADD CONSTRAINT postagem_ibfk_1 FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil);
 
 ALTER TABLE midia
-ADD CONSTRAINT fk_midia_postagem FOREIGN KEY (fk_postagem_id_postagem) REFERENCES postagem(id_postagem);
+ADD CONSTRAINT midia_ibfk_1 FOREIGN KEY (fk_postagem_id_postagem) REFERENCES postagem(id_postagem);
 
 ALTER TABLE perfil
-ADD CONSTRAINT fk_perfil_midia FOREIGN KEY (fk_midia_id_midia) REFERENCES midia(id_midia);
+ADD CONSTRAINT perfil_ibfk_1 FOREIGN KEY (fk_midia_id_midia) REFERENCES midia(id_midia);
 
 CREATE TABLE IF NOT EXISTS marca (
     id_marca int PRIMARY KEY AUTO_INCREMENT,

@@ -1,4 +1,5 @@
 from datetime import datetime
+import sqlparse
 # import mariadb
 
 def get_profiles(con):
@@ -102,16 +103,33 @@ def get_flashs(con, profile_id):
      return flashs
 
 def create_database(con):
-     with open("database/sql_tds.sql", "r") as file:
+     with open("database/sql_tds.sql", "r", encoding="utf-8") as file:
           sql = file.read()
 
-     commands = sql.split(";")
+     commands = sqlparse.split(sql)
      cursor = con.cursor()
 
      for command in commands:
           command = command.strip()
 
           if command:
+               cursor.execute(command)
+
+     con.commit()
+     cursor.close()
+
+def seed_data(con):
+     with open("database/seed_data.sql", "r", encoding="utf-8") as file:
+          sql = file.read()
+
+     commands = sqlparse.split(sql)
+     cursor = con.cursor()
+
+     for command in commands:
+          command = command.strip()
+
+          if command:
+               print("comando", command)
                cursor.execute(command)
 
      con.commit()
