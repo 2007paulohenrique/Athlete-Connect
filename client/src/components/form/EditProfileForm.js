@@ -7,15 +7,18 @@ import axios from "axios";
 
 function EditProfileForm() {
     const [profile, setProfile] = useState({});
+    const [profiles, setProfiles] = useState([]);
     const [privateProfile, setPrivateProfile] = useState(false);
+    const [acceptTerms, setAcceptTerms] = useState(false);
     const [haveError, setHaveError] = useState(false);
 
     const navigate = useNavigate()
     const location = useLocation();
 
     useEffect(() => {
-        if (location.state && location.state.profile) {
-            setProfile(location.state.profile);
+        if (location.state) {
+            if (location.state.profile) setProfile(location.state.profile);
+            if (location.state.profiles) setProfiles(location.state.profiles);
         }
     }, [location.state]);
 
@@ -23,8 +26,17 @@ function EditProfileForm() {
         setProfile({ ...profile, [e.target.name]: e.target.value });
     }
 
-    function handleOnChangeCheckBox() {
+    function handleOnChangePrivate() {
         setPrivateProfile(!privateProfile);
+    }
+
+    function handleOnChangeAcceptTerms() {
+        setAcceptTerms(!acceptTerms);
+        setProfile({...profile, acceptTerms: acceptTerms })
+    }
+
+    function profileMatch() {
+        return profiles.some(p => (p["email"] === profile["emailSignUp"] || p["nome"] === profile["nameSignUp"]))
     }
 
     const validateName = () => profile["nameSignUp"] && /^[a-zA-Z0-9_@+&.]{4,30}$/.test(profile["nameSignUp"]);
@@ -32,24 +44,30 @@ function EditProfileForm() {
 
 
     useEffect(() => {
-        setHaveError(!(validateName() && validateBio()));
+        setHaveError(!(validateName() && validateBio() && acceptTerms));
     }, [profile]);
 
     function handleSubmit(e) {
         e.preventDefault();
 
-        const updatedProfile = { ...profile, private: privateProfile };
-
-        if (!updatedProfile["bio"]) updatedProfile["bio"] = "";
-
-        console.log(updatedProfile);
-        axios.post("http://localhost:5000/profiles", updatedProfile)
-        .then(resp => sessionStorage.setItem("profileId", resp.data.profileId))
-        .catch(err => {
-            console.error('Erro ao fazer a requisição:', err);
-        });
-
-        navigate("/home");
+        if (!profileMatch()) {
+            const updatedProfile = { ...profile, private: privateProfile };
+    
+            if (!updatedProfile["bio"]) updatedProfile["bio"] = "";
+        
+            axios.post("http://localhost:5000/profiles", updatedProfile)
+            .then(resp => {
+                const newProfile = { ...updatedProfile, profileId: resp.data.profileId };
+                setProfiles([...profiles, newProfile]);
+                
+                sessionStorage.setItem("profileId", resp.data.profileId)
+                
+                navigate("/home");
+            })
+            .catch(err => {
+                console.error('Erro ao fazer a requisição:', err);
+            });
+        }
     }
 
     return (
@@ -84,7 +102,16 @@ function EditProfileForm() {
                     type="checkbox" 
                     name="private"  
                     labelText="Clique na caixa abaixo para tornar seu perfil privado" 
-                    handleChange={handleOnChangeCheckBox} 
+                    handleChange={handleOnChangePrivate} 
+                />
+
+                <InputField 
+                    type="checkbox" 
+                    name="acceptTerms"  
+                    labelText="Ao clicar na caixa abaixo, você estará aceitando os termos e condições do Athlete Connect" 
+                    handleChange={handleOnChangeAcceptTerms} 
+                    alertMessage="Aceite os termos e condições para criar uma conta." 
+                    showAlert={!acceptTerms}
                 />
             </div>
 

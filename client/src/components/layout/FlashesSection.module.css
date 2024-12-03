@@ -63,7 +63,7 @@
     display: block;
 }
 
-@media screen and (max-width: 663px) {
+@media screen and (max-width: 720px) {
     .flashes_section,
     .flashes_section ul {
         flex-direction: row;

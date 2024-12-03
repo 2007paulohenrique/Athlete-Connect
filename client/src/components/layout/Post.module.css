@@ -218,7 +218,7 @@ div.slide_right {
     z-index: 1;
 }
 
-@media screen and (max-width: 663px) {
+@media screen and (max-width: 720px) {
     .post {
         flex-direction: column;
         border: 2px solid var(--ligth-theme-color);

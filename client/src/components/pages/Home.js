@@ -6,6 +6,7 @@ import styles from "./Home.module.css";
 import arrowIcon from "../../img/icons/socialMedia/arrowIcon.png";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import Message from "../layout/Message";
 
 function Home() {
     const [feed, setFeed] = useState([]);

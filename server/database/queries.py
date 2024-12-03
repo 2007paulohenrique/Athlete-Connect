@@ -129,7 +129,6 @@ def seed_data(con):
           command = command.strip()
 
           if command:
-               print("comando", command)
                cursor.execute(command)
 
      con.commit()

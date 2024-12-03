@@ -5,5 +5,4 @@
     background: var(--ligth-theme-color) url(../../img/background/bgLogin.svg) center;
     height: 100%;
     background-size: cover;
-    border: 2px solid blue;
 }

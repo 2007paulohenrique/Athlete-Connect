@@ -16,7 +16,6 @@ function Login() {
         axios.get("http://localhost:5000/profiles")
         .then(resp => {
             setProfiles(resp.data);
-            console.log("profiles", resp.data);
         })
         .catch(err => {
             console.error('Erro ao fazer a requisição:', err);
@@ -51,8 +50,7 @@ function Login() {
         e.preventDefault();
 
         if (!profileMatch()) {
-            console.log(profile);
-            navigate("/editProfile", {state: {profile: profile}})
+            navigate("/editProfile", {state: {profile: profile, profiles: profiles}})
         }
     }
 

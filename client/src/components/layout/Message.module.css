@@ -1,0 +1,34 @@
+.message {
+    height: max-content;
+    width: max-content;
+    padding: 0.7em 1em;
+    display: flex;
+    position: fixed;
+    top: 1em;
+    right: 1em;
+    gap: 1em;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--ligth-font-color);
+    border-radius: 10px;
+    z-index: 2;
+    box-shadow: 3px 3px 20px rgb(38, 38, 38) inset;
+    border: 2px solid black;
+}
+
+.message img {
+    height: 1.5em; 
+}
+
+.message span {
+    letter-spacing: 1px;
+    color: black;
+}
+
+.error {
+    border: 2px solid var(--alert-color);
+}
+
+.success {
+    border: 2px solid var(--ligth-theme-color);
+}
