@@ -22,6 +22,13 @@
     font-size: 1.2em;
 }
 
+.checkbox_input label {
+    outline: none;
+    margin-top: 0.4em;
+    text-align: justify;
+    font-size: 0.85em;
+}
+
 .inputField input {
     height: 3em;
     border-radius: 5px;

@@ -19,6 +19,16 @@ def insert_profile(con, email, password, name, bio, private):
      cursor.close()
      return profile_id
 
+def insert_profile_preferences(con, profile_id, sports_ids):
+     cursor = con.cursor()
+     sql = "INSERT INTO preferencia (fk_usuario_id_usuario, fk_esporte_id_esporte) VALUES (%s, %s)"
+     
+     for sport_id in sports_ids:
+        cursor.execute(sql, (profile_id, sport_id))
+    
+     con.commit() 
+     cursor.close()
+
 def insert_post(con, caption, profile_id):
      cursor = con.cursor()
      sql = "INSERT INTO postagem (legenda, data_publicacao, fk_perfil_id_perfil) VALUES (%s, %s, %s)"
@@ -101,6 +111,50 @@ def get_flashs(con, profile_id):
                flashs.add(item)
 
      return flashs
+
+def get_sports(con):
+     cursor = con.cursor(dictionary=True)
+     sql = "SELECT * FROM esporte"
+     cursor.execute(sql)
+     result = cursor.fetchall()
+     cursor.close()
+
+     for sport in result:
+        sport_id = sport['id_esporte']
+        categories = get_sports_categories(con, sport_id)
+        icon = get_sports_icon(con, sport['fk_midia_id_icone'])
+        sport['categories'] = categories
+        sport['iconPath'] = icon
+
+     return result
+
+def get_sports_categories(con, sport_id):
+     cursor = con.cursor(dictionary=True)
+     sql = """
+          SELECT c.*
+          FROM esporte e
+          JOIN categorias_esporte cs ON e.id_esporte = ce.fk_esporte_id_esporte
+          JOIN categoria_esporte c ON cs.fk_categoria_esporte_id_categoria_esporte = c.id_categoria_esporte
+          WHERE e.id_esporte = %s
+     """
+     cursor.execute(sql, (sport_id,))
+     result = cursor.fetchall()
+     cursor.close()
+
+     return result
+
+def get_sports_icon(con, midia_id):
+     cursor = con.cursor(dictionary=True)
+     sql = """
+          SELECT caminho 
+          FROM midia 
+          WHERE id_midia = %s AND tipo = 'icon'
+     """
+     cursor.execute(sql, (midia_id,))
+     result = cursor.fetchone()
+     cursor.close()
+
+     return result
 
 def create_database(con):
      with open("database/sql_tds.sql", "r", encoding="utf-8") as file:

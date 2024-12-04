@@ -10,6 +10,7 @@ function Login() {
     const [loginPasswordError, setLoginPasswordError] = useState(false);
     const [profiles, setProfiles] = useState([]);
     const [profile, setProfile] = useState({});
+    const [message, setMessage] = useState({});
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -51,6 +52,8 @@ function Login() {
 
         if (!profileMatch()) {
             navigate("/editProfile", {state: {profile: profile, profiles: profiles}})
+        } else {
+            setMessage({message: "Já existe um perfil com o mesmo nome ou e-mail.", type: "error"});
         }
     }
 

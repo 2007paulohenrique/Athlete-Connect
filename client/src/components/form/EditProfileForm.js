@@ -3,7 +3,7 @@ import SubmitButton from "./SubmitButton";
 import styles from "./EditProfileForm.module.css"
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
+// import axios from "axios";
 
 function EditProfileForm() {
     const [profile, setProfile] = useState({});
@@ -55,18 +55,22 @@ function EditProfileForm() {
     
             if (!updatedProfile["bio"]) updatedProfile["bio"] = "";
         
-            axios.post("http://localhost:5000/profiles", updatedProfile)
-            .then(resp => {
-                const newProfile = { ...updatedProfile, profileId: resp.data.profileId };
-                setProfiles([...profiles, newProfile]);
+            // axios.post("http://localhost:5000/profiles", updatedProfile)
+            // .then(resp => {
+            //     const newProfile = { ...updatedProfile, profileId: resp.data.profileId };
+            //     setProfiles([...profiles, newProfile]);
                 
-                sessionStorage.setItem("profileId", resp.data.profileId)
+            //     sessionStorage.setItem("profileId", resp.data.profileId)
                 
-                navigate("/home");
-            })
-            .catch(err => {
-                console.error('Erro ao fazer a requisição:', err);
-            });
+            //     navigate("/home");
+            // })
+            // .catch(err => {
+            //     console.error('Erro ao fazer a requisição:', err);
+            // });
+
+            navigate("/profilePreferences", {state: {profile: updatedProfile}})
+        } else {
+            setMessage({message: "Já existe um perfil com o mesmo nome.", type: "error"});
         }
     }
 

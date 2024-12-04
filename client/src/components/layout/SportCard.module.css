@@ -1,0 +1,50 @@
+.sport_card {
+    width: 14em;
+    height: max-content;
+    display: flex;
+    padding: 1em;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--ligth-theme-color);
+    background-color: var(--ligth-font-color);
+    gap: 1.5em;
+    border-radius: 10px;
+}
+
+.sport_card img {
+    height: 3em;
+    border-radius: 50%;
+    border: 1px solid var(--dark-theme-color);
+}
+
+.info {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 2em;
+    text-align: start;
+}
+
+.sport_name {
+    color: var(--dark-font-color);
+    letter-spacing: 1px;
+    font-size: 1.2em;
+}
+
+.categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7em;
+}
+
+.category {
+    padding: 0.4em 0.3em;
+    font-size: 0.7em;
+    border: 1px solid var(--dark-font-color);
+    background-color: var(--ligth-bg-color);
+    border-radius: 1.5em;
+}
+
+.selected {
+    filter: brightness(50%);
+}
