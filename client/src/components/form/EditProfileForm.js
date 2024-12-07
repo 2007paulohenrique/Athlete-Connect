@@ -2,25 +2,11 @@ import InputField from "./InputField";
 import SubmitButton from "./SubmitButton";
 import styles from "./EditProfileForm.module.css"
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-// import axios from "axios";
 
-function EditProfileForm() {
-    const [profile, setProfile] = useState({});
-    const [profiles, setProfiles] = useState([]);
+function EditProfileForm({handleSubmit, profile, setProfile}) {
     const [privateProfile, setPrivateProfile] = useState(false);
     const [acceptTerms, setAcceptTerms] = useState(false);
     const [haveError, setHaveError] = useState(false);
-
-    const navigate = useNavigate()
-    const location = useLocation();
-
-    useEffect(() => {
-        if (location.state) {
-            if (location.state.profile) setProfile(location.state.profile);
-            if (location.state.profiles) setProfiles(location.state.profiles);
-        }
-    }, [location.state]);
 
     function handleOnChange(e) {
         setProfile({ ...profile, [e.target.name]: e.target.value });
@@ -28,6 +14,7 @@ function EditProfileForm() {
 
     function handleOnChangePrivate() {
         setPrivateProfile(!privateProfile);
+        setProfile({...profile, private: privateProfile })
     }
 
     function handleOnChangeAcceptTerms() {
@@ -35,44 +22,12 @@ function EditProfileForm() {
         setProfile({...profile, acceptTerms: acceptTerms })
     }
 
-    function profileMatch() {
-        return profiles.some(p => (p["email"] === profile["emailSignUp"] || p["nome"] === profile["nameSignUp"]))
-    }
-
     const validateName = () => profile["nameSignUp"] && /^[a-zA-Z0-9_@+&.]{4,30}$/.test(profile["nameSignUp"]);
     const validateBio = () => (profile["bio"] && profile["bio"].length <= 150) || !profile["bio"];
-
 
     useEffect(() => {
         setHaveError(!(validateName() && validateBio() && acceptTerms));
     }, [profile]);
-
-    function handleSubmit(e) {
-        e.preventDefault();
-
-        if (!profileMatch()) {
-            const updatedProfile = { ...profile, private: privateProfile };
-    
-            if (!updatedProfile["bio"]) updatedProfile["bio"] = "";
-        
-            // axios.post("http://localhost:5000/profiles", updatedProfile)
-            // .then(resp => {
-            //     const newProfile = { ...updatedProfile, profileId: resp.data.profileId };
-            //     setProfiles([...profiles, newProfile]);
-                
-            //     sessionStorage.setItem("profileId", resp.data.profileId)
-                
-            //     navigate("/home");
-            // })
-            // .catch(err => {
-            //     console.error('Erro ao fazer a requisição:', err);
-            // });
-
-            navigate("/profilePreferences", {state: {profile: updatedProfile}})
-        } else {
-            setMessage({message: "Já existe um perfil com o mesmo nome.", type: "error"});
-        }
-    }
 
     return (
         <form onSubmit={handleSubmit} className={`${styles.edit_profile_form}`}>

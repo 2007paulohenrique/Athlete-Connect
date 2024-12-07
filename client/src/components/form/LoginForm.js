@@ -15,7 +15,6 @@ function LoginForm({ isLoginForm, handleSubmit, handleChangeForm, isLogin, profi
 
     function handleOnChange(e) {
         setProfile({ ...profile, [e.target.name]: e.target.value });
-        console.log(profile)
     }
 
     function handleOnChangeLogin(e) {

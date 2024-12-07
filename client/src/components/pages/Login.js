@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import LoginForm from "../form/LoginForm";
 import styles from "./Login.module.css";
+import Message from "../layout/Message";
 import axios from "axios"
 import { useNavigate } from "react-router-dom";
 
@@ -22,6 +23,14 @@ function Login() {
             console.error('Erro ao fazer a requisição:', err);
         });
     }, []);
+
+    function setMessageWithReset(newMessage, type) {
+        setMessage(null);
+
+        setTimeout(() => {
+            setMessage({message: newMessage, type: type});
+        }, 1);
+    }
 
     function changeForm() {
         setIsLogin(!isLogin)
@@ -51,9 +60,12 @@ function Login() {
         e.preventDefault();
 
         if (!profileMatch()) {
+            sessionStorage.setItem("profile", JSON.stringify(profile));
+            sessionStorage.setItem("profilesExists", "true");
+
             navigate("/editProfile", {state: {profile: profile, profiles: profiles}})
         } else {
-            setMessage({message: "Já existe um perfil com o mesmo nome ou e-mail.", type: "error"});
+            setMessageWithReset("Já existe um perfil com o mesmo nome ou e-mail.", "error");
         }
     }
 
@@ -72,7 +84,7 @@ function Login() {
             const loggedInProfile = validatePasswordLogin();
             sessionStorage.setItem("profileId", loggedInProfile["id_perfil"]);
 
-            navigate("/home");
+            navigate("/");
         } else {
             setLoginError(true);
         }   
@@ -85,6 +97,7 @@ function Login() {
 
     return (
         <main className={styles.login_page}>
+            {message && <Message message={message.message} type={message.type}/>}
             <div className={styles.login_container}>
                 <div className={styles.forms_container}>
                     <LoginForm 

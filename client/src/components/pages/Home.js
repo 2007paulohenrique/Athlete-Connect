@@ -6,14 +6,14 @@ import styles from "./Home.module.css";
 import arrowIcon from "../../img/icons/socialMedia/arrowIcon.png";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import Message from "../layout/Message";
+// import Message from "../layout/Message";
 
 function Home() {
     const [feed, setFeed] = useState([]);
     const [profileId, setProfileId] = useState();
 
     useEffect(() => {
-        const storedProfileId = sessionStorage.getItem("profileId");
+        const storedProfileId = localStorage.getItem("profileId");
         setProfileId(storedProfileId);
     }, []);
 

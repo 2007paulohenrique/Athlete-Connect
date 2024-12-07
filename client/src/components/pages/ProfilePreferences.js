@@ -3,12 +3,12 @@ import { useLocation, useNavigate } from "react-router-dom";
 import SportCard from "../layout/SportCard";
 import styles from "./ProfilePreferences.module.css";
 import SubmitButton from "../form/SubmitButton";
+import axios from "axios"
 
-function ProfilePreferences({}) {
+function ProfilePreferences() {
     const [sports, setSports] = useState([]);
     const [profilePreferences, setProfilePreferences] = useState([]);
     const [profile, setProfile] = useState({});
-
 
     const navigate = useNavigate()
     const location = useLocation();
@@ -39,19 +39,19 @@ function ProfilePreferences({}) {
         });
     }
 
-    function handleOnSubmit() {
+    function handleOnSubmit(e) {
+        e.preventDefault();
+
         const sportsIds = profilePreferences.map(sport => sport.id_esporte);
 
         profile['preferences'] = sportsIds;
 
         axios.post("http://localhost:5000/profiles", profile)
         .then(resp => {
-            // const newProfile = { ...updatedProfile, profileId: resp.data.profileId };
-            // setProfiles([...profiles, newProfile]);
-            
-            sessionStorage.setItem("profileId", resp.data.profileId)
-            
-            navigate("/home");
+            localStorage.setItem("profileId", resp.data.profileId)
+            sessionStorage.removeItem("profileReady");
+
+            navigate("/");
         })
         .catch(err => {
             console.error('Erro ao fazer a requisição:', err);
@@ -67,7 +67,7 @@ function ProfilePreferences({}) {
 
             <hr/>
 
-            <div className={styles.sports}>
+            <div className={styles.sports_cards}>
                 {sports.map((sport) => (
                     <SportCard 
                         iconPath={sport.iconPath} 

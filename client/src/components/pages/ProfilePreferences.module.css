@@ -1,0 +1,34 @@
+.profile_preferences_page {
+    display: flex;
+    flex-direction: column;
+    gap: 2em;
+    padding: 2em;
+}
+
+.profile_preferences_page hr {
+    width: 100%;
+}
+
+.title_section {
+    text-align: start;
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+}
+
+.title_section h1 {
+    letter-spacing: 2px;
+    color: var(--dark-font-color);
+}
+
+.title_section p {
+    letter-spacing: 0.4px;
+    font-size: 0.9em;
+    color: var(--ligth-bg-color);
+}
+
+.sports_cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1em;    
+}
