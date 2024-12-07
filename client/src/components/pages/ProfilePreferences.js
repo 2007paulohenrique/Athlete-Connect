@@ -62,7 +62,7 @@ function ProfilePreferences() {
         <main className={styles.profile_preferences_page}>
             <header className={styles.title_section}> 
                 <h1>Suas Preferências</h1>
-                <p>Selecione os esportes que te agradam para personalizarmos seu feed de acordo com seus gostos.</p>
+                <p>Selecione os esportes que te agradam para personalizarmos seu feed de acordo com seu gosto.</p>
             </header>
 
             <hr/>
@@ -70,6 +70,7 @@ function ProfilePreferences() {
             <div className={styles.sports_cards}>
                 {sports.map((sport) => (
                     <SportCard 
+                        key={sport.id_esporte}
                         iconPath={sport.iconPath} 
                         sportName={sport.nome} 
                         categories={sport.categories} 

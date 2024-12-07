@@ -3,6 +3,14 @@
     flex-direction: column;
     gap: 2em;
     padding: 2em;
+    background: var(--ligth-theme-color) url(../../img/background/bgPreferences.svg) center;
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+.profile_preferences_page form{
+    text-align: center;
+    margin-top: 4em;
 }
 
 .profile_preferences_page hr {
@@ -14,21 +22,29 @@
     display: flex;
     flex-direction: column;
     gap: 1em;
+    width: 100%;
+    text-align: center;
+    align-items: center;
 }
 
 .title_section h1 {
-    letter-spacing: 2px;
     color: var(--dark-font-color);
+    letter-spacing: 2px;
+    text-shadow: 1px 1px 2px white;
 }
 
 .title_section p {
     letter-spacing: 0.4px;
-    font-size: 0.9em;
-    color: var(--ligth-bg-color);
+    font-size: 1em;
+    color: var(--dark-font-color);
+    word-wrap: break-word;
+    max-width: 24em;
 }
 
 .sports_cards {
     display: flex;
+    justify-content: space-evenly;
     flex-wrap: wrap;
-    gap: 1em;    
+    gap: 2em; 
 }
+

@@ -133,7 +133,7 @@ def get_sports_categories(con, sport_id):
      sql = """
           SELECT c.*
           FROM esporte e
-          JOIN categorias_esporte cs ON e.id_esporte = ce.fk_esporte_id_esporte
+          JOIN categorias_esporte cs ON e.id_esporte = cs.fk_esporte_id_esporte
           JOIN categoria_esporte c ON cs.fk_categoria_esporte_id_categoria_esporte = c.id_categoria_esporte
           WHERE e.id_esporte = %s
      """

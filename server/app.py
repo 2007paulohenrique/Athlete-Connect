@@ -6,8 +6,8 @@ from database.connection import *
 app = Flask(__name__)
 CORS(app)
 
-con_params = ("localhost", "estudante1", "estudante1", "athleteconnect")   
-# con_params = ("localhost", "root", "1234", "athleteconnect")   
+# con_params = ("localhost", "estudante1", "estudante1", "athleteconnect")   
+con_params = ("localhost", "root", "1234", "athleteconnect")   
 # con_params = ("localhost", "troarmen", "0000", "athleteconnect")   
 
 @app.route('/profiles', methods=['GET'])

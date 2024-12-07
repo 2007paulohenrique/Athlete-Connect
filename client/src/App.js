@@ -23,13 +23,18 @@ function App() {
           } 
         />
         
-        <Route 
+        {/* <Route 
           path="/profilePreferences" 
           element={
             sessionStorage.getItem("profileReady") 
               ? <ProfilePreferences/> 
               : <Navigate to="/login"/>
           } 
+        /> */}
+
+        <Route 
+          path="/profilePreferences" 
+          element={<ProfilePreferences/>} 
         />
         
         <Route 
