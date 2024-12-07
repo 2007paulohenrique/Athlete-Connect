@@ -9,9 +9,20 @@ function ProfilePreferences() {
     const [sports, setSports] = useState([]);
     const [profilePreferences, setProfilePreferences] = useState([]);
     const [profile, setProfile] = useState({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const navigate = useNavigate()
     const location = useLocation();
+
+    useEffect(() => {
+        const profile = location.state?.profileReady
+
+        if (!profile) {
+            navigate("/login");
+        } else {
+            setProfile(location.state.profileReady);
+        }
+    }, [location, navigate]);
 
     useEffect(() => {
         axios.get("http://localhost:5000/sports")
@@ -22,12 +33,6 @@ function ProfilePreferences() {
             console.error('Erro ao fazer a requisição:', err);
         });
     }, []);
-
-    useEffect(() => {
-        if (location.state) {
-            if (location.state.profile) setProfile(location.state.profile);
-        }
-    }, [location.state]);
 
     function handleOnClick(sport) {
         setProfilePreferences(prevPreferences => {
@@ -42,19 +47,22 @@ function ProfilePreferences() {
     function handleOnSubmit(e) {
         e.preventDefault();
 
-        const sportsIds = profilePreferences.map(sport => sport.id_esporte);
+        if (isSubmitting) return; 
 
+        setIsSubmitting(true);
+
+        const sportsIds = profilePreferences.map(sport => sport.id_esporte);
         profile['preferences'] = sportsIds;
 
         axios.post("http://localhost:5000/profiles", profile)
         .then(resp => {
             localStorage.setItem("profileId", resp.data.profileId)
-            sessionStorage.removeItem("profileReady");
-
-            navigate("/");
+            
+            navigate("/", {state: {profileId: resp.data.profileId}});
         })
         .catch(err => {
             console.error('Erro ao fazer a requisição:', err);
+            setIsSubmitting(false);
         });
     }
 

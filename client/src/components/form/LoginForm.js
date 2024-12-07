@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import styles from "./LoginForm.module.css";
 import InputField from "./InputField";
 import SubmitButton from "./SubmitButton";
@@ -14,10 +14,14 @@ function LoginForm({ isLoginForm, handleSubmit, handleChangeForm, isLogin, profi
     const signupFormRef = useRef(null);
 
     function handleOnChange(e) {
+        e.target.value = e.target.value.replace(/\s+/g, "");
+
         setProfile({ ...profile, [e.target.name]: e.target.value });
     }
 
     function handleOnChangeLogin(e) {
+        e.target.value = e.target.value.replace(/\s+/g, "");
+
         setProfile({ ...profile, [e.target.name]: e.target.value });
         resetErrors();
     }
@@ -34,13 +38,24 @@ function LoginForm({ isLoginForm, handleSubmit, handleChangeForm, isLogin, profi
         setProfile({});
     }
 
-    const validateName = () => profile["nameSignUp"] && /^[a-zA-Z0-9_@+&.]{4,30}$/.test(profile["nameSignUp"]);
-    const validateEmail = () => profile["emailSignUp"] && /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(profile["emailSignUp"]);
-    const validatePassword = () => profile["passwordSignUp"] && /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$/.test(profile["passwordSignUp"]);
-
+    const validateName = useCallback(() => {
+        return profile["nameSignUp"] && /^[a-zA-Z0-9_@+&.]{4,30}$/.test(profile["nameSignUp"]);
+    }, [profile]);
+    
+    const validateEmail = useCallback(() => {
+        return profile["emailSignUp"] && 
+               /^([a-zA-Z0-9._%+-]{1,64})@([a-zA-Z0-9.-]{1,255})\.([a-zA-Z]{2,})$/.test(profile["emailSignUp"]) &&
+               profile["emailSignUp"].length <= 320;
+    }, [profile]); 
+    
+    const validatePassword = useCallback(() => {
+        return profile["passwordSignUp"] && 
+               /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$/.test(profile["passwordSignUp"]);
+    }, [profile]); 
+    
     useEffect(() => {
         setHaveError(!(validateName() && validateEmail() && validatePassword()));
-    }, [profile]);
+    }, [profile, validateName, validateEmail, validatePassword]);
 
     return (
         <>
@@ -108,7 +123,7 @@ function LoginForm({ isLoginForm, handleSubmit, handleChangeForm, isLogin, profi
                         />
 
                         <InputField 
-                            type="email" 
+                            type="text" 
                             name="emailSignUp" 
                             placeholder="Insira seu e-mail" 
                             labelText="E-mail" 

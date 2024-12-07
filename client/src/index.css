@@ -25,9 +25,9 @@ body,
 main {
     width: 100%;
     height: max-content;
+    min-height: 100dvh;
 }
 
 main {
-  min-height: max-content;
   position: relative;
 }

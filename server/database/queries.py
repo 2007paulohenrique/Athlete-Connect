@@ -21,7 +21,7 @@ def insert_profile(con, email, password, name, bio, private):
 
 def insert_profile_preferences(con, profile_id, sports_ids):
      cursor = con.cursor()
-     sql = "INSERT INTO preferencia (fk_usuario_id_usuario, fk_esporte_id_esporte) VALUES (%s, %s)"
+     sql = "INSERT INTO preferencia (fk_perfil_id_perfil, fk_esporte_id_esporte) VALUES (%s, %s)"
      
      for sport_id in sports_ids:
         cursor.execute(sql, (profile_id, sport_id))
@@ -114,7 +114,7 @@ def get_flashs(con, profile_id):
 
 def get_sports(con):
      cursor = con.cursor(dictionary=True)
-     sql = "SELECT * FROM esporte"
+     sql = "SELECT * FROM esporte ORDER BY nome"
      cursor.execute(sql)
      result = cursor.fetchall()
      cursor.close()

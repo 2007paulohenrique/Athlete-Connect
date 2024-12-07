@@ -1,62 +1,44 @@
-.inputField,
-.checkbox_input {
+.textarea_field {
     display: flex;
     width: 100%;
     height: max-content;
     flex-direction: column;
 }
 
-.checkbox_input {
-    align-items: start;
-}
-
-:where(.inputField, .checkbox_input) label {
+.textarea_field label {
     height: max-content;
     letter-spacing: 0.5px;
     width: max-content;
-    font-size: 0.8em;
-}
-
-.inputField label {
     margin-bottom: 0.5em;
     font-size: 1.2em;
 }
 
-.checkbox_input label {
-    outline: none;
-    margin-top: 0.4em;
-    text-align: justify;
-    font-size: 0.65em;
-}
-
-.inputField input {
-    height: 3em;
+.textarea_field textarea {
+    height: 10.6em;
     border-radius: 5px;
     border: 1px solid var(--ligth-font-color);
     background-color: transparent;
-    padding: 0 1em;
+    padding: 1em;
     letter-spacing: 0.5px;
     outline: none;
+    resize: none;
+    overflow: hidden;
+    line-height: 1.2em;
 }
 
-.checkbox_input input {
-    outline: none;
-    margin-top: 0.4em;
-}
-
-.inputField span {
+.textarea_field span {
     display: flex;
     align-items: left;
     gap: 0.6em;
 }
 
-.inputField img {
+.textarea_field img {
     display: inline-block;
     height: 1.4em;
     width: 1.4em;
 }
 
-.inputField .alert {
+.alert {
     height: 3em;
     font-size: 0.7em;
     margin: 0.1em 0.5em 0;

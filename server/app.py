@@ -21,7 +21,7 @@ def get_profiles_r():
 def post_profile():
     profile = request.get_json()
     con = open_connection(*con_params)
-    profile_id = insert_profile(con, profile["emailSignUp"], profile["passwordSignUp"], profile["nameSignUp"], profile["bio"], profile["private"])
+    profile_id = insert_profile(con, profile["emailSignUp"], profile["passwordSignUp"], profile["confirmedNameSignUp"], profile["bio"], profile["private"])
     insert_profile_preferences(con, profile_id, profile["preferences"])
     close_connection(con)
     return jsonify({"profileId": profile_id})

@@ -6,7 +6,6 @@ function InputField({ type, name, labelText, placeholder, alertMessage, handleCh
 
     useEffect(() => {
         if (alertRef.current) {
-            console.log(showAlert);
             alertRef.current.style.visibility = showAlert ? "visible" : "hidden";
         }
     }, [showAlert]);

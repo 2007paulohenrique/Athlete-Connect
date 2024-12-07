@@ -8,19 +8,25 @@ function EditProfile() {
     const [profiles, setProfiles] = useState([]);
     const [profile, setProfile] = useState({});
     const [message, setMessage] = useState({});
+    const [submitError, setSubmitError] = useState(false);
 
     const navigate = useNavigate();
     const location = useLocation();
-    
+
     useEffect(() => {
-        if (location.state) {
-            if (location.state.profile) setProfile(location.state.profile);
-            if (location.state.profiles) setProfiles(location.state.profiles);
+        const profile = location.state?.profile
+        const profiles = location.state?.profiles
+
+        if (!profile || !profiles) {
+            navigate("/login");
+        } else {
+            setProfile(location.state.profile);
+            setProfiles(location.state.profiles);
         }
-    }, [location.state]);
+    }, [location, navigate]);
 
     function profileMatch() {
-        return profiles.some(p => (p["email"] === profile["emailSignUp"] || p["nome"] === profile["nameSignUp"]))
+        return profiles.some(p => (p["email"] === profile["emailSignUp"] || p["nome"] === profile["confirmedNameSignUp"]))
     }
 
     function setMessageWithReset(newMessage, type) {
@@ -34,14 +40,12 @@ function EditProfile() {
     function handleOnSubmit(e) {
         e.preventDefault();
 
-        if (!profileMatch()) {    
-            if (!profile["bio"]) profile["bio"] = "";
-
-            sessionStorage.setItem("profileReady", JSON.stringify(profile));
-            sessionStorage.removeItem("profile");
-            sessionStorage.removeItem("profilesExists");
-
-            navigate("/profilePreferences", {state: {profile: profile}});
+        if (!profileMatch()) {  
+            if (!submitError) {
+                if (!profile["bio"]) profile["bio"] = "";
+    
+                navigate("/profilePreferences", {state: {profileReady: profile}});
+            }
         } else {
             setMessageWithReset("Já existe um perfil com o mesmo nome.", "error");
         }
@@ -50,7 +54,7 @@ function EditProfile() {
     return (
         <main className={styles.edit_profile_page}>
             {message && <Message message={message.message} type={message.type}/>}
-            <EditProfileForm handleSubmit={handleOnSubmit} profile={profile} setProfile={setProfile}/>
+            <EditProfileForm handleSubmit={handleOnSubmit} profile={profile} setProfile={setProfile} submitError={submitError} setSubmitError={setSubmitError}/>
         </main>
     );
 }

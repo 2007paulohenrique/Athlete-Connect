@@ -6,16 +6,25 @@ import styles from "./Home.module.css";
 import arrowIcon from "../../img/icons/socialMedia/arrowIcon.png";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { useLocation, useNavigate } from "react-router-dom";
 // import Message from "../layout/Message";
 
 function Home() {
     const [feed, setFeed] = useState([]);
     const [profileId, setProfileId] = useState();
 
+    const location = useLocation();
+    const navigate = useNavigate();
+
     useEffect(() => {
-        const storedProfileId = localStorage.getItem("profileId");
-        setProfileId(storedProfileId);
-    }, []);
+        const profileId = location.state?.profileId || localStorage.getItem("profileId");
+
+        if (!profileId) {
+            navigate("/login");
+        } else {
+            setProfileId(profileId);
+        }
+    }, [location, navigate]);
 
     useEffect(() => {
         if (profileId) {

@@ -188,9 +188,9 @@ CREATE TABLE IF NOT EXISTS categorias_esporte (
 );
 
 CREATE TABLE IF NOT EXISTS preferencia (
-    fk_usuario_id_usuario int NOT NULL,
+    fk_perfil_id_perfil int NOT NULL,
     fk_esporte_id_esporte int NOT NULL,
-    FOREIGN KEY (fk_usuario_id_usuario) REFERENCES usuario(id_usuario),
+    FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil),
     FOREIGN KEY (fk_esporte_id_esporte) REFERENCES esporte(id_esporte)
 );
 
