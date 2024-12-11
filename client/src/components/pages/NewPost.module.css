@@ -19,6 +19,11 @@
     gap: 1em;
 }
 
+.post {
+    width: 80%;
+    height: max-content;
+}
+
 .inputs {
     display: flex;
     align-items: center;
@@ -32,5 +37,11 @@
         flex-direction: column;
         align-items: center;
         gap: 1em;
+    }
+}
+
+@media screen and (min-width: 1500px) {
+    .edit_post:last-child() {
+        font-size: 1.2em;
     }
 }

@@ -1,9 +1,9 @@
 import styles from "./SportCard.module.css";
 
-function SportCard({iconPath, sportName, categories = [], handleClick, selected = false}) {
+function SportCard({icon, sportName, categories = [], handleClick, selected = false}) {
     return (
         <div className={`${styles.sport_card} ${selected && styles.selected}`} onClick={handleClick}>
-            <img src={iconPath} alt={`${sportName} Icon`}/>
+            <img src={icon} alt={`${sportName} Icon`}/>
 
             <div className={styles.info}>
                 <span className={styles.sport_name}>{sportName}</span>

@@ -48,3 +48,13 @@
     gap: 2em; 
 }
 
+
+@media screen and (min-width: 1500px) {
+    .title_section {
+        font-size: 1.3em;
+    }
+
+    .profile_preferences_page form {
+        font-size: 1.3em;
+    }
+}

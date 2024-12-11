@@ -68,8 +68,26 @@
     }
 
     .edit_profile_form h2 {
-        font-size: 2em;
         letter-spacing: 1px;
         color: var(--ligth-theme-color);
+    }
+}
+
+
+@media screen and (min-width: 1500px) {
+    .edit_profile_form {
+        width: 28em;
+    }
+
+    .edit_profile_form * {
+        font-size: 1.05em;
+    }
+
+    .edit_profile_form h2 {
+        font-size: 3em;
+    }
+
+    .empty_field_alert {
+        font-size: 1em;
     }
 }

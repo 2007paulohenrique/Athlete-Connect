@@ -50,3 +50,9 @@
         border-bottom: 1px solid var(--ligth-font-color);
     }
 }
+
+@media screen and (min-width: 1500px) {
+    .posts_section {
+        padding: 5.8em 0 5em 5.6em;
+    }
+}

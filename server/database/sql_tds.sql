@@ -53,8 +53,6 @@ CREATE TABLE IF NOT EXISTS esporte (
     id_esporte int PRIMARY KEY AUTO_INCREMENT,
     nome varchar(50) NOT NULL UNIQUE,
     descricao varchar(255) NOT NULL UNIQUE,
-    fk_midia_id_icone int NOT NULL UNIQUE,
-    FOREIGN KEY (fk_midia_id_icone) REFERENCES midia(id_midia)
 );
 
 CREATE TABLE IF NOT EXISTS categoria_esporte (

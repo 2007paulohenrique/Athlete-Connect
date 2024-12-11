@@ -145,14 +145,16 @@ function NewPost() {
                 
                 <h2>Pré-visualização</h2>
 
-                <Post 
-                    authorUserName={profile["nome"]} 
-                    moment={currentMoment} 
-                    caption={post["caption"]} 
-                    blobUrlsMedias={medias}
-                    isInCreating={true}
-                    setHashtagsInPost={setHashtagsInPost}
-                />
+                <div className={styles.post}>
+                    <Post 
+                        authorUserName={profile["nome"]} 
+                        moment={currentMoment} 
+                        caption={post["caption"]} 
+                        blobUrlsMedias={medias}
+                        isInCreating={true}
+                        setHashtagsInPost={setHashtagsInPost}
+                    />
+                </div>
 
                 <SubmitButton text="Publicar" haveError={haveError}/>
             </form>

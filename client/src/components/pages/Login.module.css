@@ -5,6 +5,7 @@
     background: var(--ligth-theme-color) url(../../img/background/bgLogin.svg) center;
     height: 100%;
     background-size: cover;
+    background-attachment: fixed;
 }
 
 .login_container {
@@ -83,5 +84,11 @@
 
     .welcome_container {
         display: none;
+    }
+}
+
+@media screen and (min-width: 1500px) {
+    .login_container * {
+        font-size: 1.05em;
     }
 }

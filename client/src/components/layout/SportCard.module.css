@@ -82,3 +82,36 @@
         width: auto;
     }
 }
+
+
+@media screen and (min-width: 1500px) {
+    .sport_card {
+        height: 16em;
+        width: 25.6em;
+    }
+
+    .sport_name {
+        letter-spacing: 1px;
+        font-size: 1.6em;
+    }
+    
+    .category {
+        font-size: 0.95em;
+    }
+
+    .info {
+        width: 15.3em;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        text-align: end;
+    }
+
+    .sport_card img {
+        height: 5.3em;
+        width: 5.3em;
+        border-radius: 50%;
+        border: 1px solid var(--dark-theme-color);
+    }
+}

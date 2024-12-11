@@ -41,6 +41,7 @@
     min-height: max-content;
     overflow: hidden;
     position: relative;
+    min-height: 3em;
 }
 
 .post_author_container img {
@@ -251,8 +252,6 @@ div.slide_right {
     background-color: var(--ligth-bg-color);
 }
 
-
-
 @media screen and (max-width: 720px) {
     .post {
         flex-direction: column;
@@ -299,3 +298,4 @@ div.slide_right {
         aspect-ratio: 3 / 1;
     }
 }
+

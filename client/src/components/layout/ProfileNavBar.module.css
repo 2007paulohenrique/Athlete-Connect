@@ -50,3 +50,15 @@
         position: relative;
     }
 }
+
+@media screen and (min-width: 1500px) {
+    .profile_nav_bar ul div li img {
+        height: 2em;
+        display: block;
+    }
+    
+    .profile_nav_bar ul li > img {
+        height: 4em;
+        display: block;
+    }
+}
