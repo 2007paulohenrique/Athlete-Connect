@@ -7,9 +7,16 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-# con_params = ("localhost", "estudante1", "estudante1", "athleteconnect")   
-con_params = ("localhost", "root", "1234", "athleteconnect")   
+con_params = ("localhost", "estudante1", "estudante1", "athleteconnect")   
+# con_params = ("localhost", "root", "1234", "athleteconnect")   
 # con_params = ("localhost", "troarmen", "0000", "athleteconnect")   
+
+@app.route('/hashtags', methods=['GET'])
+def get_hastags_r():
+    con = open_connection(*con_params)
+    hashtags = get_hashtags(con)
+    close_connection(con)
+    return jsonify(hashtags)
 
 @app.route('/profiles', methods=['GET'])
 def get_profiles_r():
@@ -49,13 +56,14 @@ def get_feed(profile_id):
     close_connection(con)
     return jsonify(feed)
 
-@app.route('/posts', methods=['POST'])
-def post_post():
+@app.route('/profiles/<int:profile_id>/posts', methods=['POST'])
+def post_post(profile_id):
     post = request.get_json()
 
     con = open_connection(*con_params)
-    insert_post(con, post["caption"], post["profile_id"])
+    insert_post(con, post["caption"], profile_id, post['hashtags'])
     close_connection(con)
+    return ""
 
 # flashs dos perfis que o usuário segue
 @app.route('/flashs_list/<int:profile_id>', methods=['GET'])

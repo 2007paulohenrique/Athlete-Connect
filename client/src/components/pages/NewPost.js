@@ -9,6 +9,7 @@ import SubmitButton from "../form/SubmitButton";
 import FileInput from "../form/FileInput";
 import mediasIcon from "../../img/icons/socialMedia/mediasIcon.png";
 import captionIcon from "../../img/icons/socialMedia/captionIcon.png";
+import Message from "../layout/Message";
 
 function NewPost() {
     const navigate = useNavigate();
@@ -18,6 +19,8 @@ function NewPost() {
     const [currentMoment, setCurrentMoment] = useState("");
     const [medias, setMedias] = useState([]);
     const [mediasLengthError, setMediasLengthError] = useState(false);
+    const [hashtagsInPost, setHashtagsInPost] = useState([]);
+    const [message, setMessage] = useState({});
 
     useEffect(() => {
         const profileId = localStorage.getItem("athleteConnectProfileId");
@@ -42,6 +45,14 @@ function NewPost() {
 
         return () => clearInterval(interval);
     }, []);
+
+    function setMessageWithReset(newMessage, type) {
+        setMessage(null);
+
+        setTimeout(() => {
+            setMessage({message: newMessage, type: type});
+        }, 1);
+    }
 
     function handleOnChange(e) {
         e.target.value = e.target.value.replace(/(\n\s*){3,}/g, '\n\n').trimStart();
@@ -84,22 +95,25 @@ function NewPost() {
     function handleOnSubmit(e) {
         e.preventDefault();
 
-        // if (!profileMatch()) {  
-        //     if (!submitError) {
-        //         if (!profile["bio"]) profile["bio"] = "";
+        setPost({...post, hashtags: hashtagsInPost});
 
-        //         if (profile["private"] === undefined) profile["private"] = false;
-                
-    
-        //         navigate("/profilePreferences", {state: {profileReady: profile}});
-        //     }
-        // } else {
-        //     setMessageWithReset("Já existe um perfil com o mesmo nome.", "error");
-        // }
+        if (medias.length >= 1) {  
+            axios.post(`http://localhost:5000/profiles/${profile['id_perfil']}/posts`, {...post, hashtags: hashtagsInPost})
+            .then(resp => {            
+                navigate("/");
+            })
+            .catch(err => {
+                console.error('Erro ao fazer a requisição:', err);
+            }); 
+        } else {
+            setMessageWithReset("Selecione pelo menos uma foto ou vídeo para publicar", "error");
+        }
     }
 
     return (
         <main className={styles.new_post_page}>
+            {message && <Message message={message.message} type={message.type}/>}
+
             <h1>Criar Postagem</h1>
 
             <form className={styles.edit_post} onSubmit={handleOnSubmit}>
@@ -136,6 +150,8 @@ function NewPost() {
                     moment={currentMoment} 
                     caption={post["caption"]} 
                     blobUrlsMedias={medias}
+                    isInCreating={true}
+                    setHashtagsInPost={setHashtagsInPost}
                 />
 
                 <SubmitButton text="Publicar" haveError={haveError}/>

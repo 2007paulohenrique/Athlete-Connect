@@ -7,10 +7,14 @@ import complaintIcon from "../../img/icons/socialMedia/complaintedIcon.png";
 import tagsIcon from "../../img/icons/socialMedia/tagsIcon.png";
 import hashtagsIcon from "../../img/icons/socialMedia/hashtagsIcon.png";
 import ProfilePhotoContainer from "./ProfilePhotoContainer";
+import axios from "axios"
 
-function Post({authorUserName, authorPhotoPath, moment, mediasPath, blobUrlsMedias, caption}) {
+function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsMedias=[], caption, isInCreating, setHashtagsInPost}) {
     const [medias, setMedias] = useState([]);
+    const [hashtags, setHashtags] = useState([]);
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+    const [showHashtags, setShowHashtags] = useState(false);  
+    const [selectedHashtags, setSelectedHashtags] = useState([]);
 
     useEffect(() => {
         if (!blobUrlsMedias) {
@@ -35,6 +39,16 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath, blobUrlsMedi
         setCurrentMediaIndex(0);
     }, [blobUrlsMedias]);
 
+    useEffect(() => {
+        axios.get("http://localhost:5000/hashtags")
+        .then(resp => {
+            setHashtags(resp.data);
+        })
+        .catch(err => {
+            console.error('Erro ao fazer a requisição:', err);
+        });
+    }, []);
+
     const handleVideoLoad = (index, videoElement) => {
         if (videoElement) {
             const duration = videoElement.duration;
@@ -51,27 +65,26 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath, blobUrlsMedi
     };
 
     function likeAction() {
-        
+        // Implementar ação de like
     }
 
     function shareAction() {
-        
+        // Implementar ação de share
     }
 
     function commentAction() {
-        
+        // Implementar ação de comment
     }
 
     function viewTags() {
-        
+        // Implementar ação de tags
     }
 
     function viewHashtags() {
-        
+        setShowHashtags(!showHashtags);  
     }
 
     function complaintAction() {
-        
     }
 
     const slideToLeft = () => {
@@ -141,8 +154,44 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath, blobUrlsMedi
                         </div>
 
                         <div>
-                            <li><img src={tagsIcon} alt="Tags" onClick={viewTags}/></li>
-                            <li><img src={hashtagsIcon} alt="Hashtags" onClick={viewHashtags}/></li>
+                            <li>
+                                <img src={tagsIcon} alt="Tags" onClick={viewTags}/>
+                            </li>
+
+                            <li>
+                                <img src={hashtagsIcon} alt="Hashtags" onClick={viewHashtags}/>
+                                {showHashtags && (
+                                    <div className={styles.actions_itens}>
+                                        <ul>
+                                            {isInCreating && hashtags.map((hashtag, index) => (
+                                                <li 
+                                                    key={index} 
+                                                    onClick={() => {
+                                                        setHashtagsInPost(prevHashtags => {
+                                                            if (prevHashtags.includes(hashtag)) {
+                                                                return prevHashtags.filter(item => item !== hashtag);
+                                                            } else {
+                                                                return [...prevHashtags, hashtag];
+                                                            }
+                                                        });
+
+                                                        setSelectedHashtags(prevSelected => {
+                                                            if (prevSelected.includes(hashtag)) {
+                                                                return prevSelected.filter(item => item !== hashtag);
+                                                            } else {
+                                                                return [...prevSelected, hashtag];
+                                                            }
+                                                        });
+                                                    }}
+                                                    className={selectedHashtags.includes(hashtag) ? styles.selectedHashtag : ""}
+                                                >
+                                                    # {hashtag['nome']}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </li>
                         </div>
 
                         <li><img src={complaintIcon} alt="Complaint" onClick={complaintAction}/></li>

@@ -105,6 +105,7 @@
     border-radius: 35%;
     background-color: #000000aa;
     position: absolute;
+    z-index: 3;
 }
 
 .medias div.media_controls p:first-child {
@@ -124,6 +125,7 @@
     width: 100%;
     object-fit: cover;
     display: block;
+    z-index: 1;
 }
 
 .post_actions,
@@ -131,7 +133,7 @@
     width: 100%;
 }
 
-.post_actions ul {
+.post_actions > ul {
     display: flex;
     list-style: none;
     align-items: end;
@@ -140,12 +142,12 @@
     flex-wrap: wrap-reverse;
 }
 
-.post_actions ul div {
+.post_actions ul > div {
     display: flex;
     gap: 0.6em;
 }
 
-.post_actions ul li {
+.post_actions > ul > div > li {
     cursor: pointer;
 }
 
@@ -209,7 +211,7 @@ div.slide_left {
     min-width: unset;
     border-radius: 0 30% 30% 0;
     margin-right: auto;
-    z-index: 1;
+    z-index: 2;
 }
 
 div.slide_right {
@@ -218,8 +220,38 @@ div.slide_right {
     min-width: unset;
     border-radius: 30% 0 0 30%;
     margin-left: auto;
-    z-index: 1;
+    z-index: 2;
 }
+
+.actions_itens {
+    position: absolute;
+    bottom: 8em;
+    height: 15em;
+    overflow: auto;
+    background-color: var(--dark-bg-color);
+    border: 2px solid var(--dark-theme-color);
+}
+
+.actions_itens ul {
+    width: max-content;
+    display: flex;
+    flex-direction: column;
+    list-style: none;
+    padding: 0.5em;
+}
+
+.actions_itens ul li {
+    width: 100%;
+    transition: all 0.3s ease-in-out;
+    padding: 0.4em;
+}
+
+.actions_itens ul li:hover,
+.selectedHashtag {
+    background-color: var(--ligth-bg-color);
+}
+
+
 
 @media screen and (max-width: 720px) {
     .post {

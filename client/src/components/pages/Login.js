@@ -98,6 +98,7 @@ function Login() {
     return (
         <main className={styles.login_page}>
             {message && <Message message={message.message} type={message.type}/>}
+            
             <div className={styles.login_container}>
                 <div className={styles.forms_container}>
                     <LoginForm 

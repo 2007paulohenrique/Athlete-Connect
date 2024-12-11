@@ -8,7 +8,7 @@
 <!-- 6. Instale a biblioteca do mysql com `pip install mysql-connector-python` ou a do mariadb com `pip install mariadb` -->
 7. Instale o [Node.js](https://nodejs.org/) caso ainda não o tenha instalado, dessa forma. O npm será instalado automaticamente junto com o Node.js.
 8. Confirme a instalação do Node.js e do npm executando `node -v` e `npm -v`. Caso apareça suas versões, a instalação foi concluida com sucesso. 
-9. Instale as dependências do front-end indo até o diretório "client" dentro do projeto pelo terminal do vscodde e executando o comando `npm install`.
+9. Instale as dependências do front-end indo até o diretório "client" dentro do projeto pelo terminal do VScode e executando o comando `npm install`.
 10. habilite o serviço do mysql
 11. crie a database executando os comandos no mysql:
 `DROP DATABASE IF EXISTS athleteconnect;`

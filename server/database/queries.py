@@ -37,11 +37,24 @@ def insert_profile_preferences(con, profile_id, sports_ids):
      con.commit() 
      cursor.close()
 
-def insert_post(con, caption, profile_id):
+def insert_post(con, caption, profile_id, hashtags):
      cursor = con.cursor()
-     sql = "INSERT INTO postagem (legenda, data_publicacao, fk_perfil_id_perfil) VALUES (%s, %s, %s)"
      date = datetime.now()
+
+     sql = "INSERT INTO postagem (legenda, data_publicacao, fk_perfil_id_perfil) VALUES (%s, %s, %s)"
      cursor.execute(sql, (caption, date, profile_id))
+     post_id = cursor.lastrowid
+
+     for item in hashtags:
+          insert_post_hashtag(con, post_id, item['id_hashtag'])
+     
+     cursor.close()
+     con.commit()
+
+def insert_post_hashtag(con, post_id, hashtag_id):
+     cursor = con.cursor()
+     sql = "INSERT INTO postagem_hashtag (fk_postagem_id_postagem, fk_hashtag_id_hashtag) VALUES (%s, %s)"
+     cursor.execute(sql, (post_id, hashtag_id))
      con.commit()
      cursor.close()
 
@@ -162,6 +175,14 @@ def get_sports_icon(con, midia_id):
      result = cursor.fetchone()
      cursor.close()
 
+     return result
+
+def get_hashtags(con):
+     cursor = con.cursor(dictionary=True)
+     sql = "SELECT * FROM hashtag ORDER BY nome"
+     cursor.execute(sql)
+     result = cursor.fetchall()
+     cursor.close()
      return result
 
 def create_database(con):

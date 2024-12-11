@@ -16,6 +16,8 @@
     width: max-content;
     display: flex;
     overflow: hidden;
+    position: relative;
+    background-color: #000000c5;
 }
 
 .forms_container {

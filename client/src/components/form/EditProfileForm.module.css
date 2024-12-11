@@ -12,6 +12,7 @@
     border-radius: 1.5em;
     padding: 1em;
     backdrop-filter: brightness(0.2);
+    background-color: #000000c5;
     height: max-content;
     display: flex;
     gap: 1em;

@@ -8,9 +8,10 @@
 
 .flashes_section ul {
     list-style: none;
-    padding: 1em 0.7em;
+    padding: 1em calc(0.7em + 10px) 1em 0.7em;
     align-items: center;
     gap: 1em;
+
 }
 
 .flashes_section {
@@ -20,26 +21,26 @@
     top: calc(4.6em + 1px);
     bottom: 4em;
     /* Para Firefox */
-    /* scrollbar-width: thin; 
-    scrollbar-color: var(--dark-theme-color) var(--white-bg-color); */
+    scrollbar-width: 10px; 
+    scrollbar-color: var(--dark-theme-color) var(--ligth-bg-color);
 }
 
 /* Estilos específicos para a barra de rolagem no Chrome, Edge e Safari */
 .flashes_section::-webkit-scrollbar {
-    width: 10px; /* Largura da barra de rolagem */
+    width: 10px; 
 }
 
 .flashes_section::-webkit-scrollbar-track {
-    background: var(--ligth-bg-color); /* Cor do fundo da barra */
+    background: var(--ligth-bg-color); 
 }
 
 .flashes_section::-webkit-scrollbar-thumb {
-    background-color: var(--dark-theme-color); /* Cor da barra de rolagem */
-    border-radius: 10px; /* Bordas arredondadas */
+    background-color: var(--dark-theme-color);
+    border-radius: 10px;
 }
 
 .flashes_section::-webkit-scrollbar-thumb:hover {
-    background-color: var(--ligth-theme-color); /* Cor ao passar o mouse */
+    background-color: var(--ligth-theme-color); 
 }
 
 .flashes_section ul li.add_flash {
