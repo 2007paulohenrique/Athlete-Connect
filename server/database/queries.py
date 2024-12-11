@@ -10,6 +10,14 @@ def get_profiles(con):
      cursor.close()
      return result
 
+def get_profile(con, profile_id):
+     cursor = con.cursor(dictionary=True)
+     sql = "SELECT * FROM perfil WHERE id_perfil = %s"
+     cursor.execute(sql, (profile_id,))
+     result = cursor.fetchone()
+     cursor.close()
+     return result
+
 def insert_profile(con, email, password, name, bio, private):
      cursor = con.cursor()
      sql = "INSERT INTO perfil (email, senha, nome, verificado, ativo, privado, biografia) VALUES (%s, %s, %s, %s, %s, %s, %s)"

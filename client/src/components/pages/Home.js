@@ -17,7 +17,7 @@ function Home() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const profileId = location.state?.profileId || localStorage.getItem("profileId");
+        const profileId = location.state?.athleteConnectProfileId || localStorage.getItem("athleteConnectProfileId");
 
         if (!profileId) {
             navigate("/login");

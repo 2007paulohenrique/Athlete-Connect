@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from "./components/pages/Login";
 import EditProfile from "./components/pages/EditProfile";
 import ProfilePreferences from "./components/pages/ProfilePreferences";
+import NewPost from "./components/pages/NewPost";
 
 function App() {
   return (
@@ -24,6 +25,12 @@ function App() {
         />
 
         <Route 
+          path="/NewPost" 
+          element={<NewPost/>} 
+        />
+
+        <Route 
+          exact
           path="/" 
           element={<Home/>} 
         />

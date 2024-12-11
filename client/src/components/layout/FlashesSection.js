@@ -10,13 +10,13 @@ function FlashesSection() {
                 <li className={styles.add_flash}><img src={addFlashIcon} alt="New Flash"></img></li>
                 
                 <ProfilePhotoContainer profilePhotoPath="https://plus.unsplash.com/premium_photo-1689977968861-9c91dbb16049?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Zm90byUyMGRvJTIwcGVyZmlsfGVufDB8fDB8fHww"/>
-                <ProfilePhotoContainer profilePhotoPath={userIcon}/>
+                <ProfilePhotoContainer/>
                 <ProfilePhotoContainer profilePhotoPath="https://plus.unsplash.com/premium_photo-1689977968861-9c91dbb16049?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Zm90byUyMGRvJTIwcGVyZmlsfGVufDB8fDB8fHww"/>
                 <ProfilePhotoContainer profilePhotoPath="https://plus.unsplash.com/premium_photo-1689977968861-9c91dbb16049?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Zm90byUyMGRvJTIwcGVyZmlsfGVufDB8fDB8fHww"/>
-                <ProfilePhotoContainer profilePhotoPath={userIcon}/>
-                <ProfilePhotoContainer profilePhotoPath={userIcon}/>
+                <ProfilePhotoContainer/>
+                <ProfilePhotoContainer/>
                 <ProfilePhotoContainer profilePhotoPath="https://plus.unsplash.com/premium_photo-1689977968861-9c91dbb16049?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Zm90byUyMGRvJTIwcGVyZmlsfGVufDB8fDB8fHww"/>
-                <ProfilePhotoContainer profilePhotoPath={userIcon}/>
+                <ProfilePhotoContainer/>
             </ul>
         </section>
     );

@@ -1,0 +1,36 @@
+.new_post_page {
+    background-color: black;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5em;
+    align-items: center;
+    padding: 2em;
+}
+
+.new_post_page h1 {
+    margin-bottom: 1em;
+}
+
+.edit_post {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: 1em;
+}
+
+.inputs {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 1em;
+}
+
+@media screen and (max-width: 720px) {
+    .inputs {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1em;
+    }
+}

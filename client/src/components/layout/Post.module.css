@@ -5,8 +5,9 @@
     padding: 1em;
     background-color: var(--dark-bg-color);
     width: 100%;
-    aspect-ratio: 10 / 5;
+    aspect-ratio: 2 / 1;
     gap: 1em;
+    overflow: hidden;
 }
 
 .container_divisor {
@@ -29,6 +30,7 @@
     align-items: start;
     justify-content: space-between;
     flex: 1;
+    word-break: break-all;
     gap: 1.5em;
 }
 
@@ -185,6 +187,7 @@
     padding: 0.5em;
     max-height: 100%;
     text-align: justify;
+    white-space: pre-wrap;
 }
 
 .caption p span {
@@ -223,7 +226,7 @@ div.slide_right {
         flex-direction: column;
         border: 2px solid var(--ligth-theme-color);
         border-bottom: unset;
-        aspect-ratio: 2 / 3;
+        aspect-ratio: unset;
     }
 
     .container_divisor {
@@ -237,6 +240,7 @@ div.slide_right {
     .second_post_container {
         flex-direction: column-reverse;
         gap: 1em;
+        overflow: hidden;
     }
 
     .medias {
@@ -257,7 +261,9 @@ div.slide_right {
     }
 
     .caption {
-        aspect-ratio: 4 / 1;
         font-size: 0.7em;
+        max-height: 30%;
+        min-height: 5em;
+        aspect-ratio: 3 / 1;
     }
 }

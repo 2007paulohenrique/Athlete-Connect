@@ -8,22 +8,32 @@ import tagsIcon from "../../img/icons/socialMedia/tagsIcon.png";
 import hashtagsIcon from "../../img/icons/socialMedia/hashtagsIcon.png";
 import ProfilePhotoContainer from "./ProfilePhotoContainer";
 
-function Post({authorUserName, authorPhotoPath, moment, mediasPath, caption}) {
+function Post({authorUserName, authorPhotoPath, moment, mediasPath, blobUrlsMedias, caption}) {
     const [medias, setMedias] = useState([]);
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
 
     useEffect(() => {
-        setMedias(mediasPath.map((mediaPath) => {
-            const isImage = /\.(jpg|jpeg|png|webp)$/i.test(mediaPath);
-            const isVideo = /\.(mp4|webm|ogg)$/i.test(mediaPath);
+        if (!blobUrlsMedias) {
+            const newMedias = mediasPath.map((mediaPath) => {
+                const isImage = /\.(jpg|jpeg|png|webp)$/i.test(mediaPath);
+                const isVideo = /\.(mp4|webm|ogg)$/i.test(mediaPath);
+        
+                return {
+                    type: isImage ? 'image' : isVideo ? 'video' : 'unknown',
+                    path: mediaPath,
+                    duration: isVideo ? null : undefined,
+                };
+            });
+    
+            setMedias(newMedias);
+        } else {
+            setMedias(blobUrlsMedias);
+        }
+    }, [blobUrlsMedias, mediasPath]);
 
-            return {
-                type: isImage ? 'image' : isVideo ? 'video' : 'unknown',
-                path: mediaPath,
-                duration: isVideo ? null : undefined,
-            };
-        }));
-    }, [mediasPath]);
+    useEffect(() => {
+        setCurrentMediaIndex(0);
+    }, [blobUrlsMedias]);
 
     const handleVideoLoad = (index, videoElement) => {
         if (videoElement) {
@@ -139,7 +149,6 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath, caption}) {
                     </ul>
                 </div>
             </div>
-                
         </div>
     );
 }

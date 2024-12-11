@@ -56,9 +56,9 @@ function ProfilePreferences() {
 
         axios.post("http://localhost:5000/profiles", profile)
         .then(resp => {
-            localStorage.setItem("profileId", resp.data.profileId)
+            localStorage.setItem("athleteConnectProfileId", resp.data.profileId)
             
-            navigate("/", {state: {profileId: resp.data.profileId}});
+            navigate("/", {state: {athleteConnectProfileId: resp.data.profileId}});
         })
         .catch(err => {
             console.error('Erro ao fazer a requisição:', err);

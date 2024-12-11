@@ -43,6 +43,9 @@ function EditProfile() {
         if (!profileMatch()) {  
             if (!submitError) {
                 if (!profile["bio"]) profile["bio"] = "";
+
+                if (profile["private"] === undefined) profile["private"] = false;
+                
     
                 navigate("/profilePreferences", {state: {profileReady: profile}});
             }
@@ -54,7 +57,14 @@ function EditProfile() {
     return (
         <main className={styles.edit_profile_page}>
             {message && <Message message={message.message} type={message.type}/>}
-            <EditProfileForm handleSubmit={handleOnSubmit} profile={profile} setProfile={setProfile} submitError={submitError} setSubmitError={setSubmitError}/>
+
+            <EditProfileForm 
+                handleSubmit={handleOnSubmit} 
+                profile={profile} 
+                setProfile={setProfile} 
+                submitError={submitError} 
+                setSubmitError={setSubmitError}
+            />
         </main>
     );
 }

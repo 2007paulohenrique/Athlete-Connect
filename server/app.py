@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from database.queries import *
 from database.connection import *
+import os
 
 app = Flask(__name__)
 CORS(app)
@@ -24,7 +25,22 @@ def post_profile():
     profile_id = insert_profile(con, profile["emailSignUp"], profile["passwordSignUp"], profile["confirmedNameSignUp"], profile["bio"], profile["private"])
     insert_profile_preferences(con, profile_id, profile["preferences"])
     close_connection(con)
+
+    base_dir = os.path.join(os.getcwd(), "..", "client", "src", "img", "users")
+    profile_name = profile["confirmedNameSignUp"]
+    user_dir = os.path.join(base_dir, profile_name)
+    os.makedirs(user_dir, exist_ok=True)
+    os.makedirs(os.path.join(user_dir, "posts"), exist_ok=True)
+    os.makedirs(os.path.join(user_dir, "flashs"), exist_ok=True)
+        
     return jsonify({"profileId": profile_id})
+
+@app.route('/profiles/<int:profile_id>', methods=['GET'])
+def get_profile_r(profile_id):
+    con = open_connection(*con_params)
+    profile = get_profile(con, profile_id)
+    close_connection(con)
+    return jsonify(profile)
 
 @app.route('/feeds/<int:profile_id>', methods=['GET'])
 def get_feed(profile_id):

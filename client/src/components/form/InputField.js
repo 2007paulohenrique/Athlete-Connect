@@ -13,7 +13,7 @@ function InputField({ type, name, labelText, placeholder, alertMessage, handleCh
     return (
         <div className={type === "checkbox" ? styles.checkbox_input : styles.inputField}>
             <span>
-                {inputIcon && <img src={inputIcon} alt={inputIconAlt} />}
+                {inputIcon && <img src={inputIcon} alt={inputIconAlt}/>}
                 <label htmlFor={name}>{labelText}</label>
             </span>
             <input type={type} name={name} id={name} placeholder={placeholder} onChange={handleChange} value={value}/>

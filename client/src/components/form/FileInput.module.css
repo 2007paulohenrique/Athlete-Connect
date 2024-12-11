@@ -1,0 +1,44 @@
+.file_input {
+    display: flex;
+    flex-direction: column;
+}
+
+.file_input label img {
+    height: 3em;
+    width: 3em;
+}
+
+.file_input label {
+    background-color: var(--ligth-theme-color);
+    border: 1px solid var(--dark-theme-color);
+    width: max-content;
+    padding: 0.4em 1em;
+    cursor: pointer;
+    font-weight: bold;
+    letter-spacing: 0.3px;
+    border-radius: 5px;
+    color: black;
+    transition: all 0.2s ease-in;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1em;
+}
+
+.file_input input {
+    display: none;
+}
+
+.file_input label:hover {
+    background-color: var(--dark-theme-color);
+}
+
+.alert {
+    height: 3em;
+    font-size: 0.7em;
+    margin: 0.1em 0.5em 0;
+    text-align: justify;
+    color: var(--alert-color);
+    letter-spacing: 0.4px;
+    visibility: hidden;
+}
