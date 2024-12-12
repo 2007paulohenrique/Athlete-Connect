@@ -17,5 +17,9 @@
 `ALTER DATABASE athleteconnect CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;`
 12. caso necessário, mude os parâmetros da conexão no arquivo `app.py` e `create_database.py` na pasta `/server`
 13. pelo terminal do vscode, vá até o diretório `/server` e execute `python app.py` e `python create_database.py`, em seguida, vá até o diretório `/client` e execute o comando `npm start`
+<!-- Caso npm start n funcione talvez o comando 
+chmod -R 755 node_modules
+possa resolver
+ -->
 
 obs: verifique se a extensão do python está instalada no vscode

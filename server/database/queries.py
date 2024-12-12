@@ -144,6 +144,8 @@ def get_sports(con):
         sport_id = sport['id_esporte']
         categories = get_sports_categories(con, sport_id)
         sport['categories'] = categories
+        icon = get_sports_icon(con, sport['fk_midia_id_icone'])
+        sport['iconPath'] = icon 
 
      return result
 
@@ -158,6 +160,19 @@ def get_sports_categories(con, sport_id):
      """
      cursor.execute(sql, (sport_id,))
      result = cursor.fetchall()
+     cursor.close()
+
+     return result
+
+def get_sports_icon(con, midia_id):
+     cursor = con.cursor(dictionary=True)
+     sql = """
+          SELECT caminho 
+          FROM midia 
+          WHERE id_midia = %s AND tipo = 'icone'
+     """
+     cursor.execute(sql, (midia_id,))
+     result = cursor.fetchone()
      cursor.close()
 
      return result

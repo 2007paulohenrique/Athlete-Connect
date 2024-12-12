@@ -30,7 +30,11 @@ function NewPost() {
         } else {
             axios.get(`http://localhost:5000/profiles/${profileId}`)
             .then(resp => {
-                setProfile(resp.data);
+                if (resp.data) {
+                    setProfile(resp.data);
+                } else {
+                    navigate("/login"); 
+                }
             })
             .catch(err => {
                 console.error('Erro ao fazer a requisição:', err);

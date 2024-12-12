@@ -5,8 +5,6 @@ import styles from "./ProfilePreferences.module.css";
 import SubmitButton from "../form/SubmitButton";
 import axios from "axios"
 
-import futebolIcon from "../../img/icons/sports/futebolIcon.png";
-
 function ProfilePreferences() {
     const [sports, setSports] = useState([]);
     const [profilePreferences, setProfilePreferences] = useState([]);
@@ -29,7 +27,6 @@ function ProfilePreferences() {
     useEffect(() => {
         axios.get("http://localhost:5000/sports")
         .then(resp => {
-            console.log(resp.data)
             setSports(resp.data);
         })
         .catch(err => {
@@ -82,7 +79,7 @@ function ProfilePreferences() {
                 {sports.map((sport) => (
                     <SportCard 
                         key={sport.id_esporte}
-                        icon={futebolIcon} 
+                        iconPath={sport.iconPath.caminho} 
                         sportName={sport.nome} 
                         categories={sport.categories} 
                         handleClick={() => handleOnClick(sport)}

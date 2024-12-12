@@ -22,21 +22,21 @@ function Home() {
         if (!profileId) {
             navigate("/login");
         } else {
-            setProfileId(profileId);
-        }
-    }, [location, navigate]);
-
-    useEffect(() => {
-        if (profileId) {
             axios.get(`http://localhost:5000/feeds/${profileId}`)
             .then(resp => {
-                setFeed(resp.data);
+                if (resp.data) {
+                    setProfileId(profileId);
+                    setFeed(resp.data);
+                } else {
+                    navigate("/login"); 
+                }
             })
             .catch(err => {
                 console.error('Erro ao fazer a requisição:', err);
             });
         }
-    }, [profileId]);
+    }, [location, navigate]);
+
     // const medias = [];
     // medias.push("https://www.shutterstock.com/shutterstock/videos/3473744799/preview/stock-footage-winning-the-penalty-shootout-challenge-in-a-virtual-sport-simulator-game-winning-the-match-of-a.webm");
     // medias.push("https://www.estadao.com.br/recomenda/wp-content/uploads/2023/04/icE5DUtSaptb3bBC8eliggfQNKgqNH-metadHJhdmVsLW5vbWFkZXMtSk8xOUswSEREWEktdW5zcGxhc2guanBn-1-1.jpg.webp");

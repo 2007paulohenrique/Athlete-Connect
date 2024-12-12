@@ -8,6 +8,7 @@ import tagsIcon from "../../img/icons/socialMedia/tagsIcon.png";
 import hashtagsIcon from "../../img/icons/socialMedia/hashtagsIcon.png";
 import ProfilePhotoContainer from "./ProfilePhotoContainer";
 import axios from "axios"
+import InputSearchField from "../layout/InputSearchField";
 
 function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsMedias=[], caption, isInCreating, setHashtagsInPost}) {
     const [medias, setMedias] = useState([]);
@@ -15,6 +16,9 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
     const [showHashtags, setShowHashtags] = useState(false);  
     const [selectedHashtags, setSelectedHashtags] = useState([]);
+    const [searchText, setSearchText] = useState("");
+    const [filteredHashtags, setFilteredHashtags] = useState([]);
+
 
     useEffect(() => {
         if (!blobUrlsMedias) {
@@ -43,6 +47,7 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
         axios.get("http://localhost:5000/hashtags")
         .then(resp => {
             setHashtags(resp.data);
+            setFilteredHashtags(resp.data);
         })
         .catch(err => {
             console.error('Erro ao fazer a requisição:', err);
@@ -64,6 +69,13 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
         }
     };
 
+    useEffect(() => {
+        const filtered = hashtags.filter((hashtag) =>
+            hashtag.nome.toLowerCase().includes(searchText.toLowerCase())
+        );
+        setFilteredHashtags(filtered);
+    }, [searchText, hashtags]);
+
     function likeAction() {
         // Implementar ação de like
     }
@@ -79,6 +91,10 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
     function viewTags() {
         // Implementar ação de tags
     }
+
+    const handleSearchChange = (e) => {
+        setSearchText(e.target.value);
+    };
 
     function viewHashtags() {
         setShowHashtags(!showHashtags);  
@@ -162,8 +178,15 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
                                 <img src={hashtagsIcon} alt="Hashtags" onClick={viewHashtags}/>
                                 {showHashtags && (
                                     <div className={styles.actions_itens}>
+                                        <InputSearchField 
+                                            type="text" 
+                                            name="hashtagsSearch"
+                                            placeholder="Pesquisar hashtags..." 
+                                            value={searchText}
+                                            handleChange={handleSearchChange}
+                                        />
                                         <ul>
-                                            {isInCreating && hashtags.map((hashtag, index) => (
+                                            {isInCreating && filteredHashtags.map((hashtag, index) => (
                                                 <li 
                                                     key={index} 
                                                     onClick={() => {

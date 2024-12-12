@@ -1,6 +1,8 @@
 import styles from "./SportCard.module.css";
 
-function SportCard({icon, sportName, categories = [], handleClick, selected = false}) {
+function SportCard({iconPath, sportName, categories = [], handleClick, selected = false}) {
+    const icon = require(`../../img/${iconPath}`);
+
     return (
         <div className={`${styles.sport_card} ${selected && styles.selected}`} onClick={handleClick}>
             <img src={icon} alt={`${sportName} Icon`}/>

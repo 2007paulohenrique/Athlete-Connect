@@ -17,6 +17,12 @@
   color: var(--ligth-font-color);
   user-select: none;
   /* border: 1px solid red; */
+  scrollbar-width: thin; 
+  scrollbar-color: var(--dark-theme-color) var(--ligth-bg-color);
+}
+
+*:hover {
+  scrollbar-color: var(--ligth-theme-color) var(--ligth-bg-color);
 }
 
 html,

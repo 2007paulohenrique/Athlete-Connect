@@ -20,23 +20,27 @@
     top: calc(4.6em + 1px);
     bottom: 4em;
     /* Para Firefox */
-    scrollbar-width: 10px; 
+    scrollbar-width: thin; 
     scrollbar-color: var(--dark-theme-color) var(--ligth-bg-color);
 }
 
+.flashes_section:hover {
+    scrollbar-color: var(--ligth-theme-color) var(--ligth-bg-color);
+}
+
 /* Estilos específicos para a barra de rolagem no Chrome, Edge e Safari */
-.flashes_section::-webkit-scrollbar {
+/* .flashes_section::-webkit-scrollbar {
     width: 10px; 
-}
+} */
 
-.flashes_section::-webkit-scrollbar-track {
+/* .flashes_section::-webkit-scrollbar-track {
     background: var(--ligth-bg-color); 
-}
+} */
 
-.flashes_section::-webkit-scrollbar-thumb {
+/* .flashes_section::-webkit-scrollbar-thumb {
     background-color: var(--dark-theme-color);
     border-radius: 10px;
-}
+} */
 
 .flashes_section::-webkit-scrollbar-thumb:hover {
     background-color: var(--ligth-theme-color); 
