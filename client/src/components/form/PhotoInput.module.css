@@ -1,0 +1,43 @@
+.photo_input {
+    position: relative;
+    height: 3em;
+    width: 3em;
+    min-height: 3em;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 3px solid var(--dark-theme-color);
+    background-color: var(--ligth-bg-color);
+    transition: border 0.15s ease-in-out;
+    overflow: hidden;
+}
+
+.photo_input:hover {
+    border: 3px solid var(--ligth-theme-color);
+    background-color: black;
+}
+
+.photo_input label {
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    position: absolute;
+    top: 0;
+    text-align: center;
+    cursor: pointer;
+    color: var(--ligth-theme-color);
+    font-size: 2em;
+    font-weight: bold;
+}
+
+.photo_input input {
+    display: none;
+}
+
+.photo_input img {
+    height: 100%;
+    width: 100%;
+    display: block;
+    object-fit: cover;
+}

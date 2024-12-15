@@ -127,7 +127,7 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
                     {medias.length > 0 && (
                         <div id={`media${currentMediaIndex}`}>
                             <div className={styles.media_controls}>
-                                <p>{`${currentMediaIndex + 1}/${medias.length}`}</p>
+                                {medias.length !== 1 && <p>{`${currentMediaIndex + 1}/${medias.length}`}</p>}
                                 {medias[currentMediaIndex].duration && <p>{medias[currentMediaIndex].duration}</p>}
                             </div>
 

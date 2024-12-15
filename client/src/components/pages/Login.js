@@ -4,6 +4,7 @@ import styles from "./Login.module.css";
 import Message from "../layout/Message";
 import axios from "axios"
 import { useNavigate } from "react-router-dom";
+import { useProfile } from "../../ProfileContext";
 
 function Login() {
     const [isLogin, setIsLogin] = useState(false);
@@ -12,6 +13,7 @@ function Login() {
     const [profiles, setProfiles] = useState([]);
     const [profile, setProfile] = useState({});
     const [message, setMessage] = useState({});
+    const { setProfileId } = useProfile(); 
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -82,7 +84,9 @@ function Login() {
 
             setLoginPasswordError(false);
             const loggedInProfile = validatePasswordLogin();
-            sessionStorage.setItem("profileId", loggedInProfile["id_perfil"]);
+
+            setProfileId(loggedInProfile["id_perfil"]);
+            localStorage.setItem('athleteConnectProfileId', loggedInProfile["id_perfil"]);
 
             navigate("/");
         } else {

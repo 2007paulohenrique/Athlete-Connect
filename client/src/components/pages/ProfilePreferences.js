@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import SportCard from "../layout/SportCard";
 import styles from "./ProfilePreferences.module.css";
 import SubmitButton from "../form/SubmitButton";
+import { useProfile } from '../../ProfileContext';
 import axios from "axios"
 
 function ProfilePreferences() {
@@ -10,6 +11,7 @@ function ProfilePreferences() {
     const [profilePreferences, setProfilePreferences] = useState([]);
     const [profile, setProfile] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const { setProfileId } = useProfile(); 
 
     const navigate = useNavigate()
     const location = useLocation();
@@ -54,11 +56,26 @@ function ProfilePreferences() {
         const sportsIds = profilePreferences.map(sport => sport.id_esporte);
         profile['preferences'] = sportsIds;
 
-        axios.post("http://localhost:5000/profiles", profile)
+        const formData = new FormData();
+
+        formData.append("name", profile["confirmedNameSignUp"]);
+        formData.append("email", profile["emailSignUp"]);
+        formData.append("password", profile["passwordSignUp"]);
+        formData.append("bio", profile["bio"]);
+        formData.append("private", profile["private"]);
+        if (profile["photo"] && profile["photo"].length > 0) {
+            formData.append("photo", profile["photo"][0]);
+        }
+        sportsIds.forEach(sportId => formData.append("preferences", sportId));
+
+        axios.post("http://localhost:5000/profiles", formData, {
+            headers: { "Content-Type": "multipart/form-data" }, 
+        })
         .then(resp => {
-            localStorage.setItem("athleteConnectProfileId", resp.data.profileId)
+            setProfileId(resp.data.profileId);
+            localStorage.setItem('athleteConnectProfileId', resp.data.profileId)
             
-            navigate("/", {state: {athleteConnectProfileId: resp.data.profileId}});
+            navigate("/");
         })
         .catch(err => {
             console.error('Erro ao fazer a requisição:', err);

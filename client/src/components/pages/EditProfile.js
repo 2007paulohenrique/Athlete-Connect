@@ -43,9 +43,7 @@ function EditProfile() {
         if (!profileMatch()) {  
             if (!submitError) {
                 if (!profile["bio"]) profile["bio"] = "";
-
-                if (profile["private"] === undefined) profile["private"] = false;
-                
+                if (profile["private"] === undefined) profile["private"] = false;      
     
                 navigate("/profilePreferences", {state: {profileReady: profile}});
             }

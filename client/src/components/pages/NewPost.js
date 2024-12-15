@@ -9,26 +9,31 @@ import SubmitButton from "../form/SubmitButton";
 import FileInput from "../form/FileInput";
 import mediasIcon from "../../img/icons/socialMedia/mediasIcon.png";
 import captionIcon from "../../img/icons/socialMedia/captionIcon.png";
+import { useProfile } from "../../ProfileContext";
 import Message from "../layout/Message";
 
 function NewPost() {
-    const navigate = useNavigate();
     const [profile, setProfile] = useState({});
     const [post, setPost] = useState({});
     const [haveError, setHaveError] = useState({});
     const [currentMoment, setCurrentMoment] = useState("");
     const [medias, setMedias] = useState([]);
+    const [files, setFiles] = useState([]);
     const [mediasLengthError, setMediasLengthError] = useState(false);
     const [hashtagsInPost, setHashtagsInPost] = useState([]);
+    const {profileId, setProfileId} = useProfile();
     const [message, setMessage] = useState({});
 
-    useEffect(() => {
-        const profileId = localStorage.getItem("athleteConnectProfileId");
+    const navigate = useNavigate();
 
-        if (!profileId) {
+    useEffect(() => {
+        const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
+        console.log(profileId)
+
+        if (!confirmedProfileId) {
             navigate("/login");
         } else {
-            axios.get(`http://localhost:5000/profiles/${profileId}`)
+            axios.get(`http://localhost:5000/profiles/${confirmedProfileId}`)
             .then(resp => {
                 if (resp.data) {
                     setProfile(resp.data);
@@ -40,7 +45,7 @@ function NewPost() {
                 console.error('Erro ao fazer a requisição:', err);
             });
         }
-    }, [navigate]);
+    }, [navigate, profileId]);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -89,26 +94,35 @@ function NewPost() {
     
         if (newMedias.length <= 9) {
             setMedias(newMedias); 
+            setFiles(files);
             setMediasLengthError(false);
         } else {
             setMediasLengthError(true);
         }
     }
-    
 
     function handleOnSubmit(e) {
         e.preventDefault();
-
-        setPost({...post, hashtags: hashtagsInPost});
-
+        
         if (medias.length >= 1) {  
-            axios.post(`http://localhost:5000/profiles/${profile['id_perfil']}/posts`, {...post, hashtags: hashtagsInPost})
-            .then(resp => {            
+            setPost({...post, hashtags: hashtagsInPost});
+
+            const formData = new FormData();
+
+            formData.append("caption", post["caption"] || "");
+            hashtagsInPost.forEach(hashtag => formData.append("hashtags", hashtag));
+
+            files.forEach(file => formData.append(`medias`, file));
+
+            axios.post(`http://localhost:5000/profiles/${profile['id_perfil']}/posts`, formData, {
+                headers: { "Content-Type": "multipart/form-data" }, 
+            })
+            .then(resp => {
                 navigate("/");
             })
             .catch(err => {
-                console.error('Erro ao fazer a requisição:', err);
-            }); 
+                console.error("Erro ao fazer a requisição:", err);
+            });
         } else {
             setMessageWithReset("Selecione pelo menos uma foto ou vídeo para publicar", "error");
         }

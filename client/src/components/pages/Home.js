@@ -7,25 +7,25 @@ import arrowIcon from "../../img/icons/socialMedia/arrowIcon.png";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useProfile } from '../../ProfileContext';
 // import Message from "../layout/Message";
 
 function Home() {
     const [feed, setFeed] = useState([]);
-    const [profileId, setProfileId] = useState();
+    const {profileId, setProfileId} = useProfile();
 
     const location = useLocation();
     const navigate = useNavigate();
 
     useEffect(() => {
-        const profileId = location.state?.athleteConnectProfileId || localStorage.getItem("athleteConnectProfileId");
+        const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
 
-        if (!profileId) {
+        if (!confirmedProfileId) {
             navigate("/login");
         } else {
-            axios.get(`http://localhost:5000/feeds/${profileId}`)
+            axios.get(`http://localhost:5000/feeds/${confirmedProfileId}`)
             .then(resp => {
                 if (resp.data) {
-                    setProfileId(profileId);
                     setFeed(resp.data);
                 } else {
                     navigate("/login"); 
@@ -35,7 +35,7 @@ function Home() {
                 console.error('Erro ao fazer a requisição:', err);
             });
         }
-    }, [location, navigate]);
+    }, [location, navigate, profileId]);
 
     // const medias = [];
     // medias.push("https://www.shutterstock.com/shutterstock/videos/3473744799/preview/stock-footage-winning-the-penalty-shootout-challenge-in-a-virtual-sport-simulator-game-winning-the-match-of-a.webm");

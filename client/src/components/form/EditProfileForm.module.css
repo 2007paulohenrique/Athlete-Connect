@@ -42,7 +42,7 @@
     font-size: 2em;
     letter-spacing: 1px;
     color: var(--ligth-theme-color);
-    margin-bottom: 1em;
+    margin: -0.4em 0 1em 0;
 }
 
 .empty_field_alert {
@@ -62,7 +62,6 @@
         position: absolute;
         left: 0;
         top: 0;
-        padding: 1em;
         overflow: auto;
         border-radius: 0;
     }

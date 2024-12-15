@@ -16,7 +16,7 @@ function InputField({ type, name, labelText, placeholder, alertMessage, handleCh
                 {inputIcon && <img src={inputIcon} alt={inputIconAlt}/>}
                 <label htmlFor={name}>{labelText}</label>
             </span>
-            <input type={type} name={name} id={name} placeholder={placeholder} onChange={handleChange} value={value || ""}/>
+            <input type={type} name={name} id={name} placeholder={placeholder} onChange={handleChange} value={value}/>
             <p className={styles.alert} ref={alertRef}>{alertMessage}</p>
         </div>
     );

@@ -4,38 +4,47 @@ import Login from "./components/pages/Login";
 import EditProfile from "./components/pages/EditProfile";
 import ProfilePreferences from "./components/pages/ProfilePreferences";
 import NewPost from "./components/pages/NewPost";
+import { ProfileProvider } from './ProfileContext';
 
 function App() {
+  document.addEventListener('keydown', function(event) {
+    if (event.key === 'Tab') {
+        event.preventDefault(); 
+    }
+  });
+
   return (
-    <Router>
-      <Routes>
-        <Route 
-          path="/login" 
-          element={<Login/>} 
-        />
+    <ProfileProvider>
+      <Router>
+        <Routes>
+          <Route 
+            path="/login" 
+            element={<Login/>} 
+          />
 
-        <Route 
-          path="/editProfile" 
-          element={<EditProfile/>} 
-        />
+          <Route 
+            path="/editProfile" 
+            element={<EditProfile/>} 
+          />
 
-        <Route 
-          path="/profilePreferences" 
-          element={<ProfilePreferences/>} 
-        />
+          <Route 
+            path="/profilePreferences" 
+            element={<ProfilePreferences/>} 
+          />
 
-        <Route 
-          path="/NewPost" 
-          element={<NewPost/>} 
-        />
+          <Route 
+            path="/NewPost" 
+            element={<NewPost/>} 
+          />
 
-        <Route 
-          exact
-          path="/" 
-          element={<Home/>} 
-        />
-      </Routes>
-    </Router>
+          <Route 
+            exact
+            path="/" 
+            element={<Home/>} 
+          />
+        </Routes>
+      </Router>
+    </ProfileProvider>
   );
 }
 

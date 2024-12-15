@@ -7,6 +7,8 @@ import os
 app = Flask(__name__)
 CORS(app)
 
+UPLOAD_FOLDER = os.path.join('../client/src/img/users')
+
 # con_params = ("localhost", "estudante1", "estudante1", "athleteconnect")   
 con_params = ("localhost", "root", "1234", "athleteconnect")   
 # con_params = ("localhost", "troarmen", "0000", "athleteconnect")   
@@ -27,18 +29,48 @@ def get_profiles_r():
 
 @app.route('/profiles', methods=['POST'])
 def post_profile():
-    profile = request.get_json()
     con = open_connection(*con_params)
-    profile_id = insert_profile(con, profile["emailSignUp"], profile["passwordSignUp"], profile["confirmedNameSignUp"], profile["bio"], profile["private"])
-    insert_profile_preferences(con, profile_id, profile["preferences"])
-    close_connection(con)
 
-    base_dir = os.path.join(os.getcwd(), "..", "client", "src", "img", "users")
-    profile_name = profile["confirmedNameSignUp"]
-    user_dir = os.path.join(base_dir, profile_name)
-    os.makedirs(user_dir, exist_ok=True)
-    os.makedirs(os.path.join(user_dir, "posts"), exist_ok=True)
-    os.makedirs(os.path.join(user_dir, "flashs"), exist_ok=True)
+    name = request.form.get('name')
+    email = request.form.get('email')
+    password = request.form.get('password')
+    bio = request.form.get('bio')
+    private = request.form.get('private')
+    private = private.lower() == 'true' if private else False
+    photo = request.files.get('photo')
+    preferences = request.form.getlist('preferences')
+    preferences = [int(pref) for pref in preferences]
+
+    profile_id = insert_profile(con, email, password, name, bio, private)
+    insert_profile_preferences(con, profile_id, preferences)
+
+    user_folder = os.path.join(UPLOAD_FOLDER, f"{profile_id}")
+
+    os.makedirs(user_folder, exist_ok=True)
+    os.makedirs(os.path.join(user_folder, "posts"), exist_ok=True)
+    os.makedirs(os.path.join(user_folder, "flashs"), exist_ok=True)
+    os.makedirs(os.path.join(user_folder, "profilePhoto"), exist_ok=True)
+    
+    if photo:
+        filename = photo.filename
+        filename = os.path.basename(filename)
+
+        _, file_extension = os.path.splitext(filename)  
+        file_extension = file_extension.lower()
+
+        filepath = os.path.join(user_folder, "profilePhoto", filename)
+        photo.save(filepath)
+
+        saved_file = {
+            "path": f"users/{profile_id}/profilePhoto/{filename}",
+            "type": "image" if photo.mimetype.startswith('image/') else "video",
+            "format": file_extension,
+        }
+
+        media_id = insert_media(con, saved_file["path"], saved_file["type"], saved_file["format"])   
+        insert_profile_photo(con, profile_id, media_id)    
+
+    close_connection(con)
         
     return jsonify({"profileId": profile_id})
 
@@ -58,10 +90,40 @@ def get_feed(profile_id):
 
 @app.route('/profiles/<int:profile_id>/posts', methods=['POST'])
 def post_post(profile_id):
-    post = request.get_json()
-
     con = open_connection(*con_params)
-    insert_post(con, post["caption"], profile_id, post['hashtags'])
+
+    user_folder = os.path.join(UPLOAD_FOLDER, f"{profile_id}", "posts")
+    os.makedirs(user_folder, exist_ok=True)
+
+    caption = request.form.get('caption')
+    hashtags = request.form.getlist('hashtags')
+    medias = request.files.getlist('medias')
+    saved_files = []
+
+    for file in medias:
+        filename = file.filename
+        filename = os.path.basename(filename)
+
+        base_filename, file_extension = os.path.splitext(filename)
+        file_extension = file_extension.lower()
+
+        counter = 1
+        new_filename = filename
+
+        while os.path.exists(os.path.join(user_folder, new_filename)):
+            new_filename = f"{base_filename}_{counter}{file_extension}"
+            counter += 1
+
+        filepath = os.path.join(user_folder, new_filename)
+        file.save(filepath)
+
+        saved_files.append({
+            "path": f"users/{profile_id}/posts/{new_filename}",
+            "type": "image" if file.mimetype.startswith('image/') else "video",
+            "format": file_extension,
+        })
+
+    insert_post(con, caption, profile_id, hashtags, saved_files)
     close_connection(con)
     return ""
 

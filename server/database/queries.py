@@ -24,6 +24,8 @@ def insert_profile(con, email, password, name, bio, private):
      cursor.execute(sql, (email, password, name, 0, 1, 1 if private else 0, bio))
      con.commit() 
      profile_id = cursor.lastrowid
+     insert_user(con, profile_id)
+     insert_default_profile_config(con, profile_id, private)
      cursor.close()
      return profile_id
 
@@ -37,7 +39,58 @@ def insert_profile_preferences(con, profile_id, sports_ids):
      con.commit() 
      cursor.close()
 
-def insert_post(con, caption, profile_id, hashtags):
+def insert_user(con, profile_id):
+     cursor = con.cursor()
+     sql = "INSERT INTO usuario (fk_perfil_id_perfil) VALUES (%s)"
+     cursor.execute(sql, (profile_id,))
+     con.commit() 
+     cursor.close()
+
+def insert_default_profile_config(con, profile_id, is_private):
+     cursor = con.cursor()
+     sql = """
+          INSERT INTO configuracao (
+          permissao_camera,
+          permissao_microfone,
+          permissao_fotos_videos,
+          permissao_localizacao,
+          visibilidade_curtidas,
+          visibilidade_compartilhamentos,
+          visibilidade_comentarios,
+          visibilidade_seguidores,
+          visibilidade_seguindo,
+          permissao_marcacao,
+          permissao_compartilhamento,
+          permissao_comentario,
+          notificacoes,
+          notificacoes_email,
+          fk_perfil_id_perfil
+          ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+     """
+    
+     default_values = (
+          False,  
+          False,  
+          False,  
+          False,  
+          not is_private,  
+          not is_private,  
+          not is_private,  
+          not is_private,  
+          not is_private,  
+          'todos',
+          'todos',
+          'todos',
+          True,  
+          True,  
+          profile_id
+     )
+
+     cursor.execute(sql, default_values)
+     con.commit() 
+     cursor.close()
+
+def insert_post(con, caption, profile_id, hashtags, medias):
      cursor = con.cursor()
      date = datetime.now()
 
@@ -47,6 +100,9 @@ def insert_post(con, caption, profile_id, hashtags):
 
      for item in hashtags:
           insert_post_hashtag(con, post_id, item['id_hashtag'])
+
+     for item in medias:
+          insert_post_media(con, item["path"], item["type"], item["format"], post_id)
      
      cursor.close()
      con.commit()
@@ -55,6 +111,29 @@ def insert_post_hashtag(con, post_id, hashtag_id):
      cursor = con.cursor()
      sql = "INSERT INTO postagem_hashtag (fk_postagem_id_postagem, fk_hashtag_id_hashtag) VALUES (%s, %s)"
      cursor.execute(sql, (post_id, hashtag_id))
+     con.commit()
+     cursor.close()
+
+def insert_post_media(con, path, type, format, post_id):
+     cursor = con.cursor()
+     sql = "INSERT INTO midia (caminho, tipo, formato, fk_postagem_id_postagem) VALUES (%s, %s, %s, %s)"
+     cursor.execute(sql, (path, type, format, post_id))
+     con.commit()
+     cursor.close()
+
+def insert_media(con, path, type, format):
+     cursor = con.cursor()
+     sql = "INSERT INTO midia (caminho, tipo, formato) VALUES (%s, %s, %s)"
+     cursor.execute(sql, (path, type, format))
+     con.commit()
+     media_id = cursor.lastrowid
+     cursor.close()
+     return media_id
+
+def insert_profile_photo(con, profile_id, media_id):
+     cursor = con.cursor()
+     sql = "UPDATE perfil SET fk_midia_id_midia = %s WHERE id_perfil = %s"
+     cursor.execute(sql, (media_id, profile_id))
      con.commit()
      cursor.close()
 

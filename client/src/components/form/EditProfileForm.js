@@ -5,6 +5,7 @@ import bioIcon from "../../img/icons/socialMedia/bioIcon.png";
 import styles from "./EditProfileForm.module.css"
 import { useCallback, useEffect, useState } from "react";
 import TextareaInput from "./TextareaInput";
+import PhotoInput from "./PhotoInput";
 
 function EditProfileForm({handleSubmit, profile, setProfile, setSubmitError}) {
     const [privateProfile, setPrivateProfile] = useState(false);
@@ -34,7 +35,6 @@ function EditProfileForm({handleSubmit, profile, setProfile, setSubmitError}) {
     }
 
     const validateName = useCallback(() => {
-        console.log(profile["confirmedNameSignUp"])
         return profile["confirmedNameSignUp"] && /^[a-zA-Z0-9_@+&.]{4,30}$/.test(profile["confirmedNameSignUp"]);
     }, [profile]); 
     
@@ -48,8 +48,21 @@ function EditProfileForm({handleSubmit, profile, setProfile, setSubmitError}) {
         setSubmitError(haveError);
     }, [acceptTerms, haveError, profile, setSubmitError, validateBio, validateName]);
 
+    function handleFileChange(e) {
+        const files = Array.from(e.target.files);
+    
+        if (files.length === 0) return; 
+    
+        const blobUrl = URL.createObjectURL(files[0]); 
+    
+        if (files.length === 1) {
+            setProfile({...profile, blobUrl, photo: files});
+        }
+    }
+
     return (
         <form onSubmit={handleSubmit} className={`${styles.edit_profile_form}`}>
+            <PhotoInput name="profilePhoto" photoPath={profile["blobUrl"]} handleChange={handleFileChange} accepts=".jpg,.jpeg,.png,.webp"/>
             <h2>Editar Perfil</h2>
 
             <p className={styles.empty_field_alert}>- Campos obrigatórios são marcados com "*"</p>
