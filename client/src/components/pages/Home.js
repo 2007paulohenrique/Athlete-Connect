@@ -107,7 +107,7 @@ function Home() {
                         moment={post["data_publicacao"]}
                         mediasPath={post["medias"].map(media => media["caminho"])}
                         caption={post["legenda"]}
-                        setHashtagsInPost={post["hashtags"]}
+                        hashtagsInPost={post["hashtags"] || ""}
                         likeAction={() => likeAction(post["id_postagem"])}
                         isLiked={isLiked !== undefined ? isLiked : post["isLiked"]}
                     />

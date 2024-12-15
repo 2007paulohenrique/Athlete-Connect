@@ -48,7 +48,7 @@ function NewPost() {
 
     useEffect(() => {
         const interval = setInterval(() => {
-            setCurrentMoment(format(new Date(), "dd/MM/yy HH:mm"));
+            setCurrentMoment(new Date());
         }, 1000);
 
         return () => clearInterval(interval);

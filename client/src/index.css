@@ -1,6 +1,6 @@
 :root {
-  --ligth-theme-color: #00bf63;
-  --dark-theme-color: #00572d;
+  --ligth-theme-color: rgb(0, 191, 99);
+  --dark-theme-color: rgb(0, 87, 45);
   --dark-font-color: #000000;
   --ligth-font-color: #e7e7e7;
   --alert-color: #ff0000;

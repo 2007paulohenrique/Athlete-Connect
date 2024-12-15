@@ -5,6 +5,9 @@
     gap: 1.5em;
     align-items: center;
     padding: 2em;
+    background: var(--ligth-theme-color) url(../../img/background/bgNewPost.svg) center;
+    background-size: cover;
+    background-attachment: fixed;
 }
 
 .new_post_page h1 {
@@ -21,6 +24,7 @@
 
 .post {
     width: 80%;
+    min-width: min-content;
     height: max-content;
 }
 

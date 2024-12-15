@@ -1,4 +1,5 @@
 .post {
+    position: relative;
     display: flex;
     border: 5px solid var(--ligth-theme-color);
     border-bottom: unset;
@@ -7,7 +8,8 @@
     width: 100%;
     aspect-ratio: 2 / 1;
     gap: 1em;
-    overflow: hidden;
+    /* overflow: hidden; */
+    min-width: min-content;
 }
 
 .container_divisor {
@@ -139,8 +141,8 @@
     list-style: none;
     align-items: end;
     justify-content: space-between;
-    gap: 0.6em;
     flex-wrap: wrap-reverse;
+    gap: 0.6em;
 }
 
 .post_actions ul > div {
@@ -226,7 +228,7 @@ div.slide_right {
 
 .actions_itens {
     position: absolute;
-    bottom: 8em;
+    top: 1em;
     right: 50%;
     transform: translateX(50%);
     height: 15em;
@@ -285,13 +287,13 @@ div.slide_right {
         aspect-ratio: 4 / 3;
     }
 
-    .post_actions ul {
+    .post_actions > ul {
         gap: 1em;
         flex-wrap: wrap;
         padding: 0 1em;
     }
     
-    .post_actions ul div {
+    .post_actions > ul > div {
         gap: 1em;
     }
 
@@ -300,6 +302,11 @@ div.slide_right {
         max-height: 30%;
         min-height: 5em;
         aspect-ratio: 3 / 1;
+    }
+
+    .actions_itens {
+        top: 2em;
+        font-size: 0.9em;
     }
 }
 

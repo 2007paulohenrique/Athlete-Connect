@@ -100,6 +100,24 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
         setSearchText(e.target.value);
     };
 
+    const handleClickHashtag = (hashtag) => {
+        setHashtagsInPost(prevHashtags => {
+            if (prevHashtags.includes(hashtag)) {
+                return prevHashtags.filter(item => item !== hashtag);
+            } else {
+                return [...prevHashtags, hashtag];
+            }
+        });
+
+        setSelectedHashtags(prevSelected => {
+            if (prevSelected.includes(hashtag)) {
+                return prevSelected.filter(item => item !== hashtag);
+            } else {
+                return [...prevSelected, hashtag];
+            }
+        });
+    };
+
     function viewHashtags() {
         setShowHashtags(!showHashtags);  
     }
@@ -168,9 +186,9 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
                 <div className={styles.post_actions}>
                     <ul>
                         <div>
-                            <li><img src={isLiked ? likedIcon : likeIcon} alt="Like" onClick={!isInCreating && likeAction}/></li>
-                            <li><img src={shareIcon} alt="Share" onClick={!isInCreating && shareAction}/></li>
-                            <li><img src={commentIcon} alt="Comment" onClick={!isInCreating && commentAction}/></li>
+                            <li><img src={isLiked ? likedIcon : likeIcon} alt="Like" onClick={!isInCreating ? likeAction : undefined}/></li>
+                            <li><img src={shareIcon} alt="Share" onClick={!isInCreating ? shareAction : undefined}/></li>
+                            <li><img src={commentIcon} alt="Comment" onClick={!isInCreating ? commentAction : undefined}/></li>
                         </div>
 
                         <div>
@@ -193,23 +211,7 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
                                             {filteredHashtags.map((hashtag, index) => (
                                                 <li 
                                                     key={index} 
-                                                    onClick={() => {
-                                                        setHashtagsInPost(prevHashtags => {
-                                                            if (prevHashtags.includes(hashtag)) {
-                                                                return prevHashtags.filter(item => item !== hashtag);
-                                                            } else {
-                                                                return [...prevHashtags, hashtag];
-                                                            }
-                                                        });
-
-                                                        setSelectedHashtags(prevSelected => {
-                                                            if (prevSelected.includes(hashtag)) {
-                                                                return prevSelected.filter(item => item !== hashtag);
-                                                            } else {
-                                                                return [...prevSelected, hashtag];
-                                                            }
-                                                        });
-                                                    }}
+                                                    onClick={() => handleClickHashtag(hashtag)}
                                                     className={selectedHashtags.includes(hashtag) ? styles.selectedHashtag : ""}
                                                 >
                                                     # {hashtag['nome']}
@@ -220,7 +222,7 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
                                 ) : !isInCreating && showHashtags ? (
                                     <div className={styles.actions_itens}>
                                         <ul>
-                                            {hastagsInPost.map((hashtag, index) => (
+                                            {hastagsInPost && hastagsInPost.map((hashtag, index) => (
                                                 <li key={index}># {hashtag['nome']}</li>
                                             ))}
                                         </ul>
@@ -230,7 +232,7 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
                         </div>
                         
                         <div>
-                            <li><img src={complaintIcon} alt="Complaint" onClick={!isInCreating && complaintAction}/></li>
+                            <li><img src={complaintIcon} alt="Complaint" onClick={!isInCreating ? complaintAction : undefined}/></li>
                         </div>
                     </ul>
                 </div>
