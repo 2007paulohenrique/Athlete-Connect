@@ -10,7 +10,7 @@ import ProfilePhotoContainer from "./ProfilePhotoContainer";
 import axios from "axios"
 import InputSearchField from "../layout/InputSearchField";
 
-function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsMedias=[], caption, isInCreating, setHashtagsInPost}) {
+function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsMedias=[], caption, isInCreating, setHashtagsInPost, hastagsInPost}) {
     const [medias, setMedias] = useState([]);
     const [hashtags, setHashtags] = useState([]);
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
@@ -19,28 +19,33 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
     const [searchText, setSearchText] = useState("");
     const [filteredHashtags, setFilteredHashtags] = useState([]);
 
-
     useEffect(() => {
-        if (!blobUrlsMedias) {
+        if (!blobUrlsMedias || blobUrlsMedias.length === 0) {
             const newMedias = mediasPath.map((mediaPath) => {
                 const isImage = /\.(jpg|jpeg|png|webp)$/i.test(mediaPath);
                 const isVideo = /\.(mp4|webm|ogg)$/i.test(mediaPath);
         
                 return {
                     type: isImage ? 'image' : isVideo ? 'video' : 'unknown',
-                    path: mediaPath,
+                    path: require(`../../img/${mediaPath}`),
                     duration: isVideo ? null : undefined,
                 };
             });
     
-            setMedias(newMedias);
+            if (JSON.stringify(newMedias) !== JSON.stringify(medias)) {
+                setMedias(newMedias);
+            }
         } else {
-            setMedias(blobUrlsMedias);
+            if (JSON.stringify(blobUrlsMedias) !== JSON.stringify(medias)) {
+                setMedias(blobUrlsMedias);
+            }
         }
-    }, [blobUrlsMedias, mediasPath]);
+    }, [blobUrlsMedias, medias, mediasPath]);
 
     useEffect(() => {
-        setCurrentMediaIndex(0);
+        if (blobUrlsMedias && blobUrlsMedias.length !== 0) {
+            setCurrentMediaIndex(0);
+        }
     }, [blobUrlsMedias]);
 
     useEffect(() => {
@@ -176,7 +181,7 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
 
                             <li>
                                 <img src={hashtagsIcon} alt="Hashtags" onClick={viewHashtags}/>
-                                {showHashtags && (
+                                {isInCreating && showHashtags ? (
                                     <div className={styles.actions_itens}>
                                         <InputSearchField 
                                             type="text" 
@@ -186,7 +191,7 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
                                             handleChange={handleSearchChange}
                                         />
                                         <ul>
-                                            {isInCreating && filteredHashtags.map((hashtag, index) => (
+                                            {filteredHashtags.map((hashtag, index) => (
                                                 <li 
                                                     key={index} 
                                                     onClick={() => {
@@ -213,7 +218,15 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
                                             ))}
                                         </ul>
                                     </div>
-                                )}
+                                ) : !isInCreating && showHashtags ? (
+                                    <div className={styles.actions_itens}>
+                                        <ul>
+                                            {hastagsInPost.map((hashtag, index) => (
+                                                <li key={index}># {hashtag['nome']}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                ) : null}
                             </li>
                         </div>
 

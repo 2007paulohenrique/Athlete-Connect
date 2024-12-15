@@ -32,6 +32,7 @@
     bottom: calc(4.8em + 1em);
     border: 2px solid var(--ligth-bg-color);
     z-index: 1;
+    cursor: pointer;
 }
 
 .go_to_top img {

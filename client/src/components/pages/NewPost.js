@@ -21,14 +21,13 @@ function NewPost() {
     const [files, setFiles] = useState([]);
     const [mediasLengthError, setMediasLengthError] = useState(false);
     const [hashtagsInPost, setHashtagsInPost] = useState([]);
-    const {profileId, setProfileId} = useProfile();
+    const {profileId} = useProfile();
     const [message, setMessage] = useState({});
 
     const navigate = useNavigate();
 
     useEffect(() => {
         const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
-        console.log(profileId)
 
         if (!confirmedProfileId) {
             navigate("/login");
@@ -110,7 +109,7 @@ function NewPost() {
             const formData = new FormData();
 
             formData.append("caption", post["caption"] || "");
-            hashtagsInPost.forEach(hashtag => formData.append("hashtags", hashtag));
+            hashtagsInPost.forEach(hashtag => formData.append("hashtags", hashtag["id_hashtag"]));
 
             files.forEach(file => formData.append(`medias`, file));
 
@@ -118,7 +117,7 @@ function NewPost() {
                 headers: { "Content-Type": "multipart/form-data" }, 
             })
             .then(resp => {
-                navigate("/");
+                navigate("/", {state: {message: "Publicação feita com sucesso!", type: "success"}});
             })
             .catch(err => {
                 console.error("Erro ao fazer a requisição:", err);
@@ -166,6 +165,7 @@ function NewPost() {
                 <div className={styles.post}>
                     <Post 
                         authorUserName={profile["nome"]} 
+                        authorPhotoPath={profile["media"] && profile["media"]["caminho"]}
                         moment={currentMoment} 
                         caption={post["caption"]} 
                         blobUrlsMedias={medias}

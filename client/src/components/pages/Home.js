@@ -8,14 +8,16 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useProfile } from '../../ProfileContext';
-// import Message from "../layout/Message";
+import Message from "../layout/Message";
 
 function Home() {
     const [feed, setFeed] = useState([]);
-    const {profileId, setProfileId} = useProfile();
+    const {profileId} = useProfile();
+    const [profile, setProfile] = useState();
+    const [message, setMessage] = useState({});
 
-    const location = useLocation();
     const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
         const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
@@ -23,10 +25,23 @@ function Home() {
         if (!confirmedProfileId) {
             navigate("/login");
         } else {
-            axios.get(`http://localhost:5000/feeds/${confirmedProfileId}`)
+            axios.get(`http://localhost:5000/profiles/${confirmedProfileId}`)
             .then(resp => {
                 if (resp.data) {
-                    setFeed(resp.data);
+                    setProfile(resp.data);
+                    console.log(resp.data);
+
+                    axios.get(`http://localhost:5000/feeds/${confirmedProfileId}`)
+                    .then(resp => {
+                        if (resp.data) {
+                            setFeed(resp.data);
+                        } else {
+                            navigate("/login"); 
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Erro ao fazer a requisição:', err);
+                    });
                 } else {
                     navigate("/login"); 
                 }
@@ -35,16 +50,21 @@ function Home() {
                 console.error('Erro ao fazer a requisição:', err);
             });
         }
-    }, [location, navigate, profileId]);
+    }, [navigate, profileId, setProfile]);
 
-    // const medias = [];
-    // medias.push("https://www.shutterstock.com/shutterstock/videos/3473744799/preview/stock-footage-winning-the-penalty-shootout-challenge-in-a-virtual-sport-simulator-game-winning-the-match-of-a.webm");
-    // medias.push("https://www.estadao.com.br/recomenda/wp-content/uploads/2023/04/icE5DUtSaptb3bBC8eliggfQNKgqNH-metadHJhdmVsLW5vbWFkZXMtSk8xOUswSEREWEktdW5zcGxhc2guanBn-1-1.jpg.webp");
-    // medias.push("https://cdn-ilbeipn.nitrocdn.com/vqgboMkkGFxMDjaexoPqGITOSpawMnrt/assets/images/optimized/blog.lojaodosesportes.com.br/wp-content/uploads/2023/05/Qual-o-melhor-tipo-de-bola-de-futebol.png");
-    // medias.push("https://gazetadasemana.com.br/images/noticias/173000/31054549_image_8.png.png");
+    function setMessageWithReset(newMessage, type) {
+        setMessage(null);
 
-    // const authorPhoto = "https://plus.unsplash.com/premium_photo-1689977968861-9c91dbb16049?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Zm90byUyMGRvJTIwcGVyZmlsfGVufDB8fDB8fHww";
-    // const captionText = "Olha minha jogada que legal! Demorei bastante para conseguir fazer ela, mas tudo com muito treino e dedicação pode ser alcançado. Fiquei horas praticando, errando, ajustando cada detalhe, até que, finalmente, tudo saiu exatamente como eu queria. É incrível ver como o esforço traz resultados — mesmo quando parece que nada está dando certo, cada tentativa está te levando um passo mais perto do seu objetivo.";
+        setTimeout(() => {
+            setMessage({message: newMessage, type: type});
+        }, 1);
+    }
+
+    useEffect(() => {
+        if (location.state) {
+            setMessageWithReset(location.state.message, location.state.type)
+        }
+    }, [location.state])
 
     function goToTop() {
         window.scrollTo({
@@ -53,8 +73,12 @@ function Home() {
         });
     }
 
+    // "10/12/2024 12:10"
+
     return (
         <main className={styles.home_page}>
+            {message && <Message message={message.message} type={message.type}/>}
+
             <ProfileNavBar/>
 
             <FlashesSection/>
@@ -62,11 +86,12 @@ function Home() {
             <section className={styles.posts_section}> 
                 {feed.map(post => (
                     <Post 
-                        authorUserName={post.author.nome}
-                        authorPhotoPath={post.author.fk_midia_id_midia}
-                        moment="10/12/2024 12:10"
-                        mediasPath={post.medias}
-                        caption={post.legenda}
+                        authorUserName={post["author"]["nome"]}
+                        authorPhotoPath={post["author"]["media"] ? post["author"]["media"]["caminho"] : ""}
+                        moment={post["data_publicacao"]}
+                        mediasPath={post["medias"].map(media => media["caminho"])}
+                        caption={post["legenda"]}
+                        setHashtagsInPost={post["hashtags"]}
                     />
                 ))}
 
@@ -81,7 +106,7 @@ function Home() {
                 </button>
             </section>
 
-            <AppNavBar/>
+            <AppNavBar profilePhotoPath={profile && profile["media"] ? profile["media"]["caminho"] : ""}/>
         </main>
     );
 }

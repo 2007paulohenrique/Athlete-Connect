@@ -14,6 +14,7 @@
     z-index: 2;
     box-shadow: 3px 3px 20px rgb(38, 38, 38) inset;
     border: 2px solid black;
+    z-index: 6;
 }
 
 .message img {

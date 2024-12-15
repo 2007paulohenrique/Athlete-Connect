@@ -96,7 +96,13 @@ def post_post(profile_id):
     os.makedirs(user_folder, exist_ok=True)
 
     caption = request.form.get('caption')
+
     hashtags = request.form.getlist('hashtags')
+    hashtag_ids = []
+    for hashtag in hashtags:
+        hashtag_id = int(hashtag) 
+        hashtag_ids.append(hashtag_id) 
+
     medias = request.files.getlist('medias')
     saved_files = []
 
@@ -123,7 +129,7 @@ def post_post(profile_id):
             "format": file_extension,
         })
 
-    insert_post(con, caption, profile_id, hashtags, saved_files)
+    insert_post(con, caption, profile_id, hashtag_ids, saved_files)
     close_connection(con)
     return ""
 

@@ -33,7 +33,7 @@ function App() {
           />
 
           <Route 
-            path="/NewPost" 
+            path="/newPost" 
             element={<NewPost/>} 
           />
 

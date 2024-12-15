@@ -6,8 +6,13 @@ import eventIcon from "../../img/icons/socialMedia/eventIcon.png";
 import profileIcon from "../../img/icons/socialMedia/profileIcon.png";
 import { useNavigate } from "react-router-dom";
 
-function AppNavBar() {
+function AppNavBar({profilePhotoPath}) {
     const navigate = useNavigate();
+    let profilePhoto = "";
+
+    if (profilePhotoPath) {
+        profilePhoto = require(`../../img/${profilePhotoPath}`);
+    }
 
     return (
         <nav className={styles.app_nav_bar}>
@@ -16,7 +21,7 @@ function AppNavBar() {
                 <li><img src={eventIcon} alt="Events"/></li>
                 <li onClick={() => navigate("/newPost")}><img src={newPostIcon} alt="New"/></li>
                 <li><img src={favPlacesIcon} alt="Favorite Places"/></li>
-                <li><img src={profileIcon} alt="Profile"/></li>
+                <li className={profilePhoto && styles.profile_photo}><img src={profilePhoto || profileIcon} alt="Profile"/></li>
             </ul>
         </nav>
     );

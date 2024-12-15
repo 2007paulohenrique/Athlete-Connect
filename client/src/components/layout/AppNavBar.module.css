@@ -10,6 +10,7 @@
     position: fixed;
     bottom: 0;
     border-top: 1px solid var(--ligth-font-color);
+    z-index: 4;
 }
 
 .app_nav_bar ul {
@@ -23,7 +24,7 @@
     cursor: pointer;
     padding: 0.6em;
     border-radius: 50%;
-    transition: background-color, 0.2s ease-in-out;
+    transition: all 0.2s ease-in-out;
 }
 
 .app_nav_bar ul li:hover {
@@ -32,6 +33,27 @@
 
 .app_nav_bar ul li img {
     height: 1.5em;
+    display: block;
+}
+
+.app_nav_bar ul li.profile_photo {
+    padding: unset;
+    height: 2.4em;
+    width: 2.4em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.app_nav_bar ul li.profile_photo:hover {
+    filter: brightness(0.4);
+}
+
+.app_nav_bar ul li.profile_photo img {
+    object-fit: cover;
+    min-height: 100%;
+    width: 100%;
     display: block;
 }
 

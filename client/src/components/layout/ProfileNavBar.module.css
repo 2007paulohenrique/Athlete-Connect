@@ -8,8 +8,9 @@
 
 .profile_nav_bar {
     position: fixed;
-    z-index: 1;
+    z-index: 4;
     border-bottom: 1px solid var(--ligth-font-color);
+
 }
 
 .profile_nav_bar ul {

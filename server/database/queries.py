@@ -15,6 +15,9 @@ def get_profile(con, profile_id):
      sql = "SELECT * FROM perfil WHERE id_perfil = %s"
      cursor.execute(sql, (profile_id,))
      result = cursor.fetchone()
+     if result:
+          if "fk_midia_id_midia" in result and result["fk_midia_id_midia"]:
+               result["media"] = get_media(con, result["fk_midia_id_midia"])
      cursor.close()
      return result
 
@@ -90,7 +93,7 @@ def insert_default_profile_config(con, profile_id, is_private):
      con.commit() 
      cursor.close()
 
-def insert_post(con, caption, profile_id, hashtags, medias):
+def insert_post(con, caption, profile_id, hashtag_ids, medias):
      cursor = con.cursor()
      date = datetime.now()
 
@@ -98,8 +101,8 @@ def insert_post(con, caption, profile_id, hashtags, medias):
      cursor.execute(sql, (caption, date, profile_id))
      post_id = cursor.lastrowid
 
-     for item in hashtags:
-          insert_post_hashtag(con, post_id, item['id_hashtag'])
+     for item in hashtag_ids:
+          insert_post_hashtag(con, post_id, item)
 
      for item in medias:
           insert_post_media(con, item["path"], item["type"], item["format"], post_id)
@@ -130,6 +133,14 @@ def insert_media(con, path, type, format):
      cursor.close()
      return media_id
 
+def get_media(con, media_id):
+     cursor = con.cursor(dictionary=True)
+     sql = "SELECT * FROM midia WHERE id_midia = %s"
+     cursor.execute(sql, (media_id,))
+     result = cursor.fetchone()
+     cursor.close()
+     return result
+
 def insert_profile_photo(con, profile_id, media_id):
      cursor = con.cursor()
      sql = "UPDATE perfil SET fk_midia_id_midia = %s WHERE id_perfil = %s"
@@ -137,18 +148,17 @@ def insert_profile_photo(con, profile_id, media_id):
      con.commit()
      cursor.close()
 
-def check_followeds(con, follower_profile):
-     cursor = con.cursor()
+def check_followeds(con, follower_profile_id):
+     cursor = con.cursor(dictionary=True)
      sql = "SELECT * FROM segue WHERE fk_perfil_id_seguidor = %s"
-     cursor.execute(sql, (follower_profile,))
+     cursor.execute(sql, (follower_profile_id,))
      result = cursor.fetchall()
      cursor.close()
 
      followeds_ids = []
 
      for item in result:
-          if item['fk_perfil_id_seguidor'] == follower_profile:
-               followeds_ids.add(item['fk_perfil_id_seguido'])
+          followeds_ids.append(item['fk_perfil_id_seguido'])
 
      return followeds_ids
 
@@ -161,33 +171,53 @@ def get_post_medias(con, post_id):
 
      return result
 
-def get_post_author(con, profile_id):
-     cursor = con.cursor(dictionary=True)
-     sql = "SELECT * FROM perfil WHERE id_perfil = %s"
-     cursor.execute(sql, (profile_id,))
-     result = cursor.fetchone()
-     cursor.close()
-
-     return result
-
 def get_feed_posts(con, profile_id):
      cursor = con.cursor(dictionary=True)
      sql = "SELECT * FROM postagem"
      cursor.execute(sql)
-     result = cursor.fetchall()
+     posts = cursor.fetchall()
 
      followeds_ids = check_followeds(con, profile_id)
      feed = []
 
-     for item in result:
+     for item in posts:
           if (item["fk_perfil_id_perfil"] in followeds_ids):
                item["medias"] = get_post_medias(con, item["id_postagem"])
-               item["author"] = get_post_author(con, item["fk_perfil_id_perfil"])
-               feed.add(item)
+               item["author"] = get_profile(con, item["fk_perfil_id_perfil"])
+               item["hashtags"] = get_post_hashtags(con, item["id_postagem"])
+               feed.append(item)
 
      cursor.close()
 
      return feed
+
+def insert_like(con, post_id, hashtag_id):
+     cursor = con.cursor()
+     sql = "INSERT INTO postagem_hashtag (fk_postagem_id_postagem, fk_hashtag_id_hashtag) VALUES (%s, %s)"
+     cursor.execute(sql, (post_id, hashtag_id))
+     con.commit()
+     cursor.close()
+
+def insert_sharing(con, post_id, hashtag_id):
+     cursor = con.cursor()
+     sql = "INSERT INTO postagem_hashtag (fk_postagem_id_postagem, fk_hashtag_id_hashtag) VALUES (%s, %s)"
+     cursor.execute(sql, (post_id, hashtag_id))
+     con.commit()
+     cursor.close()
+
+def insert_comment(con, post_id, hashtag_id):
+     cursor = con.cursor()
+     sql = "INSERT INTO postagem_hashtag (fk_postagem_id_postagem, fk_hashtag_id_hashtag) VALUES (%s, %s)"
+     cursor.execute(sql, (post_id, hashtag_id))
+     con.commit()
+     cursor.close()
+
+def insert_post_complaint(con, post_id, hashtag_id):
+     cursor = con.cursor()
+     sql = "INSERT INTO postagem_hashtag (fk_postagem_id_postagem, fk_hashtag_id_hashtag) VALUES (%s, %s)"
+     cursor.execute(sql, (post_id, hashtag_id))
+     con.commit()
+     cursor.close()
 
 def insert_flash(con, flash_available_time, profile_id, media_id):
      cursor = con.cursor()
@@ -208,7 +238,7 @@ def get_flashs(con, profile_id):
 
      for item in result:
           if (item["fk_perfil_id_perfil"] in followeds_ids):
-               flashs.add(item)
+               flashs.append(item)
 
      return flashs
 
@@ -260,6 +290,19 @@ def get_hashtags(con):
      cursor = con.cursor(dictionary=True)
      sql = "SELECT * FROM hashtag ORDER BY nome"
      cursor.execute(sql)
+     result = cursor.fetchall()
+     cursor.close()
+     return result
+
+def get_post_hashtags(con, post_id):
+     cursor = con.cursor(dictionary=True)
+     sql = """
+          SELECT h.*
+          FROM hashtag h
+          JOIN postagem_hashtag ph ON h.id_hashtag = ph.fk_hashtag_id_hashtag
+          WHERE ph.fk_postagem_id_postagem = %s;
+     """
+     cursor.execute(sql, (post_id,))
      result = cursor.fetchall()
      cursor.close()
      return result
