@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import styles from "./Post.module.css";
-import likeIcon from "../../img/icons/socialMedia/likedIcon.png";
+import likedIcon from "../../img/icons/socialMedia/likedIcon.png";
+import likeIcon from "../../img/icons/socialMedia/likeIcon.png";
 import commentIcon from "../../img/icons/socialMedia/commentIcon.png";
-import shareIcon from "../../img/icons/socialMedia/sharedIcon.png";
+import shareIcon from "../../img/icons/socialMedia/shareIcon.png";
 import complaintIcon from "../../img/icons/socialMedia/complaintedIcon.png";
 import tagsIcon from "../../img/icons/socialMedia/tagsIcon.png";
 import hashtagsIcon from "../../img/icons/socialMedia/hashtagsIcon.png";
@@ -10,7 +11,7 @@ import ProfilePhotoContainer from "./ProfilePhotoContainer";
 import axios from "axios"
 import InputSearchField from "../layout/InputSearchField";
 
-function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsMedias=[], caption, isInCreating, setHashtagsInPost, hastagsInPost}) {
+function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsMedias=[], caption, isInCreating, setHashtagsInPost, hastagsInPost, likeAction, commentAction, shareAction, complaintAction, isLiked}) {
     const [medias, setMedias] = useState([]);
     const [hashtags, setHashtags] = useState([]);
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
@@ -18,6 +19,7 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
     const [selectedHashtags, setSelectedHashtags] = useState([]);
     const [searchText, setSearchText] = useState("");
     const [filteredHashtags, setFilteredHashtags] = useState([]);
+    const [formattedMoment, setFormattedMoment] = useState();
 
     useEffect(() => {
         if (!blobUrlsMedias || blobUrlsMedias.length === 0) {
@@ -81,21 +83,18 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
         setFilteredHashtags(filtered);
     }, [searchText, hashtags]);
 
-    function likeAction() {
-        // Implementar ação de like
-    }
+    useEffect(() => {
+        const date = new Date(moment);
 
-    function shareAction() {
-        // Implementar ação de share
-    }
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
 
-    function commentAction() {
-        // Implementar ação de comment
-    }
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
 
-    function viewTags() {
-        // Implementar ação de tags
-    }
+        setFormattedMoment(`${day}/${month}/${year} ${hours}:${minutes}`);
+    }, [moment]);
 
     const handleSearchChange = (e) => {
         setSearchText(e.target.value);
@@ -105,7 +104,7 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
         setShowHashtags(!showHashtags);  
     }
 
-    function complaintAction() {
+    function viewTags() {
     }
 
     const slideToLeft = () => {
@@ -160,7 +159,7 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
             <div className={styles.container_divisor}></div>
 
             <div className={styles.second_post_container}>    
-                <span className={styles.date}>{moment}</span>
+                <span className={styles.date}>{formattedMoment}</span>
 
                 <div className={styles.caption}>
                     <p><span>{authorUserName}:</span> {caption}</p>
@@ -169,9 +168,9 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
                 <div className={styles.post_actions}>
                     <ul>
                         <div>
-                            <li><img src={likeIcon} alt="Like" onClick={likeAction}/></li>
-                            <li><img src={shareIcon} alt="Share" onClick={shareAction}/></li>
-                            <li><img src={commentIcon} alt="Comment" onClick={commentAction}/></li>
+                            <li><img src={isLiked ? likedIcon : likeIcon} alt="Like" onClick={!isInCreating && likeAction}/></li>
+                            <li><img src={shareIcon} alt="Share" onClick={!isInCreating && shareAction}/></li>
+                            <li><img src={commentIcon} alt="Comment" onClick={!isInCreating && commentAction}/></li>
                         </div>
 
                         <div>
@@ -229,8 +228,10 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
                                 ) : null}
                             </li>
                         </div>
-
-                        <li><img src={complaintIcon} alt="Complaint" onClick={complaintAction}/></li>
+                        
+                        <div>
+                            <li><img src={complaintIcon} alt="Complaint" onClick={!isInCreating && complaintAction}/></li>
+                        </div>
                     </ul>
                 </div>
             </div>

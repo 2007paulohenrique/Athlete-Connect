@@ -133,6 +133,14 @@ def post_post(profile_id):
     close_connection(con)
     return ""
 
+@app.route('/posts/<int:post_id>/like', methods=['POST'])
+def post_like(post_id):
+    con = open_connection(*con_params)
+    profile_id = int(request.form.get('profileId'))
+    is_liked = toggle_like(con, profile_id, post_id)
+    close_connection(con)
+    return jsonify({"isLiked": is_liked})
+
 # flashs dos perfis que o usuário segue
 @app.route('/flashs_list/<int:profile_id>', methods=['GET'])
 def get_flashs_r(profile_id):

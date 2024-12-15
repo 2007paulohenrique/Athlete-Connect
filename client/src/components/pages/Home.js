@@ -14,6 +14,7 @@ function Home() {
     const [feed, setFeed] = useState([]);
     const {profileId} = useProfile();
     const [profile, setProfile] = useState();
+    const [isLiked, setIsLiked] = useState();
     const [message, setMessage] = useState({});
 
     const navigate = useNavigate();
@@ -73,7 +74,22 @@ function Home() {
         });
     }
 
-    // "10/12/2024 12:10"
+    function likeAction(postId) {
+        const formData = new FormData();
+        const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
+
+        formData.append("profileId", confirmedProfileId);
+
+        axios.post(`http://localhost:5000/posts/${postId}/like`, formData, {
+            headers: { "Content-Type": "multipart/form-data" }, 
+        })
+        .then(resp => {
+            setIsLiked(resp.data.isLiked)
+        })
+        .catch(err => {
+            console.error("Erro ao fazer a requisição:", err);
+        });
+    }
 
     return (
         <main className={styles.home_page}>
@@ -92,6 +108,8 @@ function Home() {
                         mediasPath={post["medias"].map(media => media["caminho"])}
                         caption={post["legenda"]}
                         setHashtagsInPost={post["hashtags"]}
+                        likeAction={() => likeAction(post["id_postagem"])}
+                        isLiked={isLiked !== undefined ? isLiked : post["isLiked"]}
                     />
                 ))}
 

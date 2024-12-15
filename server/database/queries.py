@@ -185,18 +185,41 @@ def get_feed_posts(con, profile_id):
                item["medias"] = get_post_medias(con, item["id_postagem"])
                item["author"] = get_profile(con, item["fk_perfil_id_perfil"])
                item["hashtags"] = get_post_hashtags(con, item["id_postagem"])
+               item["isLiked"] = check_like(con, profile_id, item["id_postagem"])
                feed.append(item)
 
      cursor.close()
 
      return feed
 
-def insert_like(con, profile_id, post_id):
+def toggle_like(con, profile_id, post_id):
+    cursor = con.cursor()
+    
+    sql_check = "SELECT * FROM curte WHERE fk_perfil_id_perfil = %s AND fk_postagem_id_postagem = %s"
+    cursor.execute(sql_check, (profile_id, post_id))
+    result = cursor.fetchone()
+
+    if result:
+        sql_delete = "DELETE FROM curte WHERE fk_perfil_id_perfil = %s AND fk_postagem_id_postagem = %s"
+        cursor.execute(sql_delete, (profile_id, post_id))
+        is_liked = False
+    else:
+        sql_insert = "INSERT INTO curte (fk_perfil_id_perfil, fk_postagem_id_postagem) VALUES (%s, %s)"
+        cursor.execute(sql_insert, (profile_id, post_id))
+        is_liked = True
+    
+    con.commit()
+    cursor.close()
+
+    return is_liked
+
+def check_like(con, profile_id, post_id):
      cursor = con.cursor()
-     sql = "INSERT INTO curte (fk_perfil_id_perfil, fk_postagem_id_postagem) VALUES (%s, %s)"
+     sql = "SELECT * FROM curte WHERE fk_perfil_id_perfil = %s AND fk_postagem_id_postagem = %s"
      cursor.execute(sql, (profile_id, post_id))
-     con.commit()
+     result = cursor.fetchone()
      cursor.close()
+     return result is not None
 
 def insert_sharing(con, caption, post_id, profile_id, target_profiles_ids):
      cursor = con.cursor()
