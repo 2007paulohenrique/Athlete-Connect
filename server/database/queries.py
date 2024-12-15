@@ -99,6 +99,7 @@ def insert_post(con, caption, profile_id, hashtag_ids, medias):
 
      sql = "INSERT INTO postagem (legenda, data_publicacao, fk_perfil_id_perfil) VALUES (%s, %s, %s)"
      cursor.execute(sql, (caption, date, profile_id))
+     con.commit()
      post_id = cursor.lastrowid
 
      for item in hashtag_ids:
@@ -108,7 +109,6 @@ def insert_post(con, caption, profile_id, hashtag_ids, medias):
           insert_post_media(con, item["path"], item["type"], item["format"], post_id)
      
      cursor.close()
-     con.commit()
 
 def insert_post_hashtag(con, post_id, hashtag_id):
      cursor = con.cursor()
@@ -191,33 +191,66 @@ def get_feed_posts(con, profile_id):
 
      return feed
 
-def insert_like(con, post_id, hashtag_id):
+def insert_like(con, profile_id, post_id):
      cursor = con.cursor()
-     sql = "INSERT INTO postagem_hashtag (fk_postagem_id_postagem, fk_hashtag_id_hashtag) VALUES (%s, %s)"
-     cursor.execute(sql, (post_id, hashtag_id))
+     sql = "INSERT INTO curte (fk_perfil_id_perfil, fk_postagem_id_postagem) VALUES (%s, %s)"
+     cursor.execute(sql, (profile_id, post_id))
      con.commit()
      cursor.close()
 
-def insert_sharing(con, post_id, hashtag_id):
+def insert_sharing(con, caption, post_id, profile_id, target_profiles_ids):
      cursor = con.cursor()
-     sql = "INSERT INTO postagem_hashtag (fk_postagem_id_postagem, fk_hashtag_id_hashtag) VALUES (%s, %s)"
-     cursor.execute(sql, (post_id, hashtag_id))
+     sql = "INSERT INTO compartilhamento (legenda, fk_postagem_id_postagem, fk_perfil_id_perfil) VALUES (%s, %s)"
+     cursor.execute(sql, (caption, post_id, profile_id))
+     con.commit()
+     sharing_id = cursor.lastrowid
+
+     for target_id in target_profiles_ids:
+          insert_shared(con, target_id, sharing_id)
+
+     cursor.close()
+
+def insert_shared(con, profile_id, sharing_id):
+     cursor = con.cursor()
+     sql = "INSERT INTO compartilhado (fk_perfil_id_perfil, fk_compartilhamento_id_compartilhamento) VALUES (%s, %s)"
+     cursor.execute(sql, (profile_id, sharing_id))
      con.commit()
      cursor.close()
 
-def insert_comment(con, post_id, hashtag_id):
+def insert_comment(con, text, post_id, profile_id):
      cursor = con.cursor()
-     sql = "INSERT INTO postagem_hashtag (fk_postagem_id_postagem, fk_hashtag_id_hashtag) VALUES (%s, %s)"
-     cursor.execute(sql, (post_id, hashtag_id))
+     sql = "INSERT INTO comentario (texto, fk_postagem_id_postagem, fk_perfil_id_perfil) VALUES (%s, %s, %s)"
+     cursor.execute(sql, (text, post_id, profile_id))
      con.commit()
      cursor.close()
 
-def insert_post_complaint(con, post_id, hashtag_id):
+def insert_post_complaint(con, description, profile_id, post_id, complaint_reasons_ids):
      cursor = con.cursor()
-     sql = "INSERT INTO postagem_hashtag (fk_postagem_id_postagem, fk_hashtag_id_hashtag) VALUES (%s, %s)"
-     cursor.execute(sql, (post_id, hashtag_id))
+     sql = "INSERT INTO denuncia (descricao, fk_perfil_id_autor, fk_postagem_id_postagem) VALUES (%s, %s, %s)"
+     cursor.execute(sql, (description, profile_id, post_id))
+     con.commit()
+     complaint_id = cursor.lastrowid
+
+     for reason_id in complaint_reasons_ids:
+          insert_post_complaint_reason(con, reason_id, complaint_id)
+
+     cursor.close()
+
+def insert_post_complaint_reason(con, complaint_reason_id, complaint_id):
+     cursor = con.cursor()
+     sql = "INSERT INTO motivos_denuncia (fk_motivo_denuncia_id_motivo_denuncia, fk_denuncia_id_denuncia) VALUES (%s, %s)"
+     cursor.execute(sql, (complaint_reason_id, complaint_id))
      con.commit()
      cursor.close()
+     
+def get_complaint_reasons(con):
+     cursor = con.cursor(dictionary=True)
+     sql = "SELECT * FROM motivo_denuncia ORDER BY motivo"
+     cursor.execute(sql)
+     result = cursor.fetchall()
+     con.commit()
+     cursor.close()
+     return result
 
 def insert_flash(con, flash_available_time, profile_id, media_id):
      cursor = con.cursor()
