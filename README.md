@@ -17,9 +17,13 @@
 `ALTER DATABASE athleteconnect CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;`
 12. caso necessário, mude os parâmetros da conexão no arquivo `app.py` e `create_database.py` na pasta `/server`
 13. pelo terminal do vscode, vá até o diretório `/server` e execute `python app.py` e `python create_database.py`, em seguida, vá até o diretório `/client` e execute o comando `npm start`
-<!-- Caso npm start n funcione talvez o comando 
+
+Caso npm start n funcione talvez o comando 
 chmod -R 755 node_modules
 possa resolver
- -->
+
+obs: a função de seguir perfis ainda não foi implementada, então para que seja possível testar todos os recursos disponíveis insira no banco 2 registros na tabela "segue" após ter criado 2 perfis. 
+`insert into segue (fk_perfil_id_seguidor, fk_perfil_id_seguido) values (1, 2);`
+`insert into segue (fk_perfil_id_seguidor, fk_perfil_id_seguido) values (2, 1);`
 
 obs: verifique se a extensão do python está instalada no vscode

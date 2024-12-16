@@ -234,7 +234,7 @@ def check_like(con, profile_id, post_id):
 
 def insert_sharing(con, caption, post_id, profile_id, target_profiles_ids):
      cursor = con.cursor()
-     sql = "INSERT INTO compartilhamento (legenda, fk_postagem_id_postagem, fk_perfil_id_perfil) VALUES (%s, %s)"
+     sql = "INSERT INTO compartilhamento (legenda, fk_postagem_id_postagem, fk_perfil_id_perfil) VALUES (%s, %s, %s)"
      cursor.execute(sql, (caption, post_id, profile_id))
      con.commit()
      sharing_id = cursor.lastrowid

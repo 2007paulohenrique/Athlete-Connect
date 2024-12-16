@@ -13,8 +13,10 @@ import Message from "../layout/Message";
 function Home() {
     const [feed, setFeed] = useState([]);
     const {profileId} = useProfile();
-    const [profile, setProfile] = useState();
+    const [profile, setProfile] = useState({});
     const [message, setMessage] = useState({});
+    const [sharings, setSharings] = useState([]);
+    const [sharingCaption, setSharingCaption] = useState("");
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -93,6 +95,30 @@ function Home() {
         });
     }
 
+    function sharingSubmit(e, post) {
+        e.preventDefault();
+
+        if (!sharings || sharings.length === 0) return       
+        
+        const formData = new FormData();
+        const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
+
+        formData.append("caption", sharingCaption.trim());
+        formData.append("authorId", confirmedProfileId);
+        sharings.forEach(sharing => formData.append("targetProfilesIds", sharing["id_perfil"]));
+
+        axios.post(`http://localhost:5000/posts/${post["id_postagem"]}/sharing`, formData, {
+            headers: { "Content-Type": "multipart/form-data" }, 
+        })
+        .then(resp => {
+            setMessageWithReset("Postagem compartilhada com sucesso!", "success");
+            setSharingCaption("");
+        })
+        .catch(err => {
+            console.error("Erro ao fazer a requisição:", err);
+        });
+    }
+
     return (
         <main className={styles.home_page}>
             {message && <Message message={message.message} type={message.type}/>}
@@ -113,6 +139,11 @@ function Home() {
                         postTags={post["tags"] || ""}
                         likeAction={() => likeAction(post)}
                         isLiked={post["isLiked"]}
+                        setSharings={setSharings}
+                        sharingSubmit={sharingSubmit}
+                        setSharingCaption={setSharingCaption}
+                        sharingCaption={sharingCaption}
+                        post={post}
                     />
                 ))}
 

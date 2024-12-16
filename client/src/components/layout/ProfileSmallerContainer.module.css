@@ -7,4 +7,6 @@
     color: var(--ligth-theme-color);
     cursor: pointer;
     overflow: hidden;
+    width: 100%;
+    min-width: max-content;
 }

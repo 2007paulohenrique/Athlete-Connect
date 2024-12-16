@@ -9,9 +9,11 @@ import tagsIcon from "../../img/icons/socialMedia/tagsIcon.png";
 import hashtagsIcon from "../../img/icons/socialMedia/hashtagsIcon.png";
 import axios from "axios"
 import InputSearchField from "../layout/InputSearchField";
+import SubmitButton from "../form/SubmitButton";
+import InputField from "../form/InputField";
 import ProfileSmallerContainer from "./ProfileSmallerContainer";
 
-function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsMedias=[], caption, isInCreating, setHashtagsInPost, setTagsInPost, postHashtags, postTags, likeAction, commentAction, shareAction, complaintAction, isLiked}) {
+function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsMedias=[], caption, isInCreating, setHashtagsInPost, setTagsInPost, setSharings, setSharingCaption, sharingCaption, postHashtags, postTags, likeAction, commentAction, sharingSubmit, complaintAction, isLiked, post}) {
     const [medias, setMedias] = useState([]);
     const [hashtags, setHashtags] = useState([]);
     const [showHashtags, setShowHashtags] = useState(false);  
@@ -23,6 +25,10 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
     const [selectedTags, setSelectedTags] = useState([]);
     const [filteredTags, setFilteredTags] = useState([]);
     const [searchTextTag, setSearchTextTag] = useState("");
+    const [showSharing, setShowSharing] = useState(false); 
+    const [selectedSharings, setSelectedSharings] = useState([]);
+    const [filteredSharings, setFilteredSharings] = useState([]);
+    const [searchTextSharing, setSearchTextSharing] = useState("");
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
     const [formattedMoment, setFormattedMoment] = useState();
 
@@ -71,7 +77,7 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
         .then(resp => {
             setTags(resp.data);
             setFilteredTags(resp.data);
-            console.log(resp.data)
+            setFilteredSharings(resp.data);
         })
         .catch(err => {
             console.error('Erro ao fazer a requisição:', err);
@@ -107,6 +113,13 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
         setFilteredTags(filtered);
         console.log("ff",filtered)
     }, [searchTextTag, tags]);
+
+    useEffect(() => {
+        const filtered = tags.filter((tag) =>
+            tag.nome.toLowerCase().includes(searchTextSharing.toLowerCase())
+        );
+        setFilteredSharings(filtered);
+    }, [searchTextSharing, tags]);
     
     useEffect(() => {
         const date = new Date(moment);
@@ -127,6 +140,10 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
 
     const handleSearchTagChange = (e) => {
         setSearchTextTag(e.target.value);
+    };
+
+    const handleSearchSharingChange = (e) => {
+        setSearchTextSharing(e.target.value);
     };
 
     const handleClickHashtag = (hashtag) => {
@@ -165,12 +182,38 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
         });
     };
 
+    const handleClickSharing = (tag) => {
+        setSharings(prevTags => {
+            if (prevTags.includes(tag)) {
+                return prevTags.filter(item => item !== tag);
+            } else {
+                return [...prevTags, tag];
+            }
+        });
+
+        setSelectedSharings(prevSelected => {
+            if (prevSelected.includes(tag)) {
+                return prevSelected.filter(item => item !== tag);
+            } else {
+                return [...prevSelected, tag];
+            }
+        });
+    };
+
     function viewHashtags() {
         setShowHashtags(!showHashtags);  
     }
 
     function viewTags() {
         setShowTags(!showTags);  
+    }
+
+    function viewSharing() {
+        setSelectedSharings([]);
+        setSearchTextSharing("");
+        setSharings([]);
+        setSharingCaption("");
+        setShowSharing(!showSharing);  
     }
 
     const slideToLeft = () => {
@@ -180,6 +223,24 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
     const slideToRight = () => {
         setCurrentMediaIndex((prevIndex) => (prevIndex < medias.length - 1 ? prevIndex + 1 : 0));
     };
+
+    function handleOnChange(e) {
+        e.target.value = e.target.value.replace(/\s{2,}/g, ' ').trimStart();
+
+        setSharingCaption(e.target.value);
+    }
+
+    function handleSharingSubmit(e) {
+        e.preventDefault();
+    
+        sharingSubmit(e, post);
+    
+        setSelectedSharings([]);
+        setSearchTextSharing("");
+        setSharings([]);
+        setSharingCaption("");
+        setShowSharing(!showSharing); 
+      };
 
     return (
         <div className={styles.post}>
@@ -230,7 +291,43 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
                     <ul>
                         <div>
                             <li><img src={isLiked ? likedIcon : likeIcon} alt="Like" onClick={!isInCreating ? likeAction : undefined}/></li>
-                            <li><img src={shareIcon} alt="Share" onClick={!isInCreating ? shareAction : undefined}/></li>
+                            <li>
+                                <img src={shareIcon} alt="Share" onClick={viewSharing}/>
+                                {!isInCreating && showSharing && (
+                                    <div className={styles.actions_itens}>
+                                        <form onSubmit={handleSharingSubmit}>
+                                            <SubmitButton text="Compartilhar" haveError={!selectedSharings || selectedSharings.length === 0}/>
+                                            <InputField 
+                                                type="text" 
+                                                name="sharingCaption" 
+                                                placeholder="Escreva sua legenda aqui" 
+                                                alertMessage="A legenda não pode ter mais que 255 caracteres"
+                                                handleChange={handleOnChange}    
+                                                showAlert={sharingCaption && sharingCaption.length > 255}
+                                                value={sharingCaption}
+                                            />
+                                        </form>
+                                        <InputSearchField 
+                                            type="text" 
+                                            name="SharingSearch"
+                                            placeholder="Pesquisar perfis..." 
+                                            value={searchTextSharing}
+                                            handleChange={handleSearchSharingChange}
+                                        />
+                                        <ul>
+                                            {filteredSharings.map((tag, index) => (
+                                                <li 
+                                                    key={index} 
+                                                    onClick={() => handleClickSharing(tag)}
+                                                    className={selectedSharings.includes(tag) ? styles.selectedHashtag : ""}
+                                                >
+                                                    <ProfileSmallerContainer profilePhotoPath={tag["caminho"]} profileName={tag["nome"]}/>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </li>
                             <li><img src={commentIcon} alt="Comment" onClick={!isInCreating ? commentAction : undefined}/></li>
                         </div>
 

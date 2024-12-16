@@ -154,6 +154,22 @@ def post_like(post_id):
     close_connection(con)
     return jsonify({"isLiked": is_liked})
 
+@app.route('/posts/<int:post_id>/sharing', methods=['POST'])
+def post_sharing(post_id):
+    con = open_connection(*con_params)
+    caption = request.form.get('caption')
+    author_id = int(request.form.get('authorId'))
+    target_profiles_ids = request.form.getlist("targetProfilesIds")
+
+    targets_ids = []
+    for target_id in target_profiles_ids:
+        id = int(target_id) 
+        targets_ids.append(id) 
+
+    insert_sharing(con, caption, post_id, author_id, targets_ids)
+    close_connection(con)
+    return ""
+
 # flashs dos perfis que o usuário segue
 @app.route('/flashs_list/<int:profile_id>', methods=['GET'])
 def get_flashs_r(profile_id):
