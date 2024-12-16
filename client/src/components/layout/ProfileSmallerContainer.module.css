@@ -1,0 +1,10 @@
+.profile_smaller_container {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    letter-spacing: 0.5px;
+    font-weight: bold;
+    color: var(--ligth-theme-color);
+    cursor: pointer;
+    overflow: hidden;
+}

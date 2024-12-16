@@ -14,7 +14,6 @@ function Home() {
     const [feed, setFeed] = useState([]);
     const {profileId} = useProfile();
     const [profile, setProfile] = useState();
-    const [isLiked, setIsLiked] = useState();
     const [message, setMessage] = useState({});
 
     const navigate = useNavigate();
@@ -30,7 +29,6 @@ function Home() {
             .then(resp => {
                 if (resp.data) {
                     setProfile(resp.data);
-                    console.log(resp.data);
 
                     axios.get(`http://localhost:5000/feeds/${confirmedProfileId}`)
                     .then(resp => {
@@ -74,17 +72,21 @@ function Home() {
         });
     }
 
-    function likeAction(postId) {
+    function likeAction(post) {
+        setFeed(prevPosts =>
+            prevPosts.map(p => p.id_postagem === post.id_postagem ? { ...p, isLiked: !p.isLiked } : p
+            )
+        );
+
         const formData = new FormData();
         const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
 
         formData.append("profileId", confirmedProfileId);
 
-        axios.post(`http://localhost:5000/posts/${postId}/like`, formData, {
+        axios.post(`http://localhost:5000/posts/${post["id_postagem"]}/like`, formData, {
             headers: { "Content-Type": "multipart/form-data" }, 
         })
         .then(resp => {
-            setIsLiked(resp.data.isLiked)
         })
         .catch(err => {
             console.error("Erro ao fazer a requisição:", err);
@@ -100,16 +102,17 @@ function Home() {
             <FlashesSection/>
 
             <section className={styles.posts_section}> 
-                {feed.map(post => (
+                {feed.map((post) => (
                     <Post 
                         authorUserName={post["author"]["nome"]}
                         authorPhotoPath={post["author"]["media"] ? post["author"]["media"]["caminho"] : ""}
                         moment={post["data_publicacao"]}
                         mediasPath={post["medias"].map(media => media["caminho"])}
                         caption={post["legenda"]}
-                        hashtagsInPost={post["hashtags"] || ""}
-                        likeAction={() => likeAction(post["id_postagem"])}
-                        isLiked={isLiked !== undefined ? isLiked : post["isLiked"]}
+                        postHashtags={post["hashtags"] || ""}
+                        postTags={post["tags"] || ""}
+                        likeAction={() => likeAction(post)}
+                        isLiked={post["isLiked"]}
                     />
                 ))}
 

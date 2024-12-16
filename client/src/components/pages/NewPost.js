@@ -4,7 +4,6 @@ import TextareaInput from "../form/TextareaInput";
 import styles from "./NewPost.module.css";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { format } from "date-fns";
 import SubmitButton from "../form/SubmitButton";
 import FileInput from "../form/FileInput";
 import mediasIcon from "../../img/icons/socialMedia/mediasIcon.png";
@@ -21,6 +20,7 @@ function NewPost() {
     const [files, setFiles] = useState([]);
     const [mediasLengthError, setMediasLengthError] = useState(false);
     const [hashtagsInPost, setHashtagsInPost] = useState([]);
+    const [tagsInPost, setTagsInPost] = useState([]);
     const {profileId} = useProfile();
     const [message, setMessage] = useState({});
 
@@ -104,12 +104,13 @@ function NewPost() {
         e.preventDefault();
         
         if (medias.length >= 1) {  
-            setPost({...post, hashtags: hashtagsInPost});
+            setPost({...post, hashtags: hashtagsInPost, tags: tagsInPost});
 
             const formData = new FormData();
 
             formData.append("caption", post["caption"] || "");
             hashtagsInPost.forEach(hashtag => formData.append("hashtags", hashtag["id_hashtag"]));
+            tagsInPost.forEach(tag => formData.append("tags", tag["id_perfil"]));
 
             files.forEach(file => formData.append(`medias`, file));
 
@@ -171,6 +172,7 @@ function NewPost() {
                         blobUrlsMedias={medias}
                         isInCreating={true}
                         setHashtagsInPost={setHashtagsInPost}
+                        setTagsInPost={setTagsInPost}
                     />
                 </div>
 

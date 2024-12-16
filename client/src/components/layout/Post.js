@@ -7,18 +7,23 @@ import shareIcon from "../../img/icons/socialMedia/shareIcon.png";
 import complaintIcon from "../../img/icons/socialMedia/complaintedIcon.png";
 import tagsIcon from "../../img/icons/socialMedia/tagsIcon.png";
 import hashtagsIcon from "../../img/icons/socialMedia/hashtagsIcon.png";
-import ProfilePhotoContainer from "./ProfilePhotoContainer";
 import axios from "axios"
 import InputSearchField from "../layout/InputSearchField";
+import ProfileSmallerContainer from "./ProfileSmallerContainer";
 
-function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsMedias=[], caption, isInCreating, setHashtagsInPost, hastagsInPost, likeAction, commentAction, shareAction, complaintAction, isLiked}) {
+function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsMedias=[], caption, isInCreating, setHashtagsInPost, setTagsInPost, postHashtags, postTags, likeAction, commentAction, shareAction, complaintAction, isLiked}) {
     const [medias, setMedias] = useState([]);
     const [hashtags, setHashtags] = useState([]);
-    const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
     const [showHashtags, setShowHashtags] = useState(false);  
     const [selectedHashtags, setSelectedHashtags] = useState([]);
-    const [searchText, setSearchText] = useState("");
     const [filteredHashtags, setFilteredHashtags] = useState([]);
+    const [searchTextHashtag, setSearchTextHashtag] = useState("");
+    const [tags, setTags] = useState([]);
+    const [showTags, setShowTags] = useState(false);  
+    const [selectedTags, setSelectedTags] = useState([]);
+    const [filteredTags, setFilteredTags] = useState([]);
+    const [searchTextTag, setSearchTextTag] = useState("");
+    const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
     const [formattedMoment, setFormattedMoment] = useState();
 
     useEffect(() => {
@@ -61,6 +66,18 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
         });
     }, []);
 
+    useEffect(() => {
+        axios.get("http://localhost:5000/tags")
+        .then(resp => {
+            setTags(resp.data);
+            setFilteredTags(resp.data);
+            console.log(resp.data)
+        })
+        .catch(err => {
+            console.error('Erro ao fazer a requisição:', err);
+        });
+    }, []);
+
     const handleVideoLoad = (index, videoElement) => {
         if (videoElement) {
             const duration = videoElement.duration;
@@ -78,11 +95,19 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
 
     useEffect(() => {
         const filtered = hashtags.filter((hashtag) =>
-            hashtag.nome.toLowerCase().includes(searchText.toLowerCase())
+            hashtag.nome.toLowerCase().includes(searchTextHashtag.toLowerCase())
         );
         setFilteredHashtags(filtered);
-    }, [searchText, hashtags]);
-
+    }, [searchTextHashtag, hashtags]);
+    
+    useEffect(() => {
+        const filtered = tags.filter((tag) =>
+            tag.nome.toLowerCase().includes(searchTextTag.toLowerCase())
+        );
+        setFilteredTags(filtered);
+        console.log("ff",filtered)
+    }, [searchTextTag, tags]);
+    
     useEffect(() => {
         const date = new Date(moment);
 
@@ -96,8 +121,12 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
         setFormattedMoment(`${day}/${month}/${year} ${hours}:${minutes}`);
     }, [moment]);
 
-    const handleSearchChange = (e) => {
-        setSearchText(e.target.value);
+    const handleSearchHashtagChange = (e) => {
+        setSearchTextHashtag(e.target.value);
+    };
+
+    const handleSearchTagChange = (e) => {
+        setSearchTextTag(e.target.value);
     };
 
     const handleClickHashtag = (hashtag) => {
@@ -118,11 +147,30 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
         });
     };
 
+    const handleClickTag = (tag) => {
+        setTagsInPost(prevTags => {
+            if (prevTags.includes(tag)) {
+                return prevTags.filter(item => item !== tag);
+            } else {
+                return [...prevTags, tag];
+            }
+        });
+
+        setSelectedTags(prevSelected => {
+            if (prevSelected.includes(tag)) {
+                return prevSelected.filter(item => item !== tag);
+            } else {
+                return [...prevSelected, tag];
+            }
+        });
+    };
+
     function viewHashtags() {
         setShowHashtags(!showHashtags);  
     }
 
     function viewTags() {
+        setShowTags(!showTags);  
     }
 
     const slideToLeft = () => {
@@ -137,12 +185,7 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
         <div className={styles.post}>
             <div className={styles.first_post_container}>
                 <div className={styles.post_author_container}>
-                    <span>
-                        <ul>
-                            <ProfilePhotoContainer profilePhotoPath={authorPhotoPath}/>
-                        </ul>
-                        {authorUserName}
-                    </span>
+                    <ProfileSmallerContainer profilePhotoPath={authorPhotoPath} profileName={authorUserName}/>
                 </div>
 
                 <div className={styles.medias} id="medias">
@@ -194,6 +237,38 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
                         <div>
                             <li>
                                 <img src={tagsIcon} alt="Tags" onClick={viewTags}/>
+                                {isInCreating && showTags ? (
+                                    <div className={styles.actions_itens}>
+                                        <InputSearchField 
+                                            type="text" 
+                                            name="tagsSearch"
+                                            placeholder="Pesquisar perfis..." 
+                                            value={searchTextTag}
+                                            handleChange={handleSearchTagChange}
+                                        />
+                                        <ul>
+                                            {filteredTags.map((tag, index) => (
+                                                <li 
+                                                    key={index} 
+                                                    onClick={() => handleClickTag(tag)}
+                                                    className={selectedTags.includes(tag) ? styles.selectedHashtag : ""}
+                                                >
+                                                    <ProfileSmallerContainer profilePhotoPath={tag["caminho"]} profileName={tag["nome"]}/>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                ) : !isInCreating && showTags ? (
+                                    <div className={styles.actions_itens}>
+                                        <ul>
+                                            {postTags.length !== 0 ? postTags.map((tag, index) => (
+                                                <li key={index}><ProfileSmallerContainer profilePhotoPath={tag["caminho"]} profileName={tag["nome"]}/></li>
+                                            )) : (
+                                                <p>Sem marcações</p>
+                                            )}
+                                        </ul>
+                                    </div>
+                                ) : null}
                             </li>
 
                             <li>
@@ -204,8 +279,8 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
                                             type="text" 
                                             name="hashtagsSearch"
                                             placeholder="Pesquisar hashtags..." 
-                                            value={searchText}
-                                            handleChange={handleSearchChange}
+                                            value={searchTextHashtag}
+                                            handleChange={handleSearchHashtagChange}
                                         />
                                         <ul>
                                             {filteredHashtags.map((hashtag, index) => (
@@ -222,9 +297,11 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
                                 ) : !isInCreating && showHashtags ? (
                                     <div className={styles.actions_itens}>
                                         <ul>
-                                            {hastagsInPost && hastagsInPost.map((hashtag, index) => (
+                                            {postHashtags.length !== 0 ? postHashtags.map((hashtag, index) => (
                                                 <li key={index}># {hashtag['nome']}</li>
-                                            ))}
+                                            )) : (
+                                                <p>Sem hashtags</p>
+                                            )}
                                         </ul>
                                     </div>
                                 ) : null}

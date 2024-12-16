@@ -20,6 +20,13 @@ def get_hastags_r():
     close_connection(con)
     return jsonify(hashtags)
 
+@app.route('/tags', methods=['GET'])
+def get_tags_r():
+    con = open_connection(*con_params)
+    tags = get_tags(con)
+    close_connection(con)
+    return jsonify(tags)
+
 @app.route('/profiles', methods=['GET'])
 def get_profiles_r():
     con = open_connection(*con_params)
@@ -103,6 +110,12 @@ def post_post(profile_id):
         hashtag_id = int(hashtag) 
         hashtag_ids.append(hashtag_id) 
 
+    tags = request.form.getlist('tags')
+    tag_ids = []
+    for tag in tags:
+        tag_id = int(tag) 
+        tag_ids.append(tag_id) 
+
     medias = request.files.getlist('medias')
     saved_files = []
 
@@ -129,7 +142,7 @@ def post_post(profile_id):
             "format": file_extension,
         })
 
-    insert_post(con, caption, profile_id, hashtag_ids, saved_files)
+    insert_post(con, caption, profile_id, hashtag_ids, tag_ids, saved_files)
     close_connection(con)
     return ""
 

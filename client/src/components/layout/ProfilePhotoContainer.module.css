@@ -6,6 +6,7 @@
     align-items: center;
     height: 3em;
     width: 3em;
+    max-width: 3em;
     overflow: hidden;
     background-color: var(--ligth-bg-color);
     border: 3px solid var(--dark-theme-color);
@@ -18,11 +19,12 @@
 
 
 .profile_photo_container img {
-    height: 100%;
     width: 100%;
+    height: 100% ;
     display: block;
     object-fit: cover;
     transition: all 0.25s ease-in-out;
+    aspect-ratio: 1 / 1;
 }
 
 .profile_photo_container:hover img {

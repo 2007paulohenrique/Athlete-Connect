@@ -93,7 +93,7 @@ def insert_default_profile_config(con, profile_id, is_private):
      con.commit() 
      cursor.close()
 
-def insert_post(con, caption, profile_id, hashtag_ids, medias):
+def insert_post(con, caption, profile_id, hashtag_ids, tag_ids, medias):
      cursor = con.cursor()
      date = datetime.now()
 
@@ -105,6 +105,9 @@ def insert_post(con, caption, profile_id, hashtag_ids, medias):
      for item in hashtag_ids:
           insert_post_hashtag(con, post_id, item)
 
+     for item in tag_ids:
+          insert_post_tag(con, item, post_id)
+
      for item in medias:
           insert_post_media(con, item["path"], item["type"], item["format"], post_id)
      
@@ -114,6 +117,13 @@ def insert_post_hashtag(con, post_id, hashtag_id):
      cursor = con.cursor()
      sql = "INSERT INTO postagem_hashtag (fk_postagem_id_postagem, fk_hashtag_id_hashtag) VALUES (%s, %s)"
      cursor.execute(sql, (post_id, hashtag_id))
+     con.commit()
+     cursor.close()
+
+def insert_post_tag(con, profile_id, post_id):
+     cursor = con.cursor()
+     sql = "INSERT INTO marcacao_postagem (fk_perfil_id_perfil, fk_postagem_id_postagem) VALUES (%s, %s)"
+     cursor.execute(sql, (profile_id, post_id))
      con.commit()
      cursor.close()
 
@@ -185,6 +195,7 @@ def get_feed_posts(con, profile_id):
                item["medias"] = get_post_medias(con, item["id_postagem"])
                item["author"] = get_profile(con, item["fk_perfil_id_perfil"])
                item["hashtags"] = get_post_hashtags(con, item["id_postagem"])
+               item["tags"] = get_post_tags(con, item["id_postagem"])
                item["isLiked"] = check_like(con, profile_id, item["id_postagem"])
                feed.append(item)
 
@@ -350,6 +361,18 @@ def get_hashtags(con):
      cursor.close()
      return result
 
+def get_tags(con):
+     cursor = con.cursor(dictionary=True)
+     sql = """
+          SELECT p.id_perfil, p.nome, m.caminho 
+          FROM perfil p
+          JOIN midia m ON m.id_midia = p.fk_midia_id_midia
+     """
+     cursor.execute(sql)
+     result = cursor.fetchall()
+     cursor.close()
+     return result
+
 def get_post_hashtags(con, post_id):
      cursor = con.cursor(dictionary=True)
      sql = """
@@ -357,6 +380,20 @@ def get_post_hashtags(con, post_id):
           FROM hashtag h
           JOIN postagem_hashtag ph ON h.id_hashtag = ph.fk_hashtag_id_hashtag
           WHERE ph.fk_postagem_id_postagem = %s;
+     """
+     cursor.execute(sql, (post_id,))
+     result = cursor.fetchall()
+     cursor.close()
+     return result
+
+def get_post_tags(con, post_id):
+     cursor = con.cursor(dictionary=True)
+     sql = """
+          SELECT p.id_perfil, p.nome, m.caminho 
+          FROM perfil p
+          JOIN midia m ON m.id_midia = p.fk_midia_id_midia
+          JOIN marcacao_postagem mp ON mp.fk_perfil_id_perfil = p.id_perfil 
+          WHERE mp.fk_postagem_id_postagem = %s
      """
      cursor.execute(sql, (post_id,))
      result = cursor.fetchall()

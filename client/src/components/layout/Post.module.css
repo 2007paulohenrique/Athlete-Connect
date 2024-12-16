@@ -154,7 +154,7 @@
     cursor: pointer;
 }
 
-.post_actions img {
+.post_actions > ul > div > li > img {
     height: 1.5em;
     display: block;
 }
@@ -231,8 +231,9 @@ div.slide_right {
     top: 1em;
     right: 50%;
     transform: translateX(50%);
-    height: 15em;
-    width: 18.8em;
+    max-height: 15em;
+    height: max-content;
+    width: max-content;
     overflow: auto;
     background-color: var(--dark-bg-color);
     border: 2px solid var(--dark-theme-color);
@@ -247,13 +248,13 @@ div.slide_right {
     padding: 0.5em;
 }
 
-.actions_itens ul li {
+.actions_itens ul > li {
     width: 100%;
     transition: all 0.3s ease-in-out;
     padding: 0.4em;
 }
 
-.actions_itens ul li:hover,
+.actions_itens ul > li:hover,
 .selectedHashtag {
     background-color: var(--ligth-bg-color);
 }
