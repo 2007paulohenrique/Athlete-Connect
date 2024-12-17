@@ -3,28 +3,19 @@ import LoginForm from "../form/LoginForm";
 import styles from "./Login.module.css";
 import Message from "../layout/Message";
 import axios from "axios"
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useProfile } from "../../ProfileContext";
 
 function Login() {
     const [isLogin, setIsLogin] = useState(false);
     const [loginError, setLoginError] = useState(false);
     const [loginPasswordError, setLoginPasswordError] = useState(false);
-    const [profiles, setProfiles] = useState([]);
     const [profile, setProfile] = useState({});
     const [message, setMessage] = useState({});
     const { setProfileId } = useProfile(); 
-    const navigate = useNavigate();
 
-    useEffect(() => {
-        axios.get("http://localhost:5000/profiles")
-        .then(resp => {
-            setProfiles(resp.data);
-        })
-        .catch(err => {
-            console.error('Erro ao fazer a requisição:', err);
-        });
-    }, []);
+    const navigate = useNavigate();
+    const location = useLocation();
 
     function setMessageWithReset(newMessage, type) {
         setMessage(null);
@@ -34,64 +25,77 @@ function Login() {
         }, 1);
     }
 
+    useEffect(() => {
+        if (location.state) {
+            setMessageWithReset(location.state.message, location.state.type)
+        }
+    })
+
     function changeForm() {
         setIsLogin(!isLogin)
-    }
-
-    function validateLogin() {
-        const profileLogin = profiles.find(p => 
-            ((p["email"] === profile["nameOrEmailLogin"] || p["nome"] === profile["nameOrEmailLogin"]))
-        )
-
-        return profileLogin
-    }
-
-    function validatePasswordLogin() {
-        const profileLogin = validateLogin();
-
-        if (profileLogin) {
-            return profileLogin["senha"] === profile["passwordLogin"] ? profileLogin : null;
-        }
-    }
-
-    function profileMatch() {
-        return profiles.some(p => (p["email"] === profile["emailSignUp"] || p["nome"] === profile["nameSignUp"]))
     }
 
     function signUpSubmit(e) {
         e.preventDefault();
 
-        if (!profileMatch()) {
-            const updatedProfile = { ...profile, confirmedNameSignUp: profile['nameSignUp'] };
+        const formData = new FormData();
+
+        formData.append("email", profile["emailSignUp"]);
+        formData.append("name", profile["nameSignUp"]);
+
+        axios.post(`http://localhost:5000/signup`, formData, {
+            headers: { "Content-Type": "multipart/form-data" }, 
+        })
+        .then(resp => {
+            const data = resp.data;
+
+            if (data !== "signUpError") {
+                const updatedProfile = { ...profile, confirmedNameSignUp: profile['nameSignUp'] };
             
-            setProfile(updatedProfile);
-            navigate("/editProfile", { state: { profile: updatedProfile, profiles: profiles } });
-        } else {
-            setMessageWithReset("Já existe um perfil com o mesmo nome ou e-mail.", "error");
-        }
+                setProfile(updatedProfile);
+                navigate("/editProfile", {state: {profile: updatedProfile}});
+            } else {
+                setMessageWithReset("Já existe um perfil com o mesmo nome ou e-mail.", "error");
+            }
+        })
+        .catch(err => {
+            console.error("Erro ao fazer a requisição:", err);
+        }); 
     }
 
     function loginSubmit(e) {  
         e.preventDefault();
 
-        if (validateLogin()) {
-            setLoginError(false);
+        const formData = new FormData();
 
-            if (!validatePasswordLogin()) {
+        formData.append("nameOrEmail", profile["nameOrEmailLogin"]);
+        formData.append("password", profile["passwordLogin"]);
+
+        axios.post(`http://localhost:5000/login`, formData, {
+            headers: { "Content-Type": "multipart/form-data" }, 
+        })
+        .then(resp => {
+            const data = resp.data;
+
+            if (data === "loginError") {
+                setLoginError(true)
+                return;
+            } 
+
+            if (data === "passwordError") {
                 setLoginPasswordError(true);
                 return;
             }
-
+            
             setLoginPasswordError(false);
-            const loggedInProfile = validatePasswordLogin();
-
-            setProfileId(loggedInProfile["id_perfil"]);
-            localStorage.setItem('athleteConnectProfileId', loggedInProfile["id_perfil"]);
-
+            setLoginError(false);
+            setProfileId(data.profileId);
+            localStorage.setItem('athleteConnectProfileId', data.profileId);
             navigate("/");
-        } else {
-            setLoginError(true);
-        }   
+        })
+        .catch(err => {
+            console.error("Erro ao fazer a requisição:", err);
+        }); 
     }
 
     function resetErrors() {

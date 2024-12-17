@@ -53,34 +53,55 @@ function ProfilePreferences() {
 
         setIsSubmitting(true);
 
-        const sportsIds = profilePreferences.map(sport => sport.id_esporte);
-        profile['preferences'] = sportsIds;
+        const formDataA = new FormData();
+                
+        formDataA.append("email", profile["emailSignUp"]);
+        formDataA.append("name", profile["confirmedNameSignUp"]);
 
-        const formData = new FormData();
-
-        formData.append("name", profile["confirmedNameSignUp"]);
-        formData.append("email", profile["emailSignUp"]);
-        formData.append("password", profile["passwordSignUp"]);
-        formData.append("bio", profile["bio"]);
-        formData.append("private", profile["private"]);
-        if (profile["photo"] && profile["photo"].length > 0) {
-            formData.append("photo", profile["photo"][0]);
-        }
-        sportsIds.forEach(sportId => formData.append("preferences", sportId));
-
-        axios.post("http://localhost:5000/profiles", formData, {
+        axios.post(`http://localhost:5000/signup`, formDataA, {
             headers: { "Content-Type": "multipart/form-data" }, 
         })
         .then(resp => {
-            setProfileId(resp.data.profileId);
-            localStorage.setItem('athleteConnectProfileId', resp.data.profileId)
-            
-            navigate("/");
+            const data = resp.data;
+
+            if (data !== "signUpError") {
+                const sportsIds = profilePreferences.map(sport => sport.id_esporte);
+                profile['preferences'] = sportsIds;
+
+                const formDataB = new FormData();
+
+                formDataB.append("name", profile["confirmedNameSignUp"]);
+                formDataB.append("email", profile["emailSignUp"]);
+                formDataB.append("password", profile["passwordSignUp"]);
+                formDataB.append("bio", profile["bio"]);
+                formDataB.append("private", profile["private"]);
+                if (profile["photo"] && profile["photo"].length > 0) {
+                    formDataB.append("photo", profile["photo"][0]);
+                }
+                sportsIds.forEach(sportId => formDataB.append("preferences", sportId));
+
+                axios.post("http://localhost:5000/profiles", formDataB, {
+                    headers: { "Content-Type": "multipart/form-data" }, 
+                })
+                .then(resp => {
+                    setProfileId(resp.data.profileId);
+                    localStorage.setItem('athleteConnectProfileId', resp.data.profileId)
+                    
+                    navigate("/");
+                })
+                .catch(err => {
+                    console.error('Erro ao fazer a requisição:', err);
+                    setIsSubmitting(false);
+                });
+            } else {
+                setIsSubmitting(false);
+                navigate("/login", {state: {message: "Ocorreu um erro ao criar seu perfil. Tente novamente.", type: "error"}});
+            }
         })
         .catch(err => {
-            console.error('Erro ao fazer a requisição:', err);
             setIsSubmitting(false);
-        });
+            console.error("Erro ao fazer a requisição:", err);
+        }); 
     }
 
     return (

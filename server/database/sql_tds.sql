@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS perfil (
     id_perfil int PRIMARY KEY AUTO_INCREMENT,
     email varchar(255) NOT NULL UNIQUE,
-    senha varchar(20) NOT NULL,
+    senha varchar(60) NOT NULL,
     nome varchar(30) NOT NULL UNIQUE,
     verificado boolean NOT NULL,
     biografia varchar(150),

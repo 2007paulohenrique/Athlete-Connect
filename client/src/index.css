@@ -13,7 +13,9 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Roboto", "Open Sans", sans-serif;
+  /* font-family: "Roboto", "Open Sans", sans-serif; */
+  font-family: "Raleway", sans-serif;
+  font-variant-numeric: lining-nums;
   color: var(--ligth-font-color);
   user-select: none;
   /* border: 1px solid red; */

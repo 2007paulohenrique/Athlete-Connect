@@ -2,9 +2,11 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from database.queries import *
 from database.connection import *
+from flask_bcrypt import Bcrypt
 import os
 
 app = Flask(__name__)
+bcrypt = Bcrypt(app)
 CORS(app)
 
 UPLOAD_FOLDER = os.path.join('../client/src/img/users')
@@ -41,6 +43,7 @@ def post_profile():
     name = request.form.get('name')
     email = request.form.get('email')
     password = request.form.get('password')
+    hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
     bio = request.form.get('bio')
     private = request.form.get('private')
     private = private.lower() == 'true' if private else False
@@ -48,7 +51,7 @@ def post_profile():
     preferences = request.form.getlist('preferences')
     preferences = [int(pref) for pref in preferences]
 
-    profile_id = insert_profile(con, email, password, name, bio, private)
+    profile_id = insert_profile(con, email, hashed_password, name, bio, private)
     insert_profile_preferences(con, profile_id, preferences)
 
     user_folder = os.path.join(UPLOAD_FOLDER, f"{profile_id}")
@@ -80,6 +83,44 @@ def post_profile():
     close_connection(con)
         
     return jsonify({"profileId": profile_id})
+
+@app.route('/login', methods=['POST'])
+def login():
+    con = open_connection(*con_params)
+
+    nameOrEmailLogin = request.form.get("nameOrEmail")
+    passwordLogin = request.form.get("password")
+
+    profiles = get_profiles(con)
+    
+    for profile in profiles:
+        if profile["nome"] == nameOrEmailLogin or profile["email"] == nameOrEmailLogin:
+            if bcrypt.check_password_hash(profile["senha"], passwordLogin):
+                close_connection(con)
+                return jsonify({"profileId": profile["id_perfil"]})
+            else:
+                close_connection(con)
+                return "passwordError"
+
+    close_connection(con)
+    return "loginError"
+
+@app.route('/signup', methods=['POST'])
+def signup():
+    con = open_connection(*con_params)
+
+    name = request.form.get("name")
+    email = request.form.get("email")
+
+    profiles = get_profiles(con)
+
+    for profile in profiles:
+        if profile["nome"] == name or profile["email"] == email:
+            close_connection(con)
+            return "signUpError"
+
+    close_connection(con)
+    return ""
 
 @app.route('/profiles/<int:profile_id>', methods=['GET'])
 def get_profile_r(profile_id):

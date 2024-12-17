@@ -3,9 +3,9 @@ import EditProfileForm from "../form/EditProfileForm";
 import styles from "./EditProfile.module.css";
 import { useLocation, useNavigate } from "react-router-dom";
 import Message from "../layout/Message";
+import axios from "axios";
 
 function EditProfile() {
-    const [profiles, setProfiles] = useState([]);
     const [profile, setProfile] = useState({});
     const [message, setMessage] = useState({});
     const [submitError, setSubmitError] = useState(false);
@@ -15,19 +15,13 @@ function EditProfile() {
 
     useEffect(() => {
         const profile = location.state?.profile
-        const profiles = location.state?.profiles
 
-        if (!profile || !profiles) {
+        if (!profile) {
             navigate("/login");
         } else {
             setProfile(location.state.profile);
-            setProfiles(location.state.profiles);
         }
     }, [location, navigate]);
-
-    function profileMatch() {
-        return profiles.some(p => (p["email"] === profile["emailSignUp"] || p["nome"] === profile["confirmedNameSignUp"]))
-    }
 
     function setMessageWithReset(newMessage, type) {
         setMessage(null);
@@ -40,16 +34,29 @@ function EditProfile() {
     function handleOnSubmit(e) {
         e.preventDefault();
 
-        if (!profileMatch()) {  
-            if (!submitError) {
+        const formData = new FormData();
+        
+        formData.append("email", profile["emailSignUp"]);
+        formData.append("name", profile["confirmedNameSignUp"]);
+
+        axios.post(`http://localhost:5000/signup`, formData, {
+            headers: { "Content-Type": "multipart/form-data" }, 
+        })
+        .then(resp => {
+            const data = resp.data;
+
+            if (data !== "signUpError") {
                 if (!profile["bio"]) profile["bio"] = "";
                 if (profile["private"] === undefined) profile["private"] = false;      
     
                 navigate("/profilePreferences", {state: {profileReady: profile}});
+            } else {
+                setMessageWithReset("Já existe um perfil com o mesmo nome.", "error");
             }
-        } else {
-            setMessageWithReset("Já existe um perfil com o mesmo nome.", "error");
-        }
+        })
+        .catch(err => {
+            console.error("Erro ao fazer a requisição:", err);
+        }); 
     }
 
     return (

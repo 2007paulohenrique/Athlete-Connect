@@ -30,6 +30,7 @@ function Home() {
             axios.get(`http://localhost:5000/profiles/${confirmedProfileId}`)
             .then(resp => {
                 if (resp.data) {
+                    console.log(resp.data)
                     setProfile(resp.data);
 
                     axios.get(`http://localhost:5000/feeds/${confirmedProfileId}`)
@@ -48,6 +49,7 @@ function Home() {
                 }
             })
             .catch(err => {
+                navigate("/login"); 
                 console.error('Erro ao fazer a requisição:', err);
             });
         }
