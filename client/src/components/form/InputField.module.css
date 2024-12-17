@@ -18,7 +18,6 @@
 }
 
 .inputField label {
-    margin-bottom: 0.5em;
     font-size: 1.2em;
 }
 
@@ -46,8 +45,10 @@
 
 .inputField span {
     display: flex;
-    align-items: left;
+    align-items: center;
+    justify-content: start;
     gap: 0.6em;
+    margin-bottom: 0.5em;
 }
 
 .inputField img {

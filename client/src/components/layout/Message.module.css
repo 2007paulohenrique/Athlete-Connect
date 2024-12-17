@@ -1,6 +1,7 @@
 .message {
     height: max-content;
     width: max-content;
+    max-width: calc(100% - 2em);
     padding: 0.7em 1em;
     display: flex;
     position: fixed;
@@ -9,7 +10,6 @@
     gap: 1em;
     justify-content: center;
     align-items: center;
-    background-color: var(--ligth-font-color);
     border-radius: 10px;
     z-index: 2;
     box-shadow: 3px 3px 20px rgb(38, 38, 38) inset;
@@ -18,7 +18,9 @@
 }
 
 .message img {
-    height: 1.5em; 
+    height: 1.5em;
+    border-radius: 50%; 
+    box-shadow: 3px 3px 5px black;
 }
 
 .message span {
@@ -27,9 +29,11 @@
 }
 
 .error {
-    border: 2px solid var(--alert-color);
+    background-color: var(--alert-color);
+    font-weight: bold;
 }
 
 .success {
-    border: 2px solid var(--ligth-theme-color);
+    background-color: var(--ligth-theme-color);
+    font-weight: bold;
 }

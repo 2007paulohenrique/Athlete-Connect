@@ -87,7 +87,7 @@ function ProfilePreferences() {
                     setProfileId(resp.data.profileId);
                     localStorage.setItem('athleteConnectProfileId', resp.data.profileId)
                     
-                    navigate("/");
+                    navigate("/", {state: {message: "Perfil criado com sucesso! Aproveite o Athlete Connect.", type: "success"}});
                 })
                 .catch(err => {
                     console.error('Erro ao fazer a requisição:', err);

@@ -46,6 +46,7 @@
     font-size: 2em;
     letter-spacing: 1px;
     color: var(--ligth-theme-color);
+    text-align: center;
 }
 
 .change_form,
@@ -59,6 +60,7 @@
 .forget_password {
     color: var(--alert-color);
     font-size: 0.9em;
+    text-align: center;
 }
 
 :where(.change_form, .forget_password)::before {

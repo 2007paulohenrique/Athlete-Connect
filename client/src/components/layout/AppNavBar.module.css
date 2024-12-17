@@ -4,6 +4,7 @@
     height: max-content;
     width: 100%;
     background-color: var(--dark-bg-color);
+    min-width: max-content;
 }
 
 .app_nav_bar {
@@ -15,9 +16,10 @@
 
 .app_nav_bar ul {
     list-style: none;
-    padding: 0.6em;
+    padding: 0.6em 4%;
     align-items: center;
     justify-content: space-around;
+    gap: 1em;
 }
 
 .app_nav_bar ul li {

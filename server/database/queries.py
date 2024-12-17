@@ -366,7 +366,7 @@ def get_tags(con):
      sql = """
           SELECT p.id_perfil, p.nome, m.caminho 
           FROM perfil p
-          JOIN midia m ON m.id_midia = p.fk_midia_id_midia
+          LEFT JOIN midia m ON m.id_midia = p.fk_midia_id_midia
      """
      cursor.execute(sql)
      result = cursor.fetchall()
@@ -391,7 +391,7 @@ def get_post_tags(con, post_id):
      sql = """
           SELECT p.id_perfil, p.nome, m.caminho 
           FROM perfil p
-          JOIN midia m ON m.id_midia = p.fk_midia_id_midia
+          LEFT JOIN midia m ON m.id_midia = p.fk_midia_id_midia
           JOIN marcacao_postagem mp ON mp.fk_perfil_id_perfil = p.id_perfil 
           WHERE mp.fk_postagem_id_postagem = %s
      """

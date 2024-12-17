@@ -43,6 +43,7 @@
     letter-spacing: 1px;
     color: var(--ligth-theme-color);
     margin: -0.4em 0 1em 0;
+    text-align: center;
 }
 
 .empty_field_alert {

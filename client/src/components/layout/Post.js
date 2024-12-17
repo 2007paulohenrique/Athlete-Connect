@@ -78,6 +78,7 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
             setTags(resp.data);
             setFilteredTags(resp.data);
             setFilteredSharings(resp.data);
+            console.log(resp.data)
         })
         .catch(err => {
             console.error('Erro ao fazer a requisição:', err);
@@ -123,13 +124,14 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
     
     useEffect(() => {
         const date = new Date(moment);
+        date.setHours(date.getHours() + 3);
 
         const day = String(date.getDate()).padStart(2, '0');
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const year = date.getFullYear();
 
-        const hours = String(date.getHours()).padStart(2, '0');
-        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const hours = String(date.getHours());
+        const minutes = String(date.getMinutes());
 
         setFormattedMoment(`${day}/${month}/${year} ${hours}:${minutes}`);
     }, [moment]);
@@ -292,7 +294,7 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
                         <div>
                             <li><img src={isLiked ? likedIcon : likeIcon} alt="Like" onClick={!isInCreating ? likeAction : undefined}/></li>
                             <li>
-                                <img src={shareIcon} alt="Share" onClick={viewSharing}/>
+                                <img src={shareIcon} alt="Share" onClick={!isInCreating ? viewSharing : undefined}/>
                                 {!isInCreating && showSharing && (
                                     <div className={styles.actions_itens}>
                                         <form onSubmit={handleSharingSubmit}>
