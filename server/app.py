@@ -29,6 +29,13 @@ def get_tags_r():
     close_connection(con)
     return jsonify(tags)
 
+@app.route('/complaintReasons', methods=['GET'])
+def get_complaint_reasons_r():
+    con = open_connection(*con_params)
+    reasons = get_complaint_reasons(con)
+    close_connection(con)
+    return jsonify(reasons)
+
 @app.route('/profiles', methods=['GET'])
 def get_profiles_r():
     con = open_connection(*con_params)
@@ -210,6 +217,32 @@ def post_sharing(post_id):
     insert_sharing(con, caption, post_id, author_id, targets_ids)
     close_connection(con)
     return ""
+
+@app.route('/posts/<int:post_id>/complaint', methods=['POST'])
+def post_complaint(post_id):
+    con = open_connection(*con_params)
+    description = request.form.get('description')
+    author_id = int(request.form.get('authorId'))
+    complaint_reasons_ids = request.form.getlist("complaintReasonsIds")
+
+    reason_ids = []
+    for reason_id in complaint_reasons_ids:
+        id = int(reason_id) 
+        reason_ids.append(id) 
+
+    insert_post_complaint(con, description, author_id, post_id, reason_ids)
+    close_connection(con)
+    return ""
+
+@app.route('/posts/<int:post_id>/comment', methods=['POST'])
+def post_comment(post_id):
+    con = open_connection(*con_params)
+    text = request.form.get('text')
+    author_id = int(request.form.get('authorId'))
+
+    new_comment = insert_comment(con, text, post_id, author_id)
+    close_connection(con)
+    return jsonify({"newComment": new_comment})
 
 # flashs dos perfis que o usuário segue
 @app.route('/flashs_list/<int:profile_id>', methods=['GET'])

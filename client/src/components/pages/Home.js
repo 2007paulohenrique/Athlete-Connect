@@ -16,6 +16,9 @@ function Home() {
     const [profile, setProfile] = useState({});
     const [message, setMessage] = useState({});
     const [sharings, setSharings] = useState([]);
+    const [commentText, setCommentText] = useState("");
+    const [postComplaintReasons, setPostComplaintReasons] = useState([]);
+    const [complaintDescription, setComplaintDescription] = useState("");
     const [sharingCaption, setSharingCaption] = useState("");
 
     const navigate = useNavigate();
@@ -30,7 +33,6 @@ function Home() {
             axios.get(`http://localhost:5000/profiles/${confirmedProfileId}`)
             .then(resp => {
                 if (resp.data) {
-                    console.log(resp.data)
                     setProfile(resp.data);
 
                     axios.get(`http://localhost:5000/feeds/${confirmedProfileId}`)
@@ -77,20 +79,19 @@ function Home() {
     }
 
     function likeAction(post) {
-        setFeed(prevPosts =>
-            prevPosts.map(p => p.id_postagem === post.id_postagem ? { ...p, isLiked: !p.isLiked } : p
-            )
-        );
-
         const formData = new FormData();
         const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
-
+        
         formData.append("profileId", confirmedProfileId);
-
+        
         axios.post(`http://localhost:5000/posts/${post["id_postagem"]}/like`, formData, {
             headers: { "Content-Type": "multipart/form-data" }, 
         })
         .then(resp => {
+            setFeed(prevPosts =>
+                prevPosts.map(p => p.id_postagem === post.id_postagem ? { ...p, isLiked: !p.isLiked } : p
+                )
+            );
         })
         .catch(err => {
             console.error("Erro ao fazer a requisição:", err);
@@ -121,6 +122,65 @@ function Home() {
         });
     }
 
+    function complaintSubmit(e, post) {
+        e.preventDefault();
+        
+        if (!complaintDescription && (!postComplaintReasons || postComplaintReasons.length === 0)) return       
+        
+        const formData = new FormData();
+        const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
+
+        formData.append("description", complaintDescription.trim());
+        formData.append("authorId", confirmedProfileId);
+        postComplaintReasons.forEach(reason => formData.append("complaintReasonsIds", reason["id_motivo_denuncia"]));
+
+        axios.post(`http://localhost:5000/posts/${post["id_postagem"]}/complaint`, formData, {
+            headers: { "Content-Type": "multipart/form-data" }, 
+        })
+        .then(resp => {
+            setFeed(prevPosts =>
+                prevPosts.map(p => p.id_postagem === post.id_postagem ? { ...p, isComplainted: true } : p
+                )
+            );
+
+            setMessageWithReset("Postagem denunciada! Aguarde para analisarmos a denúncia", "success");
+            setComplaintDescription("");
+        })
+        .catch(err => {
+            console.error("Erro ao fazer a requisição:", err);
+        });
+    }
+
+    function commentSubmit(e, post) {
+        e.preventDefault();
+        
+        if (!commentText || commentText.length === 0) return       
+        
+        const formData = new FormData();
+        const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
+
+        formData.append("text", commentText.trim());
+        formData.append("authorId", confirmedProfileId);
+
+        axios.post(`http://localhost:5000/posts/${post["id_postagem"]}/comment`, formData, {
+            headers: { "Content-Type": "multipart/form-data" }, 
+        })
+        .then(resp => {
+            const newComment = resp.data.newComment;
+            console.log(newComment);
+
+            setFeed(prevPosts =>
+                prevPosts.map(p => p.id_postagem === post.id_postagem ? { ...p, comments: [...p.comments, newComment]} : p
+                )
+            );
+
+            setCommentText("");
+        })
+        .catch(err => {
+            console.error("Erro ao fazer a requisição:", err);
+        });
+    }
+
     return (
         <main className={styles.home_page}>
             {message && <Message message={message.message} type={message.type}/>}
@@ -145,6 +205,15 @@ function Home() {
                         sharingSubmit={sharingSubmit}
                         setSharingCaption={setSharingCaption}
                         sharingCaption={sharingCaption}
+                        isComplainted={post["isComplainted"]}
+                        setPostComplaintReasons={setPostComplaintReasons}
+                        setComplaintDescription={setComplaintDescription}
+                        complaintDescription={complaintDescription}
+                        complaintSubmit={complaintSubmit}
+                        commentSubmit={commentSubmit}
+                        commentText={commentText}
+                        setCommentText={setCommentText}
+                        comments={post["comments"]}
                         post={post}
                     />
                 ))}

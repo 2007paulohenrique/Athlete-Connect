@@ -4,7 +4,8 @@ import likedIcon from "../../img/icons/socialMedia/likedIcon.png";
 import likeIcon from "../../img/icons/socialMedia/likeIcon.png";
 import commentIcon from "../../img/icons/socialMedia/commentIcon.png";
 import shareIcon from "../../img/icons/socialMedia/shareIcon.png";
-import complaintIcon from "../../img/icons/socialMedia/complaintedIcon.png";
+import complaintIcon from "../../img/icons/socialMedia/complaintIcon.png";
+import complaintedIcon from "../../img/icons/socialMedia/complaintedIcon.png";
 import tagsIcon from "../../img/icons/socialMedia/tagsIcon.png";
 import hashtagsIcon from "../../img/icons/socialMedia/hashtagsIcon.png";
 import axios from "axios"
@@ -12,8 +13,10 @@ import InputSearchField from "../layout/InputSearchField";
 import SubmitButton from "../form/SubmitButton";
 import InputField from "../form/InputField";
 import ProfileSmallerContainer from "./ProfileSmallerContainer";
+import { useProfile } from "../../ProfileContext";
+import ProfilePhotoContainer from "./ProfilePhotoContainer";
 
-function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsMedias=[], caption, isInCreating, setHashtagsInPost, setTagsInPost, setSharings, setSharingCaption, sharingCaption, postHashtags, postTags, likeAction, commentAction, sharingSubmit, complaintAction, isLiked, post}) {
+function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsMedias=[], caption, isInCreating, setHashtagsInPost, setTagsInPost, setSharings, setPostComplaintReasons, setSharingCaption, sharingCaption, setCommentText, commentText, commentSubmit, setComplaintDescription, complaintDescription, postHashtags, postTags, likeAction, comments, sharingSubmit, complaintSubmit, isLiked, isComplainted, post}) {
     const [medias, setMedias] = useState([]);
     const [hashtags, setHashtags] = useState([]);
     const [showHashtags, setShowHashtags] = useState(false);  
@@ -29,7 +32,12 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
     const [selectedSharings, setSelectedSharings] = useState([]);
     const [filteredSharings, setFilteredSharings] = useState([]);
     const [searchTextSharing, setSearchTextSharing] = useState("");
+    const [showComments, setShowComments] = useState(false); 
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+    const [complaintReasons, setComplaintReasons] = useState([]);
+    const [showComplaintReasons, setShowComplaintReasons] = useState(false);  
+    const [selectedComplaintReasons, setSelectedComplaintReasons] = useState([]);
+    const {profileId} = useProfile();
     const [formattedMoment, setFormattedMoment] = useState();
 
     useEffect(() => {
@@ -75,10 +83,26 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
     useEffect(() => {
         axios.get("http://localhost:5000/tags")
         .then(resp => {
-            setTags(resp.data);
-            setFilteredTags(resp.data);
-            setFilteredSharings(resp.data);
-            console.log(resp.data)
+            const data = resp.data;
+            const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
+
+            const filteredData = data.filter(tag => tag["nome"] !== authorUserName && String(tag["id_perfil"]) !== String(confirmedProfileId));
+            console.log(confirmedProfileId);
+            console.log(filteredData);
+
+            setTags(filteredData);
+            setFilteredTags(filteredData);
+            setFilteredSharings(filteredData);
+        })
+        .catch(err => {
+            console.error('Erro ao fazer a requisição:', err);
+        });
+    }, [authorUserName, profileId]);
+
+    useEffect(() => {
+        axios.get("http://localhost:5000/complaintReasons")
+        .then(resp => {
+            setComplaintReasons(resp.data);
         })
         .catch(err => {
             console.error('Erro ao fazer a requisição:', err);
@@ -112,7 +136,6 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
             tag.nome.toLowerCase().includes(searchTextTag.toLowerCase())
         );
         setFilteredTags(filtered);
-        console.log("ff",filtered)
     }, [searchTextTag, tags]);
 
     useEffect(() => {
@@ -124,14 +147,13 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
     
     useEffect(() => {
         const date = new Date(moment);
-        date.setHours(date.getHours() + 3);
 
         const day = String(date.getDate()).padStart(2, '0');
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const year = date.getFullYear();
 
-        const hours = String(date.getHours());
-        const minutes = String(date.getMinutes());
+        const hours = String(date.getHours() + 1).padStart(2, '0');
+        const minutes = String(date.getMinutes() + 1).padStart(2, '0');
 
         setFormattedMoment(`${day}/${month}/${year} ${hours}:${minutes}`);
     }, [moment]);
@@ -202,6 +224,24 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
         });
     };
 
+    const handleClickComplaintReason = (item) => {
+        setPostComplaintReasons(prevs => {
+            if (prevs.includes(item)) {
+                return prevs.filter(prevItem => prevItem !== item);
+            } else {
+                return [...prevs, item];
+            }
+        });
+
+        setSelectedComplaintReasons(prevSelected => {
+            if (prevSelected.includes(item)) {
+                return prevSelected.filter(prevItem => prevItem !== item);
+            } else {
+                return [...prevSelected, item];
+            }
+        });
+    };
+
     function viewHashtags() {
         setShowHashtags(!showHashtags);  
     }
@@ -218,6 +258,18 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
         setShowSharing(!showSharing);  
     }
 
+    function viewComplaint() {
+        setSelectedComplaintReasons([]);
+        setPostComplaintReasons([])
+        setComplaintDescription("");
+        setShowComplaintReasons(!showComplaintReasons);  
+    }
+
+    function viewComments() {
+        setShowComments(!showComments);
+        setCommentText("");
+    }
+
     const slideToLeft = () => {
         setCurrentMediaIndex((prevIndex) => (prevIndex > 0 ? prevIndex - 1 : medias.length - 1));
     };
@@ -226,10 +278,22 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
         setCurrentMediaIndex((prevIndex) => (prevIndex < medias.length - 1 ? prevIndex + 1 : 0));
     };
 
-    function handleOnChange(e) {
+    function handleOnChangeSharingCaption(e) {
         e.target.value = e.target.value.replace(/\s{2,}/g, ' ').trimStart();
 
         setSharingCaption(e.target.value);
+    }
+
+    function handleOnChangeComplaintDescription(e) {
+        e.target.value = e.target.value.replace(/\s{2,}/g, ' ').trimStart();
+
+        setComplaintDescription(e.target.value);
+    }
+
+    function handleOnChangeCommentText(e) {
+        e.target.value = e.target.value.replace(/\s{2,}/g, ' ').trimStart();
+
+        setCommentText(e.target.value);
     }
 
     function handleSharingSubmit(e) {
@@ -242,7 +306,27 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
         setSharings([]);
         setSharingCaption("");
         setShowSharing(!showSharing); 
-      };
+    };
+
+    function handleComplaintSubmit(e) {
+        e.preventDefault();
+    
+        complaintSubmit(e, post);
+    
+        setSelectedComplaintReasons([]);
+        setPostComplaintReasons([]);
+        setComplaintDescription("");
+        setShowComplaintReasons(!showComplaintReasons);  
+    };
+
+    function handleCommentSubmit(e) {
+        e.preventDefault();
+    
+        commentSubmit(e, post);
+    
+        setCommentText("");
+        // setShowComments(!showComments);
+    };
 
     return (
         <div className={styles.post}>
@@ -304,7 +388,7 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
                                                 name="sharingCaption" 
                                                 placeholder="Escreva sua legenda aqui" 
                                                 alertMessage="A legenda não pode ter mais que 255 caracteres"
-                                                handleChange={handleOnChange}    
+                                                handleChange={handleOnChangeSharingCaption}    
                                                 showAlert={sharingCaption && sharingCaption.length > 255}
                                                 value={sharingCaption}
                                             />
@@ -317,7 +401,7 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
                                             handleChange={handleSearchSharingChange}
                                         />
                                         <ul>
-                                            {filteredSharings.map((tag, index) => (
+                                            {searchTextSharing && filteredSharings.length > 0 ? filteredSharings.map((tag, index) => (
                                                 <li 
                                                     key={index} 
                                                     onClick={() => handleClickSharing(tag)}
@@ -325,12 +409,42 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
                                                 >
                                                     <ProfileSmallerContainer profilePhotoPath={tag["caminho"]} profileName={tag["nome"]}/>
                                                 </li>
-                                            ))}
+                                            )) : (
+                                                searchTextSharing && <li>Perfil inexistente ou indisponível</li>
+                                            )}
                                         </ul>
                                     </div>
                                 )}
                             </li>
-                            <li><img src={commentIcon} alt="Comment" onClick={!isInCreating ? commentAction : undefined}/></li>
+                            <li>
+                                <img src={commentIcon} alt="Comment" onClick={!isInCreating ? viewComments : undefined}/>
+                                {!isInCreating && showComments && (
+                                    <div className={styles.actions_itens}>
+                                        <form onSubmit={handleCommentSubmit}>
+                                            <SubmitButton text="Comentar" haveError={!commentText || commentText.length < 0}/>
+                                            <InputField 
+                                                type="text" 
+                                                name="commentText" 
+                                                placeholder="Escreva seu comentário aqui" 
+                                                alertMessage="Um comentário não pode ter mais que 255 caracteres"
+                                                handleChange={handleOnChangeCommentText}    
+                                                showAlert={commentText && commentText.length > 255}
+                                                value={commentText}
+                                            />
+                                        </form>
+                                        <ul>
+                                            {comments.length > 0 ? comments.map((comment, index) => (
+                                                <li key={index}>
+                                                    <ProfilePhotoContainer profilePhotoPath={comment["caminho"]}/>
+                                                    <p className={styles.comment_text}>{comment["texto"]}</p>
+                                                </li>
+                                            )) : (
+                                                <li>Faça o primeiro comentário</li>
+                                            )}
+                                        </ul>
+                                    </div>
+                                )}    
+                            </li>
                         </div>
 
                         <div>
@@ -346,7 +460,7 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
                                             handleChange={handleSearchTagChange}
                                         />
                                         <ul>
-                                            {filteredTags.map((tag, index) => (
+                                            {searchTextTag && filteredTags.length > 0 ? filteredTags.map((tag, index) => (
                                                 <li 
                                                     key={index} 
                                                     onClick={() => handleClickTag(tag)}
@@ -354,7 +468,9 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
                                                 >
                                                     <ProfileSmallerContainer profilePhotoPath={tag["caminho"]} profileName={tag["nome"]}/>
                                                 </li>
-                                            ))}
+                                            )) : (
+                                                searchTextTag && <li>Não existe um perfil com esse nome</li>
+                                            )}
                                         </ul>
                                     </div>
                                 ) : !isInCreating && showTags ? (
@@ -363,7 +479,7 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
                                             {postTags.length !== 0 ? postTags.map((tag, index) => (
                                                 <li key={index}><ProfileSmallerContainer profilePhotoPath={tag["caminho"]} profileName={tag["nome"]}/></li>
                                             )) : (
-                                                <p>Sem marcações</p>
+                                                <li>Sem marcações</li>
                                             )}
                                         </ul>
                                     </div>
@@ -382,7 +498,7 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
                                             handleChange={handleSearchHashtagChange}
                                         />
                                         <ul>
-                                            {filteredHashtags.map((hashtag, index) => (
+                                            {searchTextHashtag && filteredHashtags.length > 0 ? filteredHashtags.map((hashtag, index) => (
                                                 <li 
                                                     key={index} 
                                                     onClick={() => handleClickHashtag(hashtag)}
@@ -390,7 +506,9 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
                                                 >
                                                     # {hashtag['nome']}
                                                 </li>
-                                            ))}
+                                            )) : (
+                                                searchTextHashtag && <li>Nenhuma hashtag encontrada</li>
+                                            )}
                                         </ul>
                                     </div>
                                 ) : !isInCreating && showHashtags ? (
@@ -399,7 +517,7 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
                                             {postHashtags.length !== 0 ? postHashtags.map((hashtag, index) => (
                                                 <li key={index}># {hashtag['nome']}</li>
                                             )) : (
-                                                <p>Sem hashtags</p>
+                                                <li>Sem hashtags</li>
                                             )}
                                         </ul>
                                     </div>
@@ -408,7 +526,37 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
                         </div>
                         
                         <div>
-                            <li><img src={complaintIcon} alt="Complaint" onClick={!isInCreating ? complaintAction : undefined}/></li>
+                            <li><img src={isComplainted ? complaintedIcon : complaintIcon} alt="Complaint" onClick={!isInCreating && !isComplainted ? viewComplaint : undefined}/></li>
+                            {showComplaintReasons && (
+                                <div className={styles.actions_itens}>
+                                    <form onSubmit={handleComplaintSubmit}>
+                                        <SubmitButton text="Denunciar" haveError={!complaintDescription && (!selectedComplaintReasons || selectedComplaintReasons.length === 0)}/>
+                                        <InputField 
+                                            type="text" 
+                                            name="complaintDescription" 
+                                            placeholder="Descreva o motivo da sua denúncia" 
+                                            alertMessage="A descrição não pode ter mais que 255 caracteres"
+                                            handleChange={handleOnChangeComplaintDescription}    
+                                            showAlert={complaintDescription && complaintDescription.length > 255}
+                                            value={complaintDescription}
+                                        />
+                                    </form>
+                                    <ul>
+                                        <p>Motivos:</p>
+                                        <hr/>
+                                        <br/>   
+                                        {complaintReasons.map((reason, index) => (
+                                            <li 
+                                                key={index} 
+                                                onClick={() => handleClickComplaintReason(reason)}
+                                                className={selectedComplaintReasons.includes(reason) ? styles.selectedHashtag : ""}
+                                            >
+                                                {reason["motivo"]}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
                         </div>
                     </ul>
                 </div>

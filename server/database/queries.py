@@ -197,6 +197,8 @@ def get_feed_posts(con, profile_id):
                item["hashtags"] = get_post_hashtags(con, item["id_postagem"])
                item["tags"] = get_post_tags(con, item["id_postagem"])
                item["isLiked"] = check_like(con, profile_id, item["id_postagem"])
+               item["isComplainted"] = check_complaint(con, profile_id, item["id_postagem"])
+               item["comments"] = get_post_comments(con, item["id_postagem"])
                feed.append(item)
 
      cursor.close()
@@ -232,6 +234,14 @@ def check_like(con, profile_id, post_id):
      cursor.close()
      return result is not None
 
+def check_complaint(con, profile_id, post_id):
+     cursor = con.cursor()
+     sql = "SELECT * FROM denuncia WHERE fk_perfil_id_autor = %s AND fk_postagem_id_postagem = %s"
+     cursor.execute(sql, (profile_id, post_id))
+     result = cursor.fetchone()
+     cursor.close()
+     return result is not None
+
 def insert_sharing(con, caption, post_id, profile_id, target_profiles_ids):
      cursor = con.cursor()
      sql = "INSERT INTO compartilhamento (legenda, fk_postagem_id_postagem, fk_perfil_id_perfil) VALUES (%s, %s, %s)"
@@ -252,11 +262,26 @@ def insert_shared(con, profile_id, sharing_id):
      cursor.close()
 
 def insert_comment(con, text, post_id, profile_id):
-     cursor = con.cursor()
+     cursor = con.cursor(dictionary=True)
      sql = "INSERT INTO comentario (texto, fk_postagem_id_postagem, fk_perfil_id_perfil) VALUES (%s, %s, %s)"
      cursor.execute(sql, (text, post_id, profile_id))
+     comment_id = cursor.lastrowid
+
+     # sql2 = "SELECT * FROM comentario WHERE id_comentario = %s"
+     sql2 = """
+          SELECT c.*, m.caminho
+          FROM comentario c
+          JOIN perfil p ON p.id_perfil = c.fk_perfil_id_perfil
+          LEFT JOIN midia m ON m.id_midia = p.fk_midia_id_midia
+          WHERE c.id_comentario = %s;
+     """
+     cursor.execute(sql2, (comment_id,))
+
+     new_comment = cursor.fetchone()
+
      con.commit()
      cursor.close()
+     return new_comment
 
 def insert_post_complaint(con, description, profile_id, post_id, complaint_reasons_ids):
      cursor = con.cursor()
@@ -373,6 +398,14 @@ def get_tags(con):
      cursor.close()
      return result
 
+def get_complaint_reasons(con):
+     cursor = con.cursor(dictionary=True)
+     sql = "SELECT * FROM motivo_denuncia"
+     cursor.execute(sql)
+     result = cursor.fetchall()
+     cursor.close()
+     return result
+
 def get_post_hashtags(con, post_id):
      cursor = con.cursor(dictionary=True)
      sql = """
@@ -380,6 +413,20 @@ def get_post_hashtags(con, post_id):
           FROM hashtag h
           JOIN postagem_hashtag ph ON h.id_hashtag = ph.fk_hashtag_id_hashtag
           WHERE ph.fk_postagem_id_postagem = %s;
+     """
+     cursor.execute(sql, (post_id,))
+     result = cursor.fetchall()
+     cursor.close()
+     return result
+
+def get_post_comments(con, post_id):
+     cursor = con.cursor(dictionary=True)
+     sql = """
+          SELECT c.texto, m.caminho
+          FROM comentario c
+          JOIN perfil p ON p.id_perfil = c.fk_perfil_id_perfil
+          LEFT JOIN midia m ON m.id_midia = p.fk_midia_id_midia
+          WHERE c.fk_postagem_id_postagem = %s;
      """
      cursor.execute(sql, (post_id,))
      result = cursor.fetchall()

@@ -9,9 +9,9 @@ function ProfilePhotoContainer({profilePhotoPath}) {
     }
 
     return (
-        <li className={styles.profile_photo_container}>
+        <div className={styles.profile_photo_container}>
             <img src={profilePhoto ? profilePhoto : userIcon} alt="Profile"/>
-        </li>
+        </div>
     );
 }
 

@@ -8,11 +8,7 @@ import { useNavigate } from "react-router-dom";
 
 function AppNavBar({profilePhotoPath}) {
     const navigate = useNavigate();
-    let profilePhoto = "";
-
-    if (profilePhotoPath) {
-        profilePhoto = require(`../../img/${profilePhotoPath}`);
-    }
+    const profilePhoto = profilePhotoPath ? require(`../../img/${profilePhotoPath}`) : profileIcon;
 
     return (
         <nav className={styles.app_nav_bar}>
