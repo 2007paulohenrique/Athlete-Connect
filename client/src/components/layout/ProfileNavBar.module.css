@@ -1,5 +1,5 @@
 .profile_nav_bar,
-.profile_nav_bar ul {
+.profile_nav_bar > ul {
     display: flex;
     height: max-content;
     width: 100%;
@@ -8,12 +8,13 @@
 }
 
 .profile_nav_bar {
-    position: fixed;
-    z-index: 4;
     border-bottom: 1px solid var(--ligth-font-color);
+    position: fixed;
+    top: 0;
+    z-index: 4;
 }
 
-.profile_nav_bar ul {
+.profile_nav_bar > ul {
     list-style: none;
     padding: 0.2em 4%;
     align-items: center;
@@ -21,46 +22,37 @@
     gap: 1em;
 }
 
-.profile_nav_bar ul li {
+.profile_nav_bar > ul li {
     cursor: pointer;
     padding: 0.6em;
     border-radius: 50%;
-    transition: background-color, 0.2s ease-in-out;
+    transition: all 0.2s ease-in-out;
 }
 
-.profile_nav_bar ul div li:hover {
+.profile_nav_bar > ul > div > li:hover {
     background-color: var(--ligth-bg-color);
 }
 
-.profile_nav_bar ul div li img {
+.profile_nav_bar > ul li > img {
     height: 1.5em;
     display: block;
 }
 
-.profile_nav_bar ul li > img {
+.profile_nav_bar > ul > li > img {
     height: 3em;
-    display: block;
 }
 
-.profile_nav_bar_sub_container {
+.profile_nav_bar > ul > div {
     display: flex;
     gap: 1em;
 }
 
-@media screen and (max-width: 720px) {
-    .profile_nav_bar {
-        position: relative;
-    }
-}
-
 @media screen and (min-width: 1500px) {
-    .profile_nav_bar ul div li img {
+    .profile_nav_bar > ul > div > li > img {
         height: 2em;
-        display: block;
     }
     
-    .profile_nav_bar ul li > img {
+    .profile_nav_bar > ul > li > img {
         height: 4em;
-        display: block;
     }
 }

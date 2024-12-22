@@ -9,16 +9,28 @@ function ProfileNavBar() {
     return (
         <nav className={styles.profile_nav_bar}>
             <ul>
-                <div className={styles.profile_nav_bar_sub_container}>
-                    <li><img src={settingsIcon} alt="Settings"/></li>
-                    <li><img src={searchIcon} alt="Search"/></li>
+                <div>
+                    <li>
+                        <img src={settingsIcon} alt="Settings"/>
+                    </li>
+
+                    <li>
+                        <img src={searchIcon} alt="Search"/>
+                    </li>
                 </div>
                 
-                <li><img src={logo} alt="Home"/></li>
+                <li>
+                    <img src={logo} alt="Home"/>
+                </li>
 
-                <div className={styles.profile_nav_bar_sub_container}>
-                    <li><img src={notificationsIcon} alt="Notifications"/></li>
-                    <li><img src={sharingIcon} alt="Sharing"/></li>
+                <div>
+                    <li>
+                        <img src={notificationsIcon} alt="Notifications"/>
+                    </li>
+                    
+                    <li>
+                        <img src={sharingIcon} alt="Sharing"/>
+                    </li>
                 </div>
             </ul>
         </nav>

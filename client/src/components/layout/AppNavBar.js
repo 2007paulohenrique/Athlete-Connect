@@ -6,18 +6,32 @@ import eventIcon from "../../img/icons/socialMedia/eventIcon.png";
 import profileIcon from "../../img/icons/socialMedia/profileIcon.png";
 import { useNavigate } from "react-router-dom";
 
-function AppNavBar({profilePhotoPath}) {
+function AppNavBar({ profilePhotoPath }) {
     const navigate = useNavigate();
     const profilePhoto = profilePhotoPath ? require(`../../img/${profilePhotoPath}`) : profileIcon;
 
     return (
         <nav className={styles.app_nav_bar}>
             <ul>
-                <li><img src={homeIcon} alt="Home"/></li>
-                <li><img src={eventIcon} alt="Events"/></li>
-                <li onClick={() => navigate("/newPost")}><img src={newPostIcon} alt="New"/></li>
-                <li><img src={favPlacesIcon} alt="Favorite Places"/></li>
-                <li className={profilePhoto && styles.profile_photo}><img src={profilePhoto || profileIcon} alt="Profile"/></li>
+                <li>
+                    <img src={homeIcon} alt="Home"/>
+                </li>
+
+                <li>
+                    <img src={eventIcon} alt="Events"/>
+                </li>
+
+                <li onClick={() => navigate("/newPost")}>
+                    <img src={newPostIcon} alt="New"/>
+                </li>
+                
+                <li>
+                    <img src={favPlacesIcon} alt="Favorite Places"/>
+                </li>
+                
+                <li className={profilePhoto && styles.profile_photo}>
+                    <img src={profilePhoto || profileIcon} alt="Profile"/>
+                </li>
             </ul>
         </nav>
     );
