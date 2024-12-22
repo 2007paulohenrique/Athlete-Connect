@@ -11,29 +11,29 @@
     justify-content: center;
     align-items: center;
     border-radius: 10px;
-    z-index: 2;
-    box-shadow: 3px 3px 20px rgb(38, 38, 38) inset;
+    z-index: 7;
+    box-shadow: 3px 3px 20px black inset;
     border: 2px solid black;
     z-index: 6;
 }
 
-.message img {
+.message > img {
     height: 1.5em;
     border-radius: 50%; 
     box-shadow: 3px 3px 5px black;
 }
 
-.message span {
+.message > span {
     letter-spacing: 1px;
     color: black;
+    font-weight: bold;
+    text-align: end;
 }
 
 .error {
     background-color: var(--alert-color);
-    font-weight: bold;
 }
 
 .success {
     background-color: var(--ligth-theme-color);
-    font-weight: bold;
 }

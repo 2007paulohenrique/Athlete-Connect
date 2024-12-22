@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import styles from "./Message.module.css";
-import ErrorIcon from "../../img/icons/socialMedia/errorIcon.png";
-import SuccessIcon from "../../img/icons/socialMedia/successIcon.png";
+import errorIcon from "../../img/icons/socialMedia/errorIcon.png";
+import successIcon from "../../img/icons/socialMedia/successIcon.png";
 
-function Message({type, message}) {
+function Message({ type, message }) {
     const [visibility, setVisibility] = useState(false);
 
     useEffect(() => {
@@ -21,7 +21,7 @@ function Message({type, message}) {
         return () => clearTimeout(timer);
     }, [message, type])
 
-    const icon = type === "error" ? ErrorIcon : type === "success" ? SuccessIcon : null;
+    const icon = type === "error" ? errorIcon : type === "success" ? successIcon : null;
 
     return (
         <>
