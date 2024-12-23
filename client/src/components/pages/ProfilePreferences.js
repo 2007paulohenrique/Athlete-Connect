@@ -13,7 +13,7 @@ function ProfilePreferences() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { setProfileId } = useProfile(); 
 
-    const navigate = useNavigate()
+    const navigate = useNavigate();
     const location = useLocation();
 
     useEffect(() => {
@@ -122,6 +122,7 @@ function ProfilePreferences() {
                         categories={sport.categories} 
                         handleClick={() => handleOnClick(sport)}
                         selected={profilePreferences.includes(sport)}
+                        sportDescription={sport.descricao}
                     />
                 ))}
             </div>

@@ -4,7 +4,7 @@ function SportCard({ iconPath, sportName, categories = [], sportDescription, han
     const icon = require(`../../img/${iconPath}`);
 
     return (
-        <div className={`${styles.sport_card} ${selected && styles.selected}`} onClick={handleClick} title={sportDescription}>
+        <div className={`${styles.sport_card} ${selected && styles.selected}`} onClick={handleClick}>
             <img src={icon} alt={`${sportName} Icon`}/>
 
             <div className={styles.sport_info}>
@@ -15,6 +15,12 @@ function SportCard({ iconPath, sportName, categories = [], sportDescription, han
                         <span key={index}>{category.nome}</span>
                     ))}
                 </div>
+            </div>
+
+            <span className={styles.view_description}>!</span>
+
+            <div className={styles.sport_description}>
+                {sportDescription}
             </div>
         </div>
     );

@@ -10,6 +10,7 @@
     border-radius: 10px;
     box-shadow: 5px 5px 10px black;
     cursor: pointer;
+    position: relative;
 }
 
 .sport_card,
@@ -71,6 +72,47 @@
 
 .selected {
     filter: brightness(50%);
+}
+
+.sport_description {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    border-radius: inherit;
+    background-color: black;
+    padding: 1em;
+    text-align: center;
+    transition: all 0.5s ease-in-out;
+    overflow: hidden;
+    opacity: 0;
+}
+
+.view_description {
+    position: absolute;
+    top: 0.5em;
+    left: 0.5em;
+    border: 1px solid var(--dark-theme-color);
+    color: var(--dark-theme-color);
+    border-radius: 50%;
+    height: 1.2em;
+    width: 1.2em;
+    z-index: 2;
+    text-align: center;
+    font-weight: bold;
+}
+
+.view_description:hover {
+    border: 1px solid var(--ligth-font-color);
+    color: var(--ligth-font-color);
+}
+
+.view_description:hover ~ .sport_description {
+    opacity: 1;
 }
 
 @media screen and (max-width: 720px) {
