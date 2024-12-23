@@ -398,6 +398,7 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
                                             name="SharingSearch"
                                             placeholder="Pesquisar perfis..." 
                                             value={searchTextSharing}
+                                            maxLength={30}
                                             handleChange={handleSearchSharingChange}
                                         />
                                         <ul>
@@ -455,6 +456,7 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
                                         <InputSearchField 
                                             type="text" 
                                             name="tagsSearch"
+                                            maxLength={30}
                                             placeholder="Pesquisar perfis..." 
                                             value={searchTextTag}
                                             handleChange={handleSearchTagChange}
@@ -494,6 +496,7 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
                                             type="text" 
                                             name="hashtagsSearch"
                                             placeholder="Pesquisar hashtags..." 
+                                            maxLength={50}
                                             value={searchTextHashtag}
                                             handleChange={handleSearchHashtagChange}
                                         />

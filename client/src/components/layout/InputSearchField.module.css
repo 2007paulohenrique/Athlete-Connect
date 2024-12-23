@@ -6,18 +6,18 @@
     height: 2em;
 }
 
-.input_search_field label {
+.input_search_field > label {
     height: 100%;
     padding-right: 0.6em;
 }
 
-.input_search_field input{
+.input_search_field > input{
     width: 100%;
     background-color: unset;
     border: none;
     outline: none;
 }
 
-.input_search_field label img{
+.input_search_field > label > img{
     height: 100%;
 }

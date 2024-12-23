@@ -1,14 +1,14 @@
 .flashes_section,
-.flashes_section ul {
+.flashes_section > ul {
     display: flex;
     flex-direction: column;
     width: max-content;
     background-color: var(--dark-bg-color);
 }
 
-.flashes_section ul {
+.flashes_section > ul {
     list-style: none;
-    padding: 1em calc(0.7em + 10px) 1em 0.7em;
+    padding: 1em 0.7em;
     align-items: center;
     gap: 1em;
 }
@@ -19,63 +19,43 @@
     position: fixed;
     top: calc(4.6em + 1px);
     bottom: 4em;
-    /* Para Firefox */
     scrollbar-width: thin; 
-    scrollbar-color: var(--dark-theme-color) var(--ligth-bg-color);
+    scrollbar-color: var(--dark-theme-color) var(--dark-bg-color);
 }
 
 .flashes_section:hover {
-    scrollbar-color: var(--ligth-theme-color) var(--ligth-bg-color);
+    scrollbar-color: var(--ligth-theme-color) var(--dark-bg-color);
 }
 
-/* Estilos específicos para a barra de rolagem no Chrome, Edge e Safari */
-/* .flashes_section::-webkit-scrollbar {
-    width: 10px; 
-} */
-
-/* .flashes_section::-webkit-scrollbar-track {
-    background: var(--ligth-bg-color); 
-} */
-
-/* .flashes_section::-webkit-scrollbar-thumb {
-    background-color: var(--dark-theme-color);
-    border-radius: 10px;
-} */
-
-.flashes_section::-webkit-scrollbar-thumb:hover {
-    background-color: var(--ligth-theme-color); 
-}
-
-.flashes_section ul li.add_flash {
-    border: none;
+.flashes_section > ul > li:first-child {
     background-color: var(--ligth-bg-color);
     height: max-content;
     width: max-content;
-    transition: background-color 0.2s ease-in-out;
+    transition: all 0.2s ease-in-out;
     border-radius: 50%;
-    padding: 0.6em;
+    padding: 0.5em;
     cursor: pointer;
 }
 
-.flashes_section ul li.add_flash:hover {
+.flashes_section > ul > li:first-child:hover {
     background-color: var(--white-bg-color);
 }
 
-.flashes_section ul li.add_flash img {
-    height: 1.8em;
-    width: 1.8em;
+.flashes_section > ul > li:first-child > img {
+    height: 1.7em;
+    width: 1.7em;
     display: block;
 }
 
 @media screen and (max-width: 720px) {
     .flashes_section,
-    .flashes_section ul {
+    .flashes_section > ul {
         flex-direction: row;
         width: unset;
         height: max-content;
     }
     
-    .flashes_section ul {
+    .flashes_section > ul {
         padding: 0.7em 1em;
         gap: 0.8em;
     }
@@ -83,19 +63,15 @@
     .flashes_section {
         border-bottom: 1px solid var(--ligth-font-color);
         border-right: unset;
+        width: 100%;
         overflow-y: unset;
         overflow-x: auto;
-        position: relative;
-        top: unset;
         bottom: unset;
-        /* Para Firefox */
-        /* scrollbar-width: thin; 
-        scrollbar-color: var(--dark-theme-color) var(--white-bg-color); */
     }
 }
 
 @media screen and (min-width: 1500px) {
-    .flashes_section ul {
-        padding: 2.5em calc(0.7em + 10px) 2em 0.7em;
+    .flashes_section > ul {
+        padding: 2.5em 0.7em 2em 0.7em;
     }
 }

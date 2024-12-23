@@ -6,12 +6,10 @@ function FlashesSection() {
     return (
         <section className={styles.flashes_section}>
             <ul>
-                <li className={styles.add_flash}><img src={addFlashIcon} alt="New Flash"></img></li>
-                
-                <ProfilePhotoContainer/>
-                <ProfilePhotoContainer/>
-                <ProfilePhotoContainer/>
-                <ProfilePhotoContainer/>
+                <li>
+                    <img src={addFlashIcon} alt="New Flash"/>
+                </li>
+
                 <ProfilePhotoContainer/>
                 <ProfilePhotoContainer/>
                 <ProfilePhotoContainer/>
