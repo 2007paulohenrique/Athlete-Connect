@@ -14,7 +14,8 @@ import SubmitButton from "../form/SubmitButton";
 import InputField from "../form/InputField";
 import ProfileSmallerContainer from "./ProfileSmallerContainer";
 import { useProfile } from "../../ProfileContext";
-import ProfilePhotoContainer from "./ProfilePhotoContainer";
+// import ProfilePhotoContainer from "./ProfilePhotoContainer";
+import PostItemsContainer from "./PostItemsContainer";
 
 function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsMedias=[], caption, isInCreating, setHashtagsInPost, setTagsInPost, setSharings, setPostComplaintReasons, setSharingCaption, sharingCaption, setCommentText, commentText, commentSubmit, setComplaintDescription, complaintDescription, postHashtags, postTags, likeAction, comments, sharingSubmit, complaintSubmit, isLiked, isComplainted, post}) {
     const [medias, setMedias] = useState([]);
@@ -401,19 +402,15 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
                                             maxLength={30}
                                             handleChange={handleSearchSharingChange}
                                         />
-                                        <ul>
-                                            {searchTextSharing && filteredSharings.length > 0 ? filteredSharings.map((tag, index) => (
-                                                <li 
-                                                    key={index} 
-                                                    onClick={() => handleClickSharing(tag)}
-                                                    className={selectedSharings.includes(tag) ? styles.selectedHashtag : ""}
-                                                >
-                                                    <ProfileSmallerContainer profilePhotoPath={tag["caminho"]} profileName={tag["nome"]}/>
-                                                </li>
-                                            )) : (
-                                                searchTextSharing && <li>Perfil inexistente ou indisponível</li>
-                                            )}
-                                        </ul>
+                                        <PostItemsContainer
+                                            searchText={searchTextSharing}
+                                            filteredItems={filteredSharings}
+                                            handleClick={handleClickSharing}
+                                            selectedItems={selectedSharings}
+                                            isSelectable={true}
+                                            haveProfile={true}
+                                            notFoundText="Perfil inexistente ou indisponível"
+                                        />                                        
                                     </div>
                                 )}
                             </li>
@@ -433,16 +430,13 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
                                                 value={commentText}
                                             />
                                         </form>
-                                        <ul>
-                                            {comments.length > 0 ? comments.map((comment, index) => (
-                                                <li key={index}>
-                                                    <ProfilePhotoContainer profilePhotoPath={comment["caminho"]}/>
-                                                    <p className={styles.comment_text}>{comment["texto"]}</p>
-                                                </li>
-                                            )) : (
-                                                <li>Faça o primeiro comentário</li>
-                                            )}
-                                        </ul>
+
+                                        <PostItemsContainer
+                                            searchText={true}
+                                            notFoundText="Faça o primeiro comentário"
+                                            filteredItems={comments}
+                                            isComment={true}
+                                        />
                                     </div>
                                 )}    
                             </li>
@@ -461,29 +455,25 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
                                             value={searchTextTag}
                                             handleChange={handleSearchTagChange}
                                         />
-                                        <ul>
-                                            {searchTextTag && filteredTags.length > 0 ? filteredTags.map((tag, index) => (
-                                                <li 
-                                                    key={index} 
-                                                    onClick={() => handleClickTag(tag)}
-                                                    className={selectedTags.includes(tag) ? styles.selectedHashtag : ""}
-                                                >
-                                                    <ProfileSmallerContainer profilePhotoPath={tag["caminho"]} profileName={tag["nome"]}/>
-                                                </li>
-                                            )) : (
-                                                searchTextTag && <li>Não existe um perfil com esse nome</li>
-                                            )}
-                                        </ul>
+
+                                        <PostItemsContainer
+                                            searchText={searchTextTag}
+                                            filteredItems={filteredTags}
+                                            handleClick={handleClickTag}
+                                            isSelectable={true}
+                                            selectedItems={selectedTags}
+                                            haveProfile={true}
+                                            notFoundText="Não existe um perfil com esse nome"
+                                        />
                                     </div>
                                 ) : !isInCreating && showTags ? (
                                     <div className={styles.actions_itens}>
-                                        <ul>
-                                            {postTags.length !== 0 ? postTags.map((tag, index) => (
-                                                <li key={index}><ProfileSmallerContainer profilePhotoPath={tag["caminho"]} profileName={tag["nome"]}/></li>
-                                            )) : (
-                                                <li>Sem marcações</li>
-                                            )}
-                                        </ul>
+                                        <PostItemsContainer
+                                            searchText={true}
+                                            filteredItems={postTags}
+                                            notFoundText="Sem marcações"
+                                            isPostTags={true}
+                                        />
                                     </div>
                                 ) : null}
                             </li>
@@ -500,29 +490,25 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
                                             value={searchTextHashtag}
                                             handleChange={handleSearchHashtagChange}
                                         />
-                                        <ul>
-                                            {searchTextHashtag && filteredHashtags.length > 0 ? filteredHashtags.map((hashtag, index) => (
-                                                <li 
-                                                    key={index} 
-                                                    onClick={() => handleClickHashtag(hashtag)}
-                                                    className={selectedHashtags.includes(hashtag) ? styles.selectedHashtag : ""}
-                                                >
-                                                    # {hashtag['nome']}
-                                                </li>
-                                            )) : (
-                                                searchTextHashtag && <li>Nenhuma hashtag encontrada</li>
-                                            )}
-                                        </ul>
+
+                                        <PostItemsContainer
+                                            searchText={searchTextHashtag}
+                                            filteredItems={filteredHashtags}
+                                            handleClick={handleClickHashtag}
+                                            isSelectable={true}
+                                            selectedItems={selectedHashtags}
+                                            notFoundText="Nenhuma hashtag encontrada"
+                                            isHashtags={true}
+                                        />
                                     </div>
                                 ) : !isInCreating && showHashtags ? (
                                     <div className={styles.actions_itens}>
-                                        <ul>
-                                            {postHashtags.length !== 0 ? postHashtags.map((hashtag, index) => (
-                                                <li key={index}># {hashtag['nome']}</li>
-                                            )) : (
-                                                <li>Sem hashtags</li>
-                                            )}
-                                        </ul>
+                                        <PostItemsContainer
+                                            searchText={true}
+                                            filteredItems={postHashtags}
+                                            notFoundText="Sem hashtags"
+                                            isPostHashtags={true}
+                                        />
                                     </div>
                                 ) : null}
                             </li>
@@ -544,20 +530,15 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
                                             value={complaintDescription}
                                         />
                                     </form>
-                                    <ul>
-                                        <p>Motivos:</p>
-                                        <hr/>
-                                        <br/>   
-                                        {complaintReasons.map((reason, index) => (
-                                            <li 
-                                                key={index} 
-                                                onClick={() => handleClickComplaintReason(reason)}
-                                                className={selectedComplaintReasons.includes(reason) ? styles.selectedHashtag : ""}
-                                            >
-                                                {reason["motivo"]}
-                                            </li>
-                                        ))}
-                                    </ul>
+
+                                    <PostItemsContainer
+                                        searchText={true}
+                                        filteredItems={complaintReasons}
+                                        handleClick={handleClickComplaintReason}
+                                        isSelectable={true}
+                                        selectedItems={selectedComplaintReasons}
+                                        isComplaintReasons={true}
+                                    />
                                 </div>
                             )}
                         </div>
