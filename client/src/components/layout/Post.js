@@ -334,9 +334,9 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
             <div className={styles.first_post_container}>
                 <ProfileSmallerContainer profilePhotoPath={authorPhotoPath} profileName={authorUserName}/>
 
-                <div className={styles.medias} id="medias">
+                <div className={styles.medias}>
                     {medias.length > 0 && (
-                        <div id={`media${currentMediaIndex}`}>
+                        <div>
                             <div className={styles.media_controls}>
                                 {medias.length !== 1 && <p>{`${currentMediaIndex + 1}/${medias.length}`}</p>}
                                 {medias[currentMediaIndex].duration && <p>{medias[currentMediaIndex].duration}</p>}
@@ -366,158 +366,169 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
             <div className={styles.container_divisor}></div>
 
             <div className={styles.second_post_container}>    
-                <span className={styles.date}>Publicado em {formattedMoment}</span>
+                <span className={styles.date}>Publicado em: {formattedMoment}</span>
+                
+                <p className={styles.caption}><span>{authorUserName}:</span> {caption}</p>
 
-                <div className={styles.caption}>
-                    <p><span>{authorUserName}:</span> {caption}</p>
-                </div>
+                <ul className={styles.post_actions}>
+                    <div>
+                        <li>
+                            <img src={isLiked ? likedIcon : likeIcon} alt="Like" onClick={!isInCreating ? likeAction : undefined}/>
+                        </li>
 
-                <div className={styles.post_actions}>
-                    <ul>
-                        <div>
-                            <li><img src={isLiked ? likedIcon : likeIcon} alt="Like" onClick={!isInCreating ? likeAction : undefined}/></li>
-                            <li>
-                                <img src={shareIcon} alt="Share" onClick={!isInCreating ? viewSharing : undefined}/>
-                                {!isInCreating && showSharing && (
-                                    <div className={styles.actions_itens}>
-                                        <form onSubmit={handleSharingSubmit}>
-                                            <SubmitButton text="Compartilhar" haveError={!selectedSharings || selectedSharings.length === 0}/>
-                                            <InputField 
-                                                type="text" 
-                                                name="sharingCaption" 
-                                                placeholder="Escreva sua legenda aqui" 
-                                                alertMessage="A legenda não pode ter mais que 255 caracteres"
-                                                handleChange={handleOnChangeSharingCaption}    
-                                                showAlert={sharingCaption && sharingCaption.length > 255}
-                                                value={sharingCaption}
-                                            />
-                                        </form>
-                                        <InputSearchField 
+                        <li>
+                            <img src={shareIcon} alt="Share" onClick={!isInCreating ? viewSharing : undefined}/>
+                            {!isInCreating && showSharing && (
+                                <div className={styles.actions_itens}>
+                                    <form onSubmit={handleSharingSubmit}>
+                                        <SubmitButton text="Compartilhar" haveError={!selectedSharings || selectedSharings.length === 0}/>
+
+                                        <InputField 
                                             type="text" 
-                                            name="SharingSearch"
-                                            placeholder="Pesquisar perfis..." 
-                                            value={searchTextSharing}
-                                            maxLength={30}
-                                            handleChange={handleSearchSharingChange}
+                                            name="sharingCaption" 
+                                            placeholder="Escreva sua legenda aqui" 
+                                            alertMessage="A legenda não pode ter mais que 255 caracteres"
+                                            handleChange={handleOnChangeSharingCaption}    
+                                            showAlert={sharingCaption && sharingCaption.length > 255}
+                                            value={sharingCaption}
                                         />
-                                        <PostItemsContainer
-                                            searchText={searchTextSharing}
-                                            filteredItems={filteredSharings}
-                                            handleClick={handleClickSharing}
-                                            selectedItems={selectedSharings}
-                                            isSelectable={true}
-                                            haveProfile={true}
-                                            notFoundText="Perfil inexistente ou indisponível"
-                                        />                                        
-                                    </div>
-                                )}
-                            </li>
-                            <li>
-                                <img src={commentIcon} alt="Comment" onClick={!isInCreating ? viewComments : undefined}/>
-                                {!isInCreating && showComments && (
-                                    <div className={styles.actions_itens}>
-                                        <form onSubmit={handleCommentSubmit}>
-                                            <SubmitButton text="Comentar" haveError={!commentText || commentText.length < 0}/>
-                                            <InputField 
-                                                type="text" 
-                                                name="commentText" 
-                                                placeholder="Escreva seu comentário aqui" 
-                                                alertMessage="Um comentário não pode ter mais que 255 caracteres"
-                                                handleChange={handleOnChangeCommentText}    
-                                                showAlert={commentText && commentText.length > 255}
-                                                value={commentText}
-                                            />
-                                        </form>
+                                    </form>
 
-                                        <PostItemsContainer
-                                            searchText={true}
-                                            notFoundText="Faça o primeiro comentário"
-                                            filteredItems={comments}
-                                            isComment={true}
-                                        />
-                                    </div>
-                                )}    
-                            </li>
-                        </div>
+                                    <InputSearchField 
+                                        type="text" 
+                                        name="SharingSearch"
+                                        placeholder="Pesquisar perfis..." 
+                                        value={searchTextSharing}
+                                        maxLength={30}
+                                        handleChange={handleSearchSharingChange}
+                                    />
 
-                        <div>
-                            <li>
-                                <img src={tagsIcon} alt="Tags" onClick={viewTags}/>
-                                {isInCreating && showTags ? (
-                                    <div className={styles.actions_itens}>
-                                        <InputSearchField 
+                                    <PostItemsContainer
+                                        searchText={searchTextSharing}
+                                        filteredItems={filteredSharings}
+                                        handleClick={handleClickSharing}
+                                        selectedItems={selectedSharings}
+                                        isSelectable={true}
+                                        haveProfile={true}
+                                        notFoundText="Perfil inexistente ou indisponível"
+                                    />                                        
+                                </div>
+                            )}
+                        </li>
+
+                        <li>
+                            <img src={commentIcon} alt="Comment" onClick={!isInCreating ? viewComments : undefined}/>
+
+                            {!isInCreating && showComments && (
+                                <div className={styles.actions_itens}>
+                                    <form onSubmit={handleCommentSubmit}>
+                                        <SubmitButton text="Comentar" haveError={!commentText || commentText.length < 0}/>
+
+                                        <InputField 
                                             type="text" 
-                                            name="tagsSearch"
-                                            maxLength={30}
-                                            placeholder="Pesquisar perfis..." 
-                                            value={searchTextTag}
-                                            handleChange={handleSearchTagChange}
+                                            name="commentText" 
+                                            placeholder="Escreva seu comentário aqui" 
+                                            alertMessage="Um comentário não pode ter mais que 255 caracteres"
+                                            handleChange={handleOnChangeCommentText}    
+                                            showAlert={commentText && commentText.length > 255}
+                                            value={commentText}
                                         />
+                                    </form>
 
-                                        <PostItemsContainer
-                                            searchText={searchTextTag}
-                                            filteredItems={filteredTags}
-                                            handleClick={handleClickTag}
-                                            isSelectable={true}
-                                            selectedItems={selectedTags}
-                                            haveProfile={true}
-                                            notFoundText="Não existe um perfil com esse nome"
-                                        />
-                                    </div>
-                                ) : !isInCreating && showTags ? (
-                                    <div className={styles.actions_itens}>
-                                        <PostItemsContainer
-                                            searchText={true}
-                                            filteredItems={postTags}
-                                            notFoundText="Sem marcações"
-                                            isPostTags={true}
-                                        />
-                                    </div>
-                                ) : null}
-                            </li>
+                                    <PostItemsContainer
+                                        searchText={true}
+                                        notFoundText="Faça o primeiro comentário"
+                                        filteredItems={comments}
+                                        isComment={true}
+                                    />
+                                </div>
+                            )}    
+                        </li>
+                    </div>
 
-                            <li>
-                                <img src={hashtagsIcon} alt="Hashtags" onClick={viewHashtags}/>
-                                {isInCreating && showHashtags ? (
-                                    <div className={styles.actions_itens}>
-                                        <InputSearchField 
-                                            type="text" 
-                                            name="hashtagsSearch"
-                                            placeholder="Pesquisar hashtags..." 
-                                            maxLength={50}
-                                            value={searchTextHashtag}
-                                            handleChange={handleSearchHashtagChange}
-                                        />
+                    <div>
+                        <li>
+                            <img src={tagsIcon} alt="Tags" onClick={viewTags}/>
 
-                                        <PostItemsContainer
-                                            searchText={searchTextHashtag}
-                                            filteredItems={filteredHashtags}
-                                            handleClick={handleClickHashtag}
-                                            isSelectable={true}
-                                            selectedItems={selectedHashtags}
-                                            notFoundText="Nenhuma hashtag encontrada"
-                                            isHashtags={true}
-                                        />
-                                    </div>
-                                ) : !isInCreating && showHashtags ? (
-                                    <div className={styles.actions_itens}>
-                                        <PostItemsContainer
-                                            searchText={true}
-                                            filteredItems={postHashtags}
-                                            notFoundText="Sem hashtags"
-                                            isPostHashtags={true}
-                                        />
-                                    </div>
-                                ) : null}
-                            </li>
-                        </div>
+                            {isInCreating && showTags ? (
+                                <div className={styles.actions_itens}>
+                                    <InputSearchField 
+                                        type="text" 
+                                        name="tagsSearch"
+                                        maxLength={30}
+                                        placeholder="Pesquisar perfis..." 
+                                        value={searchTextTag}
+                                        handleChange={handleSearchTagChange}
+                                    />
+
+                                    <PostItemsContainer
+                                        searchText={searchTextTag}
+                                        filteredItems={filteredTags}
+                                        handleClick={handleClickTag}
+                                        isSelectable={true}
+                                        selectedItems={selectedTags}
+                                        haveProfile={true}
+                                        notFoundText="Não existe um perfil com esse nome"
+                                    />
+                                </div>
+                            ) : !isInCreating && showTags ? (
+                                <div className={styles.actions_itens}>
+                                    <PostItemsContainer
+                                        searchText={true}
+                                        filteredItems={postTags}
+                                        notFoundText="Sem marcações"
+                                        isPostTags={true}
+                                    />
+                                </div>
+                            ) : null}
+                        </li>
+
+                        <li>
+                            <img src={hashtagsIcon} alt="Hashtags" onClick={viewHashtags}/>
+
+                            {isInCreating && showHashtags ? (
+                                <div className={styles.actions_itens}>
+                                    <InputSearchField 
+                                        type="text" 
+                                        name="hashtagsSearch"
+                                        placeholder="Pesquisar hashtags..." 
+                                        maxLength={50}
+                                        value={searchTextHashtag}
+                                        handleChange={handleSearchHashtagChange}
+                                    />
+
+                                    <PostItemsContainer
+                                        searchText={searchTextHashtag}
+                                        filteredItems={filteredHashtags}
+                                        handleClick={handleClickHashtag}
+                                        isSelectable={true}
+                                        selectedItems={selectedHashtags}
+                                        notFoundText="Nenhuma hashtag encontrada"
+                                        isHashtags={true}
+                                    />
+                                </div>
+                            ) : !isInCreating && showHashtags ? (
+                                <div className={styles.actions_itens}>
+                                    <PostItemsContainer
+                                        searchText={true}
+                                        filteredItems={postHashtags}
+                                        notFoundText="Sem hashtags"
+                                        isPostHashtags={true}
+                                    />
+                                </div>
+                            ) : null}
+                        </li>
+                    </div>
+                    
+                    <div>
+                        <li>
+                            <img src={isComplainted ? complaintedIcon : complaintIcon} alt="Complaint" onClick={!isInCreating && !isComplainted ? viewComplaint : undefined}/>
                         
-                        <div>
-                            <li><img src={isComplainted ? complaintedIcon : complaintIcon} alt="Complaint" onClick={!isInCreating && !isComplainted ? viewComplaint : undefined}/></li>
                             {showComplaintReasons && (
                                 <div className={styles.actions_itens}>
                                     <form onSubmit={handleComplaintSubmit}>
                                         <SubmitButton text="Denunciar" haveError={!complaintDescription && (!selectedComplaintReasons || selectedComplaintReasons.length === 0)}/>
+                                        
                                         <InputField 
                                             type="text" 
                                             name="complaintDescription" 
@@ -539,9 +550,9 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
                                     />
                                 </div>
                             )}
-                        </div>
-                    </ul>
-                </div>
+                        </li>
+                    </div>
+                </ul>
             </div>
         </div>
     );
