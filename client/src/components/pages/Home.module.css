@@ -6,7 +6,7 @@
 }
 
 .posts_section {
-    padding: 4.8em 0 4em 5.6em;
+    padding: 4.7em 0 3.9em 5.1em;
 }
 
 .posts_ending {
@@ -44,7 +44,7 @@
 
 @media screen and (max-width: 720px) {
     .posts_section {
-        padding: 0 0 4em 0;
+        padding: 4.6em 0 3.9em 0;
     }
 
     .posts_ending {

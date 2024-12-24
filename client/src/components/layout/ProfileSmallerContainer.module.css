@@ -8,4 +8,7 @@
     cursor: pointer;
     width: 100%;
     min-width: max-content;
+    min-height: max-content;
+    /* min-height: 3em; */
+
 }

@@ -332,9 +332,7 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
     return (
         <div className={styles.post}>
             <div className={styles.first_post_container}>
-                <div className={styles.post_author_container}>
-                    <ProfileSmallerContainer profilePhotoPath={authorPhotoPath} profileName={authorUserName}/>
-                </div>
+                <ProfileSmallerContainer profilePhotoPath={authorPhotoPath} profileName={authorUserName}/>
 
                 <div className={styles.medias} id="medias">
                     {medias.length > 0 && (
@@ -368,7 +366,7 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
             <div className={styles.container_divisor}></div>
 
             <div className={styles.second_post_container}>    
-                <span className={styles.date}>{formattedMoment}</span>
+                <span className={styles.date}>Publicado em {formattedMoment}</span>
 
                 <div className={styles.caption}>
                     <p><span>{authorUserName}:</span> {caption}</p>

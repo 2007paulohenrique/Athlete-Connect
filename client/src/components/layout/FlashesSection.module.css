@@ -67,6 +67,7 @@
         overflow-y: unset;
         overflow-x: auto;
         bottom: unset;
+        position: relative;
     }
 }
 

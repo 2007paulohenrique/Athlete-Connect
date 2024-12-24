@@ -40,33 +40,10 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    min-height: max-content;
+    
     overflow: hidden;
     position: relative;
     min-height: 3em;
-}
-
-.post_author_container img {
-    height: 100%;
-    aspect-ratio: 1 / 1;
-    object-fit: cover;
-    transition: transform 0.2s ease-in-out;
-    display: block;
-}
-
-.post_author_container span {
-    display: flex;
-    align-items: center;
-    height: max-content;
-    gap: 0.5em;
-    letter-spacing: 0.5px;
-    font-weight: bold;
-    color: var(--ligth-theme-color);
-    cursor: pointer;
-}
-
-.post_author_container span ul {
-    list-style: none;
 }
 
 .date {
