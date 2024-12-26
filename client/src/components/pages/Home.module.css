@@ -6,7 +6,8 @@
 }
 
 .posts_section {
-    padding: 4.7em 0 3.9em 5.1em;
+    padding: 4.7em 0 3.9em 0;
+    margin-left: 5.1em;
 }
 
 .posts_ending {
@@ -19,7 +20,7 @@
     justify-content: center;
     line-height: 2em;
     letter-spacing: 1px;
-    border-top: 5px solid var(--ligth-theme-color);
+    border-top: 3px solid var(--ligth-theme-color);
     border-bottom: 1px solid var(--ligth-font-color);
     background-color: var(--dark-bg-color);
 }
@@ -45,6 +46,7 @@
 @media screen and (max-width: 720px) {
     .posts_section {
         padding: 4.6em 0 3.9em 0;
+        margin-left: 0;
     }
 
     .posts_ending {
@@ -55,6 +57,7 @@
 
 @media screen and (min-width: 1500px) {
     .posts_section {
-        padding: 5.8em 0 5em 5.6em;
+        padding: 5.8em 0 5em 0;
+        margin-left: 5.1em;
     }
 }

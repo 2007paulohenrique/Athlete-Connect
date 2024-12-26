@@ -12,18 +12,21 @@ function PostItemsContainer({ searchText, filteredItems = [], handleClick, isSel
                     <br/>  
                 </>
             )}
+
             {searchText && filteredItems.length > 0 ? filteredItems.map((item, index) => (
                 <>
                     {isComment || isPostHashtags || isPostTags ? (
                         <>  
                             <li key={index}>
                                 {isPostHashtags && <># {item['nome']}</>}
+
                                 {isComment && (
                                     <>
-                                        <ProfilePhotoContainer profilePhotoPath={item["caminho"]}/>
+                                        <ProfilePhotoContainer profilePhotoPath={item["caminho"]} size="short"/>
                                         <p className={styles.comment_text}>{item["texto"]}</p>
                                     </>
                                 )}
+
                                 {isPostTags && <><ProfileSmallerContainer profilePhotoPath={item["caminho"]} profileName={item["nome"]}/></>}
                             </li>
                         </>
@@ -34,7 +37,9 @@ function PostItemsContainer({ searchText, filteredItems = [], handleClick, isSel
                             className={isSelectable && selectedItems.includes(item) ? styles.selectedItem : ""}
                         >
                             {isComplaintReasons && <>{item["motivo"]}</>}
+
                             {isHashtags && <># {item['nome']}</>}
+                            
                             {haveProfile && <ProfileSmallerContainer profilePhotoPath={item["caminho"]} profileName={item["nome"]}/>}
                         </li>
                     )}

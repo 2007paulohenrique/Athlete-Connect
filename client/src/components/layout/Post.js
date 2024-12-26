@@ -336,10 +336,10 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
 
                 <div className={styles.medias}>
                     {medias.length > 0 && (
-                        <div>
-                            <div className={styles.media_controls}>
+                        <>
+                            <div className={styles.media_info}>
                                 {medias.length !== 1 && <p>{`${currentMediaIndex + 1}/${medias.length}`}</p>}
-                                {medias[currentMediaIndex].duration && <p>{medias[currentMediaIndex].duration}</p>}
+                                {/* {medias[currentMediaIndex].duration && <p>{medias[currentMediaIndex].duration}</p>} */}
                             </div>
 
                             <div className={styles.slide_container}>
@@ -358,7 +358,7 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
                                     Seu navegador não suporta a tag de vídeo.
                                 </video>
                             ) : null}
-                        </div>
+                        </>
                     )}
                 </div>
             </div>
