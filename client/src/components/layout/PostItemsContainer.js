@@ -18,16 +18,16 @@ function PostItemsContainer({ searchText, filteredItems = [], handleClick, isSel
                     {isComment || isPostHashtags || isPostTags ? (
                         <>  
                             <li key={index}>
-                                {isPostHashtags && <># {item['nome']}</>}
+                                {isPostHashtags && <># {item.nome}</>}
 
                                 {isComment && (
                                     <>
-                                        <ProfilePhotoContainer profilePhotoPath={item["caminho"]} size="short"/>
-                                        <p className={styles.comment_text}>{item["texto"]}</p>
+                                        <ProfilePhotoContainer profilePhotoPath={item.caminho} size="short"/>
+                                        <p className={styles.comment_text}>{item.texto}</p>
                                     </>
                                 )}
 
-                                {isPostTags && <><ProfileSmallerContainer profilePhotoPath={item["caminho"]} profileName={item["nome"]}/></>}
+                                {isPostTags && <><ProfileSmallerContainer profilePhotoPath={item.caminho} profileName={item.nome}/></>}
                             </li>
                         </>
                     ) : (
@@ -36,11 +36,11 @@ function PostItemsContainer({ searchText, filteredItems = [], handleClick, isSel
                             onClick={() => handleClick(item)}
                             className={isSelectable && selectedItems.includes(item) ? styles.selectedItem : ""}
                         >
-                            {isComplaintReasons && <>{item["motivo"]}</>}
+                            {isComplaintReasons && <>{item.motivo}</>}
 
-                            {isHashtags && <># {item['nome']}</>}
+                            {isHashtags && <># {item.nome}</>}
                             
-                            {haveProfile && <ProfileSmallerContainer profilePhotoPath={item["caminho"]} profileName={item["nome"]}/>}
+                            {haveProfile && <ProfileSmallerContainer profilePhotoPath={item.caminho} profileName={item.nome}/>}
                         </li>
                     )}
                 </>

@@ -6,9 +6,8 @@
     font-weight: bold;
     color: var(--ligth-theme-color);
     cursor: pointer;
-    width: 100%;
+    width: max-content;
     min-width: max-content;
     min-height: max-content;
     /* min-height: 3em; */
-
 }

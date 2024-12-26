@@ -85,7 +85,7 @@ function Post({ authorUserName, authorPhotoPath, moment, mediasPath = [], blobUr
         .then(resp => {
             const data = resp.data;
             const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
-            const filteredData = data.filter(tag => tag["nome"] !== authorUserName && String(tag["id_perfil"]) !== String(confirmedProfileId));
+            const filteredData = data.filter(tag => tag.nome !== authorUserName && String(tag.id_perfil) !== String(confirmedProfileId));
 
             setTags(filteredData);
             setFilteredTags(filteredData);
