@@ -3,12 +3,12 @@ import homeIcon from "../../img/icons/socialMedia/homeIcon.png";
 import newPostIcon from "../../img/icons/socialMedia/newPostIcon.png";
 import favPlacesIcon from "../../img/icons/socialMedia/favPlacesIcon.png";
 import eventIcon from "../../img/icons/socialMedia/eventIcon.png";
-import profileIcon from "../../img/icons/socialMedia/profileIcon.png";
+import userIcon from "../../img/icons/socialMedia/userIcon.png";
 import { useNavigate } from "react-router-dom";
 
 function AppNavBar({ profilePhotoPath }) {
     const navigate = useNavigate();
-    const profilePhoto = profilePhotoPath ? require(`../../img/${profilePhotoPath}`) : profileIcon;
+    const profilePhoto = profilePhotoPath ? require(`../../img/${profilePhotoPath}`) : userIcon;
 
     return (
         <nav className={styles.app_nav_bar}>
@@ -30,7 +30,7 @@ function AppNavBar({ profilePhotoPath }) {
                 </li>
                 
                 <li className={profilePhoto && styles.profile_photo}>
-                    <img src={profilePhoto || profileIcon} alt="Profile"/>
+                    <img src={profilePhoto || userIcon} alt="Profile"/>
                 </li>
             </ul>
         </nav>

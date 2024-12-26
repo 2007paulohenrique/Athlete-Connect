@@ -96,6 +96,8 @@ function NewPost() {
             setFiles(files);
             setMediasLengthError(false);
         } else {
+            setMedias([]);
+            setFiles([]);
             setMediasLengthError(true);
         }
     }

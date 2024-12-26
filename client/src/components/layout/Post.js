@@ -14,10 +14,9 @@ import SubmitButton from "../form/SubmitButton";
 import InputField from "../form/InputField";
 import ProfileSmallerContainer from "./ProfileSmallerContainer";
 import { useProfile } from "../../ProfileContext";
-// import ProfilePhotoContainer from "./ProfilePhotoContainer";
 import PostItemsContainer from "./PostItemsContainer";
 
-function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsMedias=[], caption, isInCreating, setHashtagsInPost, setTagsInPost, setSharings, setPostComplaintReasons, setSharingCaption, sharingCaption, setCommentText, commentText, commentSubmit, setComplaintDescription, complaintDescription, postHashtags, postTags, likeAction, comments, sharingSubmit, complaintSubmit, isLiked, isComplainted, post}) {
+function Post({ authorUserName, authorPhotoPath, moment, mediasPath = [], blobUrlsMedias = [], caption, isInCreating = false, setHashtagsInPost, postHashtags, setTagsInPost, postTags, setSharings, sharingSubmit, setSharingCaption, sharingCaption, setPostComplaintReasons, complaintSubmit, setComplaintDescription, complaintDescription, isComplainted, comments, setCommentText, commentText, commentSubmit, likeSubmit, isLiked, post }) {
     const [medias, setMedias] = useState([]);
     const [hashtags, setHashtags] = useState([]);
     const [showHashtags, setShowHashtags] = useState(false);  
@@ -86,10 +85,7 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
         .then(resp => {
             const data = resp.data;
             const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
-
             const filteredData = data.filter(tag => tag["nome"] !== authorUserName && String(tag["id_perfil"]) !== String(confirmedProfileId));
-            console.log(confirmedProfileId);
-            console.log(filteredData);
 
             setTags(filteredData);
             setFilteredTags(filteredData);
@@ -120,6 +116,7 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
             setMedias((prevMedias) => {
                 const newMedias = [...prevMedias];
                 newMedias[index].duration = newDuration;
+
                 return newMedias;
             });
         }
@@ -129,6 +126,7 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
         const filtered = hashtags.filter((hashtag) =>
             hashtag.nome.toLowerCase().includes(searchTextHashtag.toLowerCase())
         );
+
         setFilteredHashtags(filtered);
     }, [searchTextHashtag, hashtags]);
     
@@ -136,6 +134,7 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
         const filtered = tags.filter((tag) =>
             tag.nome.toLowerCase().includes(searchTextTag.toLowerCase())
         );
+
         setFilteredTags(filtered);
     }, [searchTextTag, tags]);
 
@@ -143,6 +142,7 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
         const filtered = tags.filter((tag) =>
             tag.nome.toLowerCase().includes(searchTextSharing.toLowerCase())
         );
+        
         setFilteredSharings(filtered);
     }, [searchTextSharing, tags]);
     
@@ -326,7 +326,6 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
         commentSubmit(e, post);
     
         setCommentText("");
-        // setShowComments(!showComments);
     };
 
     return (
@@ -373,7 +372,7 @@ function Post({authorUserName, authorPhotoPath, moment, mediasPath=[], blobUrlsM
                 <ul className={styles.post_actions}>
                     <div>
                         <li>
-                            <img src={isLiked ? likedIcon : likeIcon} alt="Like" onClick={!isInCreating ? likeAction : undefined}/>
+                            <img src={isLiked ? likedIcon : likeIcon} alt="Like" onClick={!isInCreating ? likeSubmit : undefined}/>
                         </li>
 
                         <li>

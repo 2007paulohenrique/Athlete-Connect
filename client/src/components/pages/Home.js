@@ -199,7 +199,7 @@ function Home() {
                         caption={post["legenda"]}
                         postHashtags={post["hashtags"] || ""}
                         postTags={post["tags"] || ""}
-                        likeAction={() => likeAction(post)}
+                        likeSubmit={() => likeAction(post)}
                         isLiked={post["isLiked"]}
                         setSharings={setSharings}
                         sharingSubmit={sharingSubmit}
