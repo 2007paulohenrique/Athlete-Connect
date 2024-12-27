@@ -192,6 +192,7 @@ function Home() {
             <section className={styles.posts_section}> 
                 {feed.map((post) => (
                     <Post 
+                        key={post.id_postagem}
                         authorUserName={post["author"]["nome"]}
                         authorPhotoPath={post["author"]["media"] ? post["author"]["media"]["caminho"] : ""}
                         moment={post["data_publicacao"]}

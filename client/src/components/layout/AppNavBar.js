@@ -8,7 +8,14 @@ import { useNavigate } from "react-router-dom";
 
 function AppNavBar({ profilePhotoPath }) {
     const navigate = useNavigate();
-    const profilePhoto = profilePhotoPath ? require(`../../img/${profilePhotoPath}`) : userIcon;
+    
+    const profilePhoto = (() => {
+        try {
+            return require(`../../img/${profilePhotoPath}`);
+        } catch {
+            return userIcon;
+        }
+    })();
 
     return (
         <nav className={styles.app_nav_bar}>
@@ -30,7 +37,7 @@ function AppNavBar({ profilePhotoPath }) {
                 </li>
                 
                 <li className={profilePhoto && styles.profile_photo}>
-                    <img src={profilePhoto || userIcon} alt="Profile"/>
+                    <img src={profilePhoto} alt="Profile"/>
                 </li>
             </ul>
         </nav>

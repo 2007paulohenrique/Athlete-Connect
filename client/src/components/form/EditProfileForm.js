@@ -72,7 +72,8 @@ function EditProfileForm({handleSubmit, profile, setProfile, setSubmitError}) {
                     type="text" 
                     name="confirmedNameSignUp" 
                     placeholder="Insira o nome de usuário" 
-                    labelText="Nome de Usuário*" 
+                    labelText="Nome de Usuário*"
+                    maxLength={30} 
                     alertMessage='O nome de usuário deve ter entre 4 e 30 caracteres, sem espaços e símbolos diferentes de: "_", "@", "+","&" e ".".' 
                     inputIcon={userIcon}
                     inputIconAlt="User Icon"
@@ -84,7 +85,7 @@ function EditProfileForm({handleSubmit, profile, setProfile, setSubmitError}) {
                 <Textarea 
                     name="bio" 
                     placeholder="Insira sua biografia" 
-                    maxLength="150"
+                    maxLength={150}
                     labelText="Biografia" 
                     alertMessage="A biografia não pode ter mais que 150 caracteres." 
                     inputIcon={bioIcon}
