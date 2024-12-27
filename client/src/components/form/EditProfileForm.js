@@ -1,10 +1,10 @@
-import InputField from "./InputField";
+import MainInput from "./MainInput";
 import SubmitButton from "./SubmitButton";
 import userIcon from "../../img/icons/socialMedia/userIcon.png";
 import bioIcon from "../../img/icons/socialMedia/bioIcon.png";
 import styles from "./EditProfileForm.module.css"
 import { useCallback, useEffect, useState } from "react";
-import TextareaInput from "./TextareaInput";
+import Textarea from "./Textarea";
 import PhotoInput from "./PhotoInput";
 
 function EditProfileForm({handleSubmit, profile, setProfile, setSubmitError}) {
@@ -19,7 +19,7 @@ function EditProfileForm({handleSubmit, profile, setProfile, setSubmitError}) {
             e.target.value = e.target.value.trimStart().replace(/\n+/g, "").replace(/\s+/g, " ")
         }
 
-        setProfile({ ...profile, [e.target.name]: e.target.value.trim() });
+        setProfile({ ...profile, [e.target.name]: e.target.value });
     }
 
     function handleOnChangePrivate() {
@@ -62,13 +62,13 @@ function EditProfileForm({handleSubmit, profile, setProfile, setSubmitError}) {
 
     return (
         <form onSubmit={handleSubmit} className={`${styles.edit_profile_form}`}>
-            <PhotoInput name="profilePhoto" photoPath={profile["blobUrl"]} handleChange={handleFileChange} accepts=".jpg,.jpeg,.png,.webp"/>
+            <PhotoInput name="profilePhoto" photoPath={profile["blobUrl"]} handleChange={handleFileChange}/>
             <h2>Editar Perfil</h2>
 
             <p className={styles.empty_field_alert}>- Campos obrigatórios são marcados com "*"</p>
 
             <div className={styles.inputs_container}>
-                <InputField 
+                <MainInput 
                     type="text" 
                     name="confirmedNameSignUp" 
                     placeholder="Insira o nome de usuário" 
@@ -81,7 +81,7 @@ function EditProfileForm({handleSubmit, profile, setProfile, setSubmitError}) {
                     value={profile["confirmedNameSignUp"]}
                 />
 
-                <TextareaInput 
+                <Textarea 
                     name="bio" 
                     placeholder="Insira sua biografia" 
                     maxLength="150"
@@ -91,17 +91,19 @@ function EditProfileForm({handleSubmit, profile, setProfile, setSubmitError}) {
                     inputIconAlt="Bio Icon"
                     handleChange={handleOnChange} 
                     showAlert={profile["bio"] && !validateBio()}
+                    value={profile["bio"]}
                 />
 
                 <div className={styles.checkboxs}>
-                    <InputField 
+                    <MainInput 
                         type="checkbox" 
                         name="private"  
                         labelText="Clique na caixa abaixo para tornar seu perfil privado" 
                         handleChange={handleOnChangePrivate} 
+                        value={privateProfile}
                     />
 
-                    <InputField 
+                    <MainInput 
                         type="checkbox" 
                         name="acceptTerms"  
                         labelText={
@@ -110,6 +112,7 @@ function EditProfileForm({handleSubmit, profile, setProfile, setSubmitError}) {
                             </>
                         } 
                         handleChange={handleOnChangeAcceptTerms} 
+                        value={acceptTerms}
                     />
                 </div>
             </div>

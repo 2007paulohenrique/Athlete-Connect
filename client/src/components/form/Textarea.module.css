@@ -1,11 +1,23 @@
-.textarea_field {
+.textarea {
     display: flex;
     width: 100%;
     height: max-content;
     flex-direction: column;
 }
 
-.textarea_field label {
+.textarea > span {
+    display: flex;
+    align-items: left;
+    gap: 0.6em;
+}
+
+.textarea > span > img {
+    display: inline-block;
+    height: 1.4em;
+    width: 1.4em;
+}
+
+.textarea > span > label {
     height: max-content;
     letter-spacing: 0.5px;
     width: max-content;
@@ -13,7 +25,7 @@
     font-size: 1.2em;
 }
 
-.textarea_field textarea {
+.textarea > textarea {
     height: 10.6em;
     border-radius: 5px;
     border: 1px solid var(--ligth-font-color);
@@ -22,24 +34,11 @@
     letter-spacing: 0.5px;
     outline: none;
     resize: none;
-    overflow: hidden;
-    line-height: 1.2em;
-}
-
-.textarea_field span {
-    display: flex;
-    align-items: left;
-    gap: 0.6em;
-}
-
-.textarea_field img {
-    display: inline-block;
-    height: 1.4em;
-    width: 1.4em;
 }
 
 .alert {
     height: 3em;
+    min-height: min-content;
     font-size: 0.7em;
     margin: 0.1em 0.5em 0;
     text-align: justify;

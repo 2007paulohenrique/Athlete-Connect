@@ -1,34 +1,37 @@
-.inputField,
-.checkbox_input {
+.text_field,
+.checkbox_field {
     display: flex;
+    flex-direction: column;
     width: 100%;
     height: max-content;
-    flex-direction: column;
 }
 
-.checkbox_input {
+.checkbox_field {
     align-items: start;
 }
 
-:where(.inputField, .checkbox_input) label {
-    height: max-content;
-    letter-spacing: 0.5px;
-    width: max-content;
-    font-size: 0.8em;
+.text_field > span {
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    gap: 0.6em;
+    margin-bottom: 0.5em;
 }
 
-.inputField label {
+:where(.text_field, .checkbox_field) > span > label {
+    height: max-content;
+    letter-spacing: 0.5px;
+}
+
+.text_field > span > label {
     font-size: 1.2em;
 }
 
-.checkbox_input label {
-    outline: none;
-    margin-top: 0.4em;
-    text-align: justify;
+.checkbox_field > span > label {
     font-size: 0.65em;
 }
 
-.inputField input {
+.text_field > input {
     height: 3em;
     border-radius: 5px;
     border: 1px solid var(--ligth-font-color);
@@ -38,26 +41,19 @@
     outline: none;
 }
 
-.checkbox_input input {
+.checkbox_field > input {
     outline: none;
     margin-top: 0.4em;
 }
 
-.inputField span {
-    display: flex;
-    align-items: center;
-    justify-content: start;
-    gap: 0.6em;
-    margin-bottom: 0.5em;
-}
 
-.inputField img {
+.text_field > span > img {
     display: inline-block;
     height: 1.4em;
     width: 1.4em;
 }
 
-.inputField .alert {
+.text_field > .alert {
     height: 3em;
     min-height: min-content;
     font-size: 0.7em;

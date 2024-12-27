@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import Post from "../layout/Post";
-import TextareaInput from "../form/TextareaInput";
+import Textarea from "../form/Textarea";
 import styles from "./NewPost.module.css";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -65,7 +65,7 @@ function NewPost() {
     function handleOnChange(e) {
         e.target.value = e.target.value.replace(/(\n\s*){3,}/g, '\n\n').trimStart();
 
-        setPost({ ...post, [e.target.name]: e.target.value.trim() });
+        setPost({ ...post, [e.target.name]: e.target.value });
     }
 
     const validateCaption = useCallback(() => {
@@ -138,7 +138,7 @@ function NewPost() {
 
             <form className={styles.edit_post} onSubmit={handleOnSubmit}>
                 <div className={styles.inputs}>
-                    <TextareaInput 
+                    <Textarea 
                         name="caption" 
                         labelText="Legenda" 
                         placeholder="Insira a legenda da sua publicação" 
@@ -148,6 +148,7 @@ function NewPost() {
                         showAlert={post["caption"] && !validateCaption()}
                         inputIcon={captionIcon}
                         inputIconAlt="Caption"
+                        value={post["caption"]}
                     />
 
                     <FileInput 
@@ -155,7 +156,6 @@ function NewPost() {
                         labelText="Selecione suas fotos e vídeos"
                         handleChange={handleFileChange} 
                         alertMessage="Selecione até nove imagens e vídeos"
-                        accepts=".jpg,.jpeg,.png,.webp,.mp4,.webm,.ogg"
                         multiple={true}
                         showAlert={mediasLengthError}
                         inputIcon={mediasIcon}

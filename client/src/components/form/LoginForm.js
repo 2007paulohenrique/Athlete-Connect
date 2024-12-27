@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import styles from "./LoginForm.module.css";
-import InputField from "./InputField";
+import MainInput from "./MainInput";
 import SubmitButton from "./SubmitButton";
 import Icon from "../../img/icons/socialMedia/icon.ico";
 import userIcon from "../../img/icons/socialMedia/userIcon.png";
@@ -69,28 +69,32 @@ function LoginForm({ isLoginForm, handleSubmit, handleChangeForm, isLogin, profi
                     <p className={styles.empty_field_alert}>- Preencha todos os campos</p>
 
                     <div className={styles.inputs_container}>
-                        <InputField 
+                        <MainInput 
                             type="text" 
                             name="nameOrEmailLogin" 
                             placeholder="Insira seu e-mail ou nome de usuário" 
+                            maxLength={255}
                             labelText="E-mail ou Nome de Usuário" 
                             alertMessage="Não foi encontrado nenhum perfil com esses dados." 
                             inputIcon={userIcon}
                             inputIconAlt="User icon"
                             handleChange={handleOnChangeLogin} 
                             showAlert={validateLogin && profile["nameOrEmailLogin"]}
+                            value={profile["nameOrEmailLogin"]}
                         />
             
-                        <InputField 
+                        <MainInput 
                             type="password" 
                             name="passwordLogin" 
                             placeholder="Insira sua senha" 
+                            maxLength={20}
                             labelText="Senha" 
                             alertMessage="Senha incorreta." 
                             inputIcon={passwordIcon}
                             inputIconAlt="Password icon"
                             handleChange={handleOnChangeLogin} 
                             showAlert={validatePasswordLogin && profile["passwordLogin"]}
+                            value={profile["passwordLogin"]}
                         />
                     </div>
 
@@ -110,40 +114,46 @@ function LoginForm({ isLoginForm, handleSubmit, handleChangeForm, isLogin, profi
                     <p className={styles.empty_field_alert}>- Preencha todos os campos</p>
 
                     <div className={styles.inputs_container}>
-                        <InputField 
+                        <MainInput 
                             type="text" 
                             name="nameSignUp" 
                             placeholder="Insira o nome de usuário" 
                             labelText="Nome de Usuário" 
+                            maxLength={30}
                             alertMessage='O nome de usuário deve ter entre 4 e 30 caracteres, sem espaços e símbolos diferentes de: "_", "@", "+","&" e ".".' 
                             inputIcon={userIcon}
                             inputIconAlt="User Icon"
                             handleChange={handleOnChange} 
                             showAlert={profile["nameSignUp"] && !validateName()}
+                            value={profile["nameSignUp"]}
                         />
 
-                        <InputField 
+                        <MainInput 
                             type="text" 
                             name="emailSignUp" 
                             placeholder="Insira seu e-mail" 
                             labelText="E-mail" 
+                            maxLength={255}
                             alertMessage="E-mail inválido." 
                             inputIcon={emailIcon}
                             inputIconAlt="E-mail icon"
                             handleChange={handleOnChange} 
                             showAlert={profile["emailSignUp"] && !validateEmail()}
+                            value={profile["emailSignUp"]}
                         />
 
-                        <InputField 
+                        <MainInput 
                             type="password" 
                             name="passwordSignUp" 
                             placeholder="Insira sua senha" 
                             labelText="Senha" 
+                            maxLength={20}
                             alertMessage="A senha deve possuir entre 8 e 20 caracteres, no minímo uma letra, número e símbolo: @, $, !, %, *, ? ou &." 
                             inputIcon={passwordIcon}
                             inputIconAlt="Password icon"
                             handleChange={handleOnChange} 
                             showAlert={profile["passwordSignUp"] && !validatePassword()}
+                            value={profile["passwordSignUp"]}
                         />
                     </div>
 

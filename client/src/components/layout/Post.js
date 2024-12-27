@@ -11,7 +11,7 @@ import hashtagsIcon from "../../img/icons/socialMedia/hashtagsIcon.png";
 import axios from "axios"
 import InputSearchField from "../layout/InputSearchField";
 import SubmitButton from "../form/SubmitButton";
-import InputField from "../form/InputField";
+import MainInput from "../form/MainInput";
 import ProfileSmallerContainer from "./ProfileSmallerContainer";
 import { useProfile } from "../../ProfileContext";
 import PostItemsContainer from "./PostItemsContainer";
@@ -382,10 +382,11 @@ function Post({ authorUserName, authorPhotoPath, moment, mediasPath = [], blobUr
                                     <form onSubmit={handleSharingSubmit}>
                                         <SubmitButton text="Compartilhar" haveError={!selectedSharings || selectedSharings.length === 0}/>
 
-                                        <InputField 
+                                        <MainInput 
                                             type="text" 
                                             name="sharingCaption" 
                                             placeholder="Escreva sua legenda aqui" 
+                                            maxLength={255}
                                             alertMessage="A legenda não pode ter mais que 255 caracteres"
                                             handleChange={handleOnChangeSharingCaption}    
                                             showAlert={sharingCaption && sharingCaption.length > 255}
@@ -407,8 +408,8 @@ function Post({ authorUserName, authorPhotoPath, moment, mediasPath = [], blobUr
                                         filteredItems={filteredSharings}
                                         handleClick={handleClickSharing}
                                         selectedItems={selectedSharings}
-                                        isSelectable={true}
-                                        haveProfile={true}
+                                        isSelectable
+                                        haveProfile
                                         notFoundText="Perfil inexistente ou indisponível"
                                     />                                        
                                 </div>
@@ -423,10 +424,11 @@ function Post({ authorUserName, authorPhotoPath, moment, mediasPath = [], blobUr
                                     <form onSubmit={handleCommentSubmit}>
                                         <SubmitButton text="Comentar" haveError={!commentText || commentText.length < 0}/>
 
-                                        <InputField 
+                                        <MainInput 
                                             type="text" 
                                             name="commentText" 
-                                            placeholder="Escreva seu comentário aqui" 
+                                            placeholder="Escreva seu comentário aqui"
+                                            maxLength={255} 
                                             alertMessage="Um comentário não pode ter mais que 255 caracteres"
                                             handleChange={handleOnChangeCommentText}    
                                             showAlert={commentText && commentText.length > 255}
@@ -438,7 +440,7 @@ function Post({ authorUserName, authorPhotoPath, moment, mediasPath = [], blobUr
                                         searchText={true}
                                         notFoundText="Faça o primeiro comentário"
                                         filteredItems={comments}
-                                        isComment={true}
+                                        isComment
                                     />
                                 </div>
                             )}    
@@ -464,9 +466,9 @@ function Post({ authorUserName, authorPhotoPath, moment, mediasPath = [], blobUr
                                         searchText={searchTextTag}
                                         filteredItems={filteredTags}
                                         handleClick={handleClickTag}
-                                        isSelectable={true}
+                                        isSelectable
                                         selectedItems={selectedTags}
-                                        haveProfile={true}
+                                        haveProfile
                                         notFoundText="Não existe um perfil com esse nome"
                                     />
                                 </div>
@@ -476,7 +478,7 @@ function Post({ authorUserName, authorPhotoPath, moment, mediasPath = [], blobUr
                                         searchText={true}
                                         filteredItems={postTags}
                                         notFoundText="Sem marcações"
-                                        isPostTags={true}
+                                        isPostTags
                                     />
                                 </div>
                             ) : null}
@@ -500,10 +502,10 @@ function Post({ authorUserName, authorPhotoPath, moment, mediasPath = [], blobUr
                                         searchText={searchTextHashtag}
                                         filteredItems={filteredHashtags}
                                         handleClick={handleClickHashtag}
-                                        isSelectable={true}
+                                        isSelectable
                                         selectedItems={selectedHashtags}
                                         notFoundText="Nenhuma hashtag encontrada"
-                                        isHashtags={true}
+                                        isHashtags
                                     />
                                 </div>
                             ) : !isInCreating && showHashtags ? (
@@ -512,7 +514,7 @@ function Post({ authorUserName, authorPhotoPath, moment, mediasPath = [], blobUr
                                         searchText={true}
                                         filteredItems={postHashtags}
                                         notFoundText="Sem hashtags"
-                                        isPostHashtags={true}
+                                        isPostHashtags
                                     />
                                 </div>
                             ) : null}
@@ -528,10 +530,11 @@ function Post({ authorUserName, authorPhotoPath, moment, mediasPath = [], blobUr
                                     <form onSubmit={handleComplaintSubmit}>
                                         <SubmitButton text="Denunciar" haveError={!complaintDescription && (!selectedComplaintReasons || selectedComplaintReasons.length === 0)}/>
                                         
-                                        <InputField 
+                                        <MainInput 
                                             type="text" 
                                             name="complaintDescription" 
                                             placeholder="Descreva o motivo da sua denúncia" 
+                                            maxLength={255}
                                             alertMessage="A descrição não pode ter mais que 255 caracteres"
                                             handleChange={handleOnChangeComplaintDescription}    
                                             showAlert={complaintDescription && complaintDescription.length > 255}
@@ -543,9 +546,9 @@ function Post({ authorUserName, authorPhotoPath, moment, mediasPath = [], blobUr
                                         searchText={true}
                                         filteredItems={complaintReasons}
                                         handleClick={handleClickComplaintReason}
-                                        isSelectable={true}
+                                        isSelectable
                                         selectedItems={selectedComplaintReasons}
-                                        isComplaintReasons={true}
+                                        isComplaintReasons
                                     />
                                 </div>
                             )}

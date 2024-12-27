@@ -3,12 +3,7 @@
     flex-direction: column;
 }
 
-.file_input label img {
-    height: 3em;
-    width: 3em;
-}
-
-.file_input label {
+.file_input > label {
     background-color: var(--ligth-theme-color);
     border: 1px solid var(--dark-theme-color);
     width: max-content;
@@ -18,19 +13,24 @@
     letter-spacing: 0.3px;
     border-radius: 5px;
     color: black;
-    transition: all 0.2s ease-in;
+    transition: all 0.2s ease-in-out;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 1em;
 }
 
-.file_input input {
-    display: none;
+.file_input > label:hover {
+    background-color: var(--dark-theme-color);
 }
 
-.file_input label:hover {
-    background-color: var(--dark-theme-color);
+.file_input > label > img {
+    height: 3em;
+    width: 3em;
+}
+
+.file_input > input {
+    display: none;
 }
 
 .alert {
