@@ -55,8 +55,8 @@ function ProfilePreferences() {
 
         const formDataA = new FormData();
                 
-        formDataA.append("email", profile["emailSignUp"]);
-        formDataA.append("name", profile["confirmedNameSignUp"]);
+        formDataA.append("email", profile.emailSignUp);
+        formDataA.append("name", profile.confirmedNameSignUp);
 
         axios.post(`http://localhost:5000/signup`, formDataA, {
             headers: { "Content-Type": "multipart/form-data" }, 
@@ -66,17 +66,17 @@ function ProfilePreferences() {
 
             if (data !== "signUpError") {
                 const sportsIds = profilePreferences.map(sport => sport.id_esporte);
-                profile['preferences'] = sportsIds;
+                profile.preferences = sportsIds;
 
                 const formDataB = new FormData();
 
-                formDataB.append("name", profile["confirmedNameSignUp"]);
-                formDataB.append("email", profile["emailSignUp"]);
-                formDataB.append("password", profile["passwordSignUp"]);
-                formDataB.append("bio", profile["bio"]);
-                formDataB.append("private", profile["private"]);
-                if (profile["photo"] && profile["photo"].length > 0) {
-                    formDataB.append("photo", profile["photo"][0]);
+                formDataB.append("name", profile.confirmedNameSignUp);
+                formDataB.append("email", profile.emailSignUp);
+                formDataB.append("password", profile.passwordSignUp);
+                formDataB.append("bio", profile.bio);
+                formDataB.append("private", profile.private);
+                if (profile.photo && profile.photo.length > 0) {
+                    formDataB.append("photo", profile.photo[0]);
                 }
                 sportsIds.forEach(sportId => formDataB.append("preferences", sportId));
 

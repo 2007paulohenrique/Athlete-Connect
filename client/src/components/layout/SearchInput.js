@@ -1,9 +1,9 @@
-import styles from "./InputSearchField.module.css";
+import styles from "./SearchInput.module.css";
 import searchIcon from "../../img/icons/socialMedia/searchIcon.png"
 
-function InputSearchField({ name, handleChange, maxLength, placeholder }) {
+function SearchInput({ name, handleChange, maxLength, placeholder }) {
     return (
-        <div className={styles.input_search_field}>
+        <div className={styles.search_input}>
             <label htmlFor={name}>
                 <img src={searchIcon} alt="Search"/>
             </label>
@@ -13,4 +13,4 @@ function InputSearchField({ name, handleChange, maxLength, placeholder }) {
     );
 }
 
-export default InputSearchField;
+export default SearchInput;

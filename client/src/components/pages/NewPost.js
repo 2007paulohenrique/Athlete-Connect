@@ -14,7 +14,6 @@ import Message from "../layout/Message";
 function NewPost() {
     const [profile, setProfile] = useState({});
     const [post, setPost] = useState({});
-    const [haveError, setHaveError] = useState({});
     const [currentMoment, setCurrentMoment] = useState("");
     const [medias, setMedias] = useState([]);
     const [files, setFiles] = useState([]);
@@ -69,12 +68,8 @@ function NewPost() {
     }
 
     const validateCaption = useCallback(() => {
-        return !post["caption"] || post["caption"].length <= 500;
+        return !post.caption || post.caption.length <= 500;
     }, [post]);
-
-    useEffect(() => {
-        setHaveError(!(validateCaption() && !mediasLengthError));
-    }, [mediasLengthError, validateCaption]);
 
     function handleFileChange(e) {
         const files = Array.from(e.target.files);
@@ -104,19 +99,21 @@ function NewPost() {
 
     function handleOnSubmit(e) {
         e.preventDefault();
+
+        if (!(validateCaption() && !mediasLengthError)) return;
         
         if (medias.length >= 1) {  
             setPost({...post, hashtags: hashtagsInPost, tags: tagsInPost});
 
             const formData = new FormData();
 
-            formData.append("caption", post["caption"] || "");
-            hashtagsInPost.forEach(hashtag => formData.append("hashtags", hashtag["id_hashtag"]));
-            tagsInPost.forEach(tag => formData.append("tags", tag["id_perfil"]));
+            formData.append("caption", post.caption || "");
+            hashtagsInPost.forEach(hashtag => formData.append("hashtags", hashtag.id_hashtag));
+            tagsInPost.forEach(tag => formData.append("tags", tag.id_perfil));
 
             files.forEach(file => formData.append(`medias`, file));
 
-            axios.post(`http://localhost:5000/profiles/${profile['id_perfil']}/posts`, formData, {
+            axios.post(`http://localhost:5000/profiles/${profile.id_perfil}/posts`, formData, {
                 headers: { "Content-Type": "multipart/form-data" }, 
             })
             .then(resp => {
@@ -145,10 +142,10 @@ function NewPost() {
                         maxLength="500" 
                         alertMessage="A legenda não pode ter mais que 500 caracteres"
                         handleChange={handleOnChange}    
-                        showAlert={post["caption"] && !validateCaption()}
+                        showAlert={!validateCaption()}
                         inputIcon={captionIcon}
                         inputIconAlt="Caption"
-                        value={post["caption"]}
+                        value={post.caption}
                     />
 
                     <FileInput 
@@ -167,10 +164,10 @@ function NewPost() {
 
                 <div className={styles.post}>
                     <Post 
-                        authorUserName={profile["nome"]} 
-                        authorPhotoPath={profile["media"] && profile["media"]["caminho"]}
+                        authorUserName={profile.nome} 
+                        authorPhotoPath={profile.media && profile.media.caminho}
                         moment={currentMoment} 
-                        caption={post["caption"]} 
+                        caption={post.caption} 
                         blobUrlsMedias={medias}
                         isInCreating={true}
                         setHashtagsInPost={setHashtagsInPost}
@@ -178,7 +175,7 @@ function NewPost() {
                     />
                 </div>
 
-                <SubmitButton text="Publicar" haveError={haveError}/>
+                <SubmitButton text="Publicar"/>
             </form>
         </main>
     );

@@ -1,5 +1,4 @@
-.submitButton {
-    position: relative;
+.submit_button {
     background-color: var(--ligth-theme-color);
     border: 1px solid var(--dark-theme-color);
     height: max-content;
@@ -13,7 +12,7 @@
     transition: all 0.2s ease-in;
 }
 
-.submitButton:hover {
+.submit_button:hover {
     background-color: var(--dark-theme-color);
     border-color: var(--light-font-color);
     color: var(--light-font-color);

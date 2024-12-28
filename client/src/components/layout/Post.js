@@ -9,7 +9,7 @@ import complaintedIcon from "../../img/icons/socialMedia/complaintedIcon.png";
 import tagsIcon from "../../img/icons/socialMedia/tagsIcon.png";
 import hashtagsIcon from "../../img/icons/socialMedia/hashtagsIcon.png";
 import axios from "axios"
-import InputSearchField from "../layout/InputSearchField";
+import SearchInput from "../layout/SearchInput";
 import SubmitButton from "../form/SubmitButton";
 import MainInput from "../form/MainInput";
 import ProfileSmallerContainer from "./ProfileSmallerContainer";
@@ -299,6 +299,8 @@ function Post({ authorUserName, authorPhotoPath, moment, mediasPath = [], blobUr
 
     function handleSharingSubmit(e) {
         e.preventDefault();
+
+        if (!selectedSharings || selectedSharings.length === 0 || (sharingCaption && sharingCaption.length > 255)) return;
     
         sharingSubmit(e, post);
     
@@ -311,6 +313,8 @@ function Post({ authorUserName, authorPhotoPath, moment, mediasPath = [], blobUr
 
     function handleComplaintSubmit(e) {
         e.preventDefault();
+
+        if ((!complaintDescription && (!selectedComplaintReasons || selectedComplaintReasons.length === 0)) || (complaintDescription && complaintDescription.length > 255)) return;
     
         complaintSubmit(e, post);
     
@@ -322,6 +326,8 @@ function Post({ authorUserName, authorPhotoPath, moment, mediasPath = [], blobUr
 
     function handleCommentSubmit(e) {
         e.preventDefault();
+
+        if (!commentText || commentText.length === 0 || (commentText && commentText.length > 255)) return;
     
         commentSubmit(e, post);
     
@@ -380,7 +386,7 @@ function Post({ authorUserName, authorPhotoPath, moment, mediasPath = [], blobUr
                             {!isInCreating && showSharing && (
                                 <div className={styles.actions_itens}>
                                     <form onSubmit={handleSharingSubmit}>
-                                        <SubmitButton text="Compartilhar" haveError={!selectedSharings || selectedSharings.length === 0}/>
+                                        <SubmitButton text="Compartilhar"/>
 
                                         <MainInput 
                                             type="text" 
@@ -394,7 +400,7 @@ function Post({ authorUserName, authorPhotoPath, moment, mediasPath = [], blobUr
                                         />
                                     </form>
 
-                                    <InputSearchField 
+                                    <SearchInput 
                                         type="text" 
                                         name="SharingSearch"
                                         placeholder="Pesquisar perfis..." 
@@ -422,7 +428,7 @@ function Post({ authorUserName, authorPhotoPath, moment, mediasPath = [], blobUr
                             {!isInCreating && showComments && (
                                 <div className={styles.actions_itens}>
                                     <form onSubmit={handleCommentSubmit}>
-                                        <SubmitButton text="Comentar" haveError={!commentText || commentText.length < 0}/>
+                                        <SubmitButton text="Comentar"/>
 
                                         <MainInput 
                                             type="text" 
@@ -453,7 +459,7 @@ function Post({ authorUserName, authorPhotoPath, moment, mediasPath = [], blobUr
 
                             {isInCreating && showTags ? (
                                 <div className={styles.actions_itens}>
-                                    <InputSearchField 
+                                    <SearchInput 
                                         type="text" 
                                         name="tagsSearch"
                                         maxLength={30}
@@ -489,7 +495,7 @@ function Post({ authorUserName, authorPhotoPath, moment, mediasPath = [], blobUr
 
                             {isInCreating && showHashtags ? (
                                 <div className={styles.actions_itens}>
-                                    <InputSearchField 
+                                    <SearchInput 
                                         type="text" 
                                         name="hashtagsSearch"
                                         placeholder="Pesquisar hashtags..." 
@@ -528,7 +534,7 @@ function Post({ authorUserName, authorPhotoPath, moment, mediasPath = [], blobUr
                             {showComplaintReasons && (
                                 <div className={styles.actions_itens}>
                                     <form onSubmit={handleComplaintSubmit}>
-                                        <SubmitButton text="Denunciar" haveError={!complaintDescription && (!selectedComplaintReasons || selectedComplaintReasons.length === 0)}/>
+                                        <SubmitButton text="Denunciar"/>
                                         
                                         <MainInput 
                                             type="text" 

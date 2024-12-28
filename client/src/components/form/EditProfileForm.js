@@ -7,10 +7,9 @@ import { useCallback, useEffect, useState } from "react";
 import Textarea from "./Textarea";
 import PhotoInput from "./PhotoInput";
 
-function EditProfileForm({handleSubmit, profile, setProfile, setSubmitError}) {
+function EditProfileForm({ handleSubmit, profile, setProfile, setSubmitError }) {
     const [privateProfile, setPrivateProfile] = useState(false);
     const [acceptTerms, setAcceptTerms] = useState(false);
-    const [haveError, setHaveError] = useState(false);
 
     function handleOnChange(e) {
         if (e.target.name === "confirmedNameSignUp") e.target.value = e.target.value.replace(/\s+/g, "");
@@ -24,29 +23,38 @@ function EditProfileForm({handleSubmit, profile, setProfile, setSubmitError}) {
 
     function handleOnChangePrivate() {
         const newPrivateProfile = !privateProfile;
+
         setPrivateProfile(newPrivateProfile); 
         setProfile({ ...profile, private: newPrivateProfile });
     }
 
     function handleOnChangeAcceptTerms() {
         const newAcceptTerms = !acceptTerms;
+
         setAcceptTerms(newAcceptTerms);
         setProfile({...profile, acceptTerms: newAcceptTerms })
     }
 
     const validateName = useCallback(() => {
-        return profile["confirmedNameSignUp"] && /^[a-zA-Z0-9_@+&.]{4,30}$/.test(profile["confirmedNameSignUp"]);
+        return (profile.confirmedNameSignUp && 
+            /^[a-zA-Z0-9_@+&.]{4,30}$/.test(profile.confirmedNameSignUp)) ||
+            !profile.confirmedNameSignUp;
     }, [profile]); 
     
     const validateBio = useCallback(() => {
-        return (profile["bio"] && profile["bio"].length <= 150) || !profile["bio"];
+        return (profile.bio && profile.bio.length <= 150) || 
+            !profile.bio;
     }, [profile]);
 
     useEffect(() => {
-        setHaveError(!(validateName() && validateBio() && acceptTerms));
+        if (!(profile.confirmedNameSignUp)) {
+            setSubmitError(true);
+            
+            return;
+        }
 
-        setSubmitError(haveError);
-    }, [acceptTerms, haveError, profile, setSubmitError, validateBio, validateName]);
+        setSubmitError(!(validateName() && validateBio() && acceptTerms));
+    }, [acceptTerms, profile, setSubmitError, validateBio, validateName]);
 
     function handleFileChange(e) {
         const files = Array.from(e.target.files);
@@ -62,7 +70,8 @@ function EditProfileForm({handleSubmit, profile, setProfile, setSubmitError}) {
 
     return (
         <form onSubmit={handleSubmit} className={`${styles.edit_profile_form}`}>
-            <PhotoInput name="profilePhoto" photoPath={profile["blobUrl"]} handleChange={handleFileChange}/>
+            <PhotoInput name="profilePhoto" photoPath={profile.blobUrl} handleChange={handleFileChange}/>
+
             <h2>Editar Perfil</h2>
 
             <p className={styles.empty_field_alert}>- Campos obrigatórios são marcados com "*"</p>
@@ -78,8 +87,8 @@ function EditProfileForm({handleSubmit, profile, setProfile, setSubmitError}) {
                     inputIcon={userIcon}
                     inputIconAlt="User Icon"
                     handleChange={handleOnChange} 
-                    showAlert={profile["confirmedNameSignUp"] && !validateName()}
-                    value={profile["confirmedNameSignUp"]}
+                    showAlert={!validateName()}
+                    value={profile.confirmedNameSignUp}
                 />
 
                 <Textarea 
@@ -91,8 +100,8 @@ function EditProfileForm({handleSubmit, profile, setProfile, setSubmitError}) {
                     inputIcon={bioIcon}
                     inputIconAlt="Bio Icon"
                     handleChange={handleOnChange} 
-                    showAlert={profile["bio"] && !validateBio()}
-                    value={profile["bio"]}
+                    showAlert={!validateBio()}
+                    value={profile.bio}
                 />
 
                 <div className={styles.checkboxs}>
@@ -119,7 +128,7 @@ function EditProfileForm({handleSubmit, profile, setProfile, setSubmitError}) {
             </div>
 
             <div className={styles.buttons_container}>
-                <SubmitButton text="Criar perfil" haveError={haveError}/>
+                <SubmitButton text="Criar perfil"/>
             </div>
         </form>
     );

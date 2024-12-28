@@ -13,12 +13,11 @@
     border-radius: 1.5em;
     padding: 1em;
     backdrop-filter: brightness(0.2);
+    background-color: #000000c5;
     height: max-content;
     width: max-content;
     display: flex;
-    overflow: hidden;
     position: relative;
-    background-color: #000000c5;
 }
 
 .forms_container {
@@ -58,7 +57,7 @@
     letter-spacing: 1px;
 }
 
-.welcome_container h2 {
+.welcome_container > h2 {
     font-size: 2em;
     text-wrap: nowrap;
 }
@@ -72,10 +71,11 @@
 @media screen and (max-width: 720px) {
     .login_container {
         width: 100%;
-        height: 100%;
-        min-height: 100dvh;
+        height: 100dvh;
         border-radius: 0;
+        border: none;
         flex-direction: column;
+        overflow: hidden;
     }
 
     .forms_container {

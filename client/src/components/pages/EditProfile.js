@@ -19,7 +19,7 @@ function EditProfile() {
         if (!profile) {
             navigate("/login");
         } else {
-            setProfile(location.state.profile);
+            setProfile(profile);
         }
     }, [location, navigate]);
 
@@ -34,10 +34,12 @@ function EditProfile() {
     function handleOnSubmit(e) {
         e.preventDefault();
 
+        if (submitError) return;
+
         const formData = new FormData();
         
-        formData.append("email", profile["emailSignUp"]);
-        formData.append("name", profile["confirmedNameSignUp"]);
+        formData.append("email", profile.emailSignUp);
+        formData.append("name", profile.confirmedNameSignUp);
 
         axios.post(`http://localhost:5000/signup`, formData, {
             headers: { "Content-Type": "multipart/form-data" }, 
@@ -46,8 +48,8 @@ function EditProfile() {
             const data = resp.data;
 
             if (data !== "signUpError") {
-                if (!profile["bio"]) profile["bio"] = "";
-                if (profile["private"] === undefined) profile["private"] = false;      
+                if (!profile.bio) profile.bio = "";
+                if (profile.private === undefined) profile.private = false;      
     
                 navigate("/profilePreferences", {state: {profileReady: profile}});
             } else {
@@ -67,7 +69,6 @@ function EditProfile() {
                 handleSubmit={handleOnSubmit} 
                 profile={profile} 
                 setProfile={setProfile} 
-                submitError={submitError} 
                 setSubmitError={setSubmitError}
             />
         </main>

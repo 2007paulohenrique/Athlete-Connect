@@ -8,8 +8,8 @@ import { useProfile } from "../../ProfileContext";
 
 function Login() {
     const [isLogin, setIsLogin] = useState(false);
-    const [loginError, setLoginError] = useState(false);
-    const [loginPasswordError, setLoginPasswordError] = useState(false);
+    const [signUpSubmitError, setSignUpSubmitError] = useState(false);
+    const [loginSubmitError, setLoginSubmitError] = useState(false);
     const [profile, setProfile] = useState({});
     const [message, setMessage] = useState({});
     const { setProfileId } = useProfile(); 
@@ -26,22 +26,18 @@ function Login() {
     }
 
     useEffect(() => {
-        if (location.state) {
-            setMessageWithReset(location.state.message, location.state.type)
-        }
-    })
-
-    function changeForm() {
-        setIsLogin(!isLogin)
-    }
+        if (location.state) setMessageWithReset(location.state.message, location.state.type)
+    }, [location.state])
 
     function signUpSubmit(e) {
         e.preventDefault();
 
+        if (signUpSubmitError) return;
+
         const formData = new FormData();
 
-        formData.append("email", profile["emailSignUp"]);
-        formData.append("name", profile["nameSignUp"]);
+        formData.append("email", profile.emailSignUp);
+        formData.append("name", profile.nameSignUp);
 
         axios.post(`http://localhost:5000/signup`, formData, {
             headers: { "Content-Type": "multipart/form-data" }, 
@@ -50,7 +46,7 @@ function Login() {
             const data = resp.data;
 
             if (data !== "signUpError") {
-                const updatedProfile = { ...profile, confirmedNameSignUp: profile['nameSignUp'] };
+                const updatedProfile = { ...profile, confirmedNameSignUp: profile.nameSignUp };
             
                 setProfile(updatedProfile);
                 navigate("/editProfile", {state: {profile: updatedProfile}});
@@ -66,10 +62,18 @@ function Login() {
     function loginSubmit(e) {  
         e.preventDefault();
 
+        setLoginSubmitError(false);
+
+        if (!(profile.nameOrEmailLogin && profile.passwordLogin)) {
+            setLoginSubmitError(true);
+
+            return;
+        }
+
         const formData = new FormData();
 
-        formData.append("nameOrEmail", profile["nameOrEmailLogin"]);
-        formData.append("password", profile["passwordLogin"]);
+        formData.append("nameOrEmail", profile.nameOrEmailLogin);
+        formData.append("password", profile.passwordLogin);
 
         axios.post(`http://localhost:5000/login`, formData, {
             headers: { "Content-Type": "multipart/form-data" }, 
@@ -78,29 +82,26 @@ function Login() {
             const data = resp.data;
 
             if (data === "loginError") {
-                setLoginError(true)
+                setLoginSubmitError(true)
+
                 return;
             } 
 
             if (data === "passwordError") {
-                setLoginPasswordError(true);
+                setLoginSubmitError(true);
+
                 return;
             }
             
-            setLoginPasswordError(false);
-            setLoginError(false);
+            setLoginSubmitError(false);
             setProfileId(data.profileId);
             localStorage.setItem('athleteConnectProfileId', data.profileId);
+
             navigate("/");
         })
         .catch(err => {
             console.error("Erro ao fazer a requisição:", err);
         }); 
-    }
-
-    function resetErrors() {
-        setLoginError(false);
-        setLoginPasswordError(false);
     }
 
     return (
@@ -111,30 +112,35 @@ function Login() {
                 <div className={styles.forms_container}>
                     <LoginForm 
                         isLoginForm={false} 
-                        handleChangeForm={changeForm} 
+                        handleChangeForm={() => setIsLogin(!isLogin)} 
                         handleSubmit={signUpSubmit}
                         profile={profile}
                         setProfile={setProfile}
+                        setSignUpSubmitError={setSignUpSubmitError}
+                        resetErrors={() => setLoginSubmitError(false)}
                         isLogin={isLogin}
                     />
+
                     <LoginForm 
                         isLoginForm={true} 
-                        handleChangeForm={changeForm} 
+                        handleChangeForm={() => setIsLogin(!isLogin)} 
                         handleSubmit={loginSubmit}
                         profile={profile}
                         setProfile={setProfile}
                         isLogin={isLogin}
-                        validateLogin={loginError}
-                        validatePasswordLogin={loginPasswordError}
-                        resetErrors={resetErrors}
+                        loginSubmitError={loginSubmitError}
+                        resetErrors={() => setLoginSubmitError(false)}
                     />
                 </div>
+
                 <div className={`${styles.welcome_container} ${isLogin ? styles.welcome_login : styles.welcome_signup}`} id="welcome_container">
                     <h2>Athlete Connect</h2>
 
                     <div className={styles.welcome_text}>
                         <p>Bem-vindo ao Athlete Connect!</p>
+
                         <p>O lugar onde você pode compartilhar suas experiências e se divertir com o mundo dos esportes.</p>
+                        
                         <p>Crie ou entre em uma conta para navegar por esse mundo.</p>
                     </div>
                 </div>

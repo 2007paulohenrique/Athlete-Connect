@@ -1,8 +1,8 @@
 import styles from "./SubmitButton.module.css";
 
-function SubmitButton({text, haveError}) {
+function SubmitButton({ text }) {
     return (
-        <button type={haveError ? "button" : "submit"} className={styles.submitButton}>
+        <button type="submit" className={styles.submit_button}>
             {text}
         </button>
     );

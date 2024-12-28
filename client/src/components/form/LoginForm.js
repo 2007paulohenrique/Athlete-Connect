@@ -1,19 +1,17 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import styles from "./LoginForm.module.css";
 import MainInput from "./MainInput";
 import SubmitButton from "./SubmitButton";
-import Icon from "../../img/icons/socialMedia/icon.ico";
+import athleteConnectIcon from "../../img/icons/socialMedia/icon.ico";
 import userIcon from "../../img/icons/socialMedia/userIcon.png";
 import emailIcon from "../../img/icons/socialMedia/emailIcon.png";
 import passwordIcon from "../../img/icons/socialMedia/passwordIcon.png";
 
-function LoginForm({ isLoginForm, handleSubmit, handleChangeForm, isLogin, profile, setProfile, validateLogin, validatePasswordLogin, resetErrors}) {
-    const [haveError, setHaveError] = useState(false);
-    
+function LoginForm({ isLoginForm , handleSubmit, handleChangeForm, isLogin = false, profile, setProfile, loginSubmitError = false, setSignUpSubmitError, resetErrors }) {    
     const loginFormRef = useRef(null);
     const signupFormRef = useRef(null);
 
-    function handleOnChange(e) {
+    function handleOnChangeSignUp(e) {
         e.target.value = e.target.value.replace(/\s+/g, "");
 
         setProfile({ ...profile, [e.target.name]: e.target.value });
@@ -27,42 +25,53 @@ function LoginForm({ isLoginForm, handleSubmit, handleChangeForm, isLogin, profi
     }
 
     function handleOnChangeForm() {
-        if (loginFormRef.current) {
-            loginFormRef.current.reset();
-        }
-        if (signupFormRef.current) {
-            signupFormRef.current.reset();
-        }
+        if (loginFormRef.current) loginFormRef.current.reset();
+        
+        if (signupFormRef.current) signupFormRef.current.reset();
 
         handleChangeForm();
+        resetErrors();
         setProfile({});
     }
 
     const validateName = useCallback(() => {
-        return profile["nameSignUp"] && /^[a-zA-Z0-9_@+&.]{4,30}$/.test(profile["nameSignUp"]);
+        return (profile.nameSignUp && 
+            /^[a-zA-Z0-9_@+&.]{4,30}$/.test(profile.nameSignUp)) || 
+            !profile.nameSignUp;
     }, [profile]);
     
     const validateEmail = useCallback(() => {
-        return profile["emailSignUp"] && 
-               /^([a-zA-Z0-9._%+-]{1,64})@([a-zA-Z0-9.-]{1,255})\.([a-zA-Z]{2,})$/.test(profile["emailSignUp"]) &&
-               profile["emailSignUp"].length <= 320;
+        return (profile.emailSignUp && 
+            /^([a-zA-Z0-9._%+-]{1,64})@([a-zA-Z0-9.-]{1,255})\.([a-zA-Z]{2,})$/.test(profile.emailSignUp) &&
+            profile.emailSignUp.length <= 320) ||
+            !profile.emailSignUp;
     }, [profile]); 
     
     const validatePassword = useCallback(() => {
-        return profile["passwordSignUp"] && 
-               /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$/.test(profile["passwordSignUp"]);
+        return (profile.passwordSignUp && 
+            /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$/.test(profile.passwordSignUp)) ||
+            !profile.passwordSignUp;
     }, [profile]); 
     
     useEffect(() => {
-        setHaveError(!(validateName() && validateEmail() && validatePassword()));
-    }, [profile, validateName, validateEmail, validatePassword]);
+        if (!isLoginForm) {
+            if (!(profile.nameSignUp && profile.emailSignUp && profile.passwordSignUp)) {
+                setSignUpSubmitError(true);
+                
+                return;
+            }
+            
+            setSignUpSubmitError(!(validateName() && validateEmail() && validatePassword()));
+        }
+    }, [profile, validateName, validateEmail, validatePassword, setSignUpSubmitError, isLoginForm]);
 
     return (
         <>
             {isLoginForm ? (
-                <form ref={loginFormRef} onSubmit={handleSubmit} className={`${styles.loginForm} ${styles.login} ${isLogin ? styles.form_visible : styles.form_hidden}`}>
+                <form ref={loginFormRef} onSubmit={handleSubmit} className={`${styles.login_form} ${styles.login} ${isLogin ? styles.form_visible : styles.form_hidden}`}>
                     <div className={styles.title_container}>
-                        <img src={Icon} alt="Athlete Connect Icon"/>
+                        <img src={athleteConnectIcon} alt="Athlete Connect Icon"/>
+
                         <h2>Login</h2>
                     </div>
 
@@ -75,12 +84,10 @@ function LoginForm({ isLoginForm, handleSubmit, handleChangeForm, isLogin, profi
                             placeholder="Insira seu e-mail ou nome de usuário" 
                             maxLength={255}
                             labelText="E-mail ou Nome de Usuário" 
-                            alertMessage="Não foi encontrado nenhum perfil com esses dados." 
                             inputIcon={userIcon}
                             inputIconAlt="User icon"
                             handleChange={handleOnChangeLogin} 
-                            showAlert={validateLogin && profile["nameOrEmailLogin"]}
-                            value={profile["nameOrEmailLogin"]}
+                            value={profile.nameOrEmailLogin}
                         />
             
                         <MainInput 
@@ -89,25 +96,28 @@ function LoginForm({ isLoginForm, handleSubmit, handleChangeForm, isLogin, profi
                             placeholder="Insira sua senha" 
                             maxLength={20}
                             labelText="Senha" 
-                            alertMessage="Senha incorreta." 
+                            alertMessage="E-mail e/ou senha incorretos." 
                             inputIcon={passwordIcon}
                             inputIconAlt="Password icon"
                             handleChange={handleOnChangeLogin} 
-                            showAlert={validatePasswordLogin && profile["passwordLogin"]}
-                            value={profile["passwordLogin"]}
+                            showAlert={loginSubmitError}
+                            value={profile.passwordLogin}
                         />
                     </div>
 
                     <div className={styles.buttons_container}>
-                        <SubmitButton text="Entrar na conta" haveError={validateLogin && validatePasswordLogin}/>
+                        <SubmitButton text="Entrar na conta"/>
+
                         <p className={styles.change_form} onClick={handleOnChangeForm}>Criar perfil</p>
                     </div>
+
                     <p className={styles.forget_password}>Esqueci minha senha</p>
                 </form>
             ) : (
-                <form ref={signupFormRef} onSubmit={handleSubmit} className={`${styles.loginForm} ${!isLogin ? styles.form_visible : styles.form_hidden}`}>
+                <form ref={signupFormRef} onSubmit={handleSubmit} className={`${styles.login_form} ${!isLogin ? styles.form_visible : styles.form_hidden}`}>
                     <div className={styles.title_container}>
-                        <img src={Icon} alt="Athlete Connect Icon"/>
+                        <img src={athleteConnectIcon} alt="Athlete Connect Icon"/>
+
                         <h2>Registro</h2>
                     </div>
 
@@ -123,9 +133,9 @@ function LoginForm({ isLoginForm, handleSubmit, handleChangeForm, isLogin, profi
                             alertMessage='O nome de usuário deve ter entre 4 e 30 caracteres, sem espaços e símbolos diferentes de: "_", "@", "+","&" e ".".' 
                             inputIcon={userIcon}
                             inputIconAlt="User Icon"
-                            handleChange={handleOnChange} 
-                            showAlert={profile["nameSignUp"] && !validateName()}
-                            value={profile["nameSignUp"]}
+                            handleChange={handleOnChangeSignUp} 
+                            showAlert={!validateName()}
+                            value={profile.nameSignUp}
                         />
 
                         <MainInput 
@@ -137,9 +147,9 @@ function LoginForm({ isLoginForm, handleSubmit, handleChangeForm, isLogin, profi
                             alertMessage="E-mail inválido." 
                             inputIcon={emailIcon}
                             inputIconAlt="E-mail icon"
-                            handleChange={handleOnChange} 
-                            showAlert={profile["emailSignUp"] && !validateEmail()}
-                            value={profile["emailSignUp"]}
+                            handleChange={handleOnChangeSignUp} 
+                            showAlert={!validateEmail()}
+                            value={profile.emailSignUp}
                         />
 
                         <MainInput 
@@ -151,14 +161,15 @@ function LoginForm({ isLoginForm, handleSubmit, handleChangeForm, isLogin, profi
                             alertMessage="A senha deve possuir entre 8 e 20 caracteres, no minímo uma letra, número e símbolo: @, $, !, %, *, ? ou &." 
                             inputIcon={passwordIcon}
                             inputIconAlt="Password icon"
-                            handleChange={handleOnChange} 
-                            showAlert={profile["passwordSignUp"] && !validatePassword()}
-                            value={profile["passwordSignUp"]}
+                            handleChange={handleOnChangeSignUp} 
+                            showAlert={!validatePassword()}
+                            value={profile.passwordSignUp}
                         />
                     </div>
 
                     <div className={styles.buttons_container}>
-                        <SubmitButton text="Criar conta" haveError={haveError}/>
+                        <SubmitButton text="Criar conta"/>
+                        
                         <p className={styles.change_form} onClick={handleOnChangeForm}>Entrar</p>
                     </div>
                 </form>
