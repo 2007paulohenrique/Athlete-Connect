@@ -15,10 +15,12 @@ function Home() {
     const {profileId} = useProfile();
     const [profile, setProfile] = useState({});
     const [message, setMessage] = useState({});
+    const [tags, setTags] = useState([]);
     const [sharings, setSharings] = useState([]);
     const [commentText, setCommentText] = useState("");
     const [postComplaintReasons, setPostComplaintReasons] = useState([]);
     const [complaintDescription, setComplaintDescription] = useState("");
+    const [complaintReasons, setComplaintReasons] = useState([]);
     const [sharingCaption, setSharingCaption] = useState("");
 
     const navigate = useNavigate();
@@ -64,6 +66,26 @@ function Home() {
             setMessage({message: newMessage, type: type});
         }, 1);
     }
+
+    useEffect(() => {
+        axios.get("http://localhost:5000/complaintReasons")
+        .then(resp => {
+            setComplaintReasons(resp.data);
+        })
+        .catch(err => {
+            console.error('Erro ao fazer a requisição:', err);
+        });
+    }, []);
+
+    useEffect(() => {
+        axios.get("http://localhost:5000/tags")
+        .then(resp => {
+            setTags(resp.data);
+        })
+        .catch(err => {
+            console.error('Erro ao fazer a requisição:', err);
+        });
+    }, []);
 
     useEffect(() => {
         if (location.state) {
@@ -205,6 +227,8 @@ function Home() {
                         setSharings={setSharings}
                         sharingSubmit={sharingSubmit}
                         setSharingCaption={setSharingCaption}
+                        complaintReasons={complaintReasons}
+                        tags={tags}
                         sharingCaption={sharingCaption}
                         isComplainted={post["isComplainted"]}
                         setPostComplaintReasons={setPostComplaintReasons}

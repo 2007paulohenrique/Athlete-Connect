@@ -21,6 +21,8 @@ function NewPost() {
     const [hashtagsInPost, setHashtagsInPost] = useState([]);
     const [tagsInPost, setTagsInPost] = useState([]);
     const {profileId} = useProfile();
+    const [tags, setTags] = useState([]);
+    const [hashtags, setHashtags] = useState([]);
     const [message, setMessage] = useState({});
 
     const navigate = useNavigate();
@@ -44,6 +46,26 @@ function NewPost() {
             });
         }
     }, [navigate, profileId]);
+
+    useEffect(() => {
+        axios.get("http://localhost:5000/hashtags")
+        .then(resp => {
+            setHashtags(resp.data);
+        })
+        .catch(err => {
+            console.error('Erro ao fazer a requisição:', err);
+        });
+    }, []);
+
+    useEffect(() => {
+        axios.get("http://localhost:5000/tags")
+        .then(resp => {
+            setTags(resp.data);
+        })
+        .catch(err => {
+            console.error('Erro ao fazer a requisição:', err);
+        });
+    }, []);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -170,6 +192,8 @@ function NewPost() {
                         caption={post.caption} 
                         blobUrlsMedias={medias}
                         isInCreating={true}
+                        hashtags={hashtags}
+                        tags={tags}
                         setHashtagsInPost={setHashtagsInPost}
                         setTagsInPost={setTagsInPost}
                     />

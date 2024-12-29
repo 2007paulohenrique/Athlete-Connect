@@ -8,7 +8,6 @@ import complaintIcon from "../../img/icons/socialMedia/complaintIcon.png";
 import complaintedIcon from "../../img/icons/socialMedia/complaintedIcon.png";
 import tagsIcon from "../../img/icons/socialMedia/tagsIcon.png";
 import hashtagsIcon from "../../img/icons/socialMedia/hashtagsIcon.png";
-import axios from "axios"
 import SearchInput from "../layout/SearchInput";
 import SubmitButton from "../form/SubmitButton";
 import MainInput from "../form/MainInput";
@@ -16,14 +15,12 @@ import ProfileSmallerContainer from "./ProfileSmallerContainer";
 import { useProfile } from "../../ProfileContext";
 import PostItemsContainer from "./PostItemsContainer";
 
-function Post({ authorUserName, authorPhotoPath, moment, mediasPath = [], blobUrlsMedias = [], caption, isInCreating = false, setHashtagsInPost, postHashtags, setTagsInPost, postTags, setSharings, sharingSubmit, setSharingCaption, sharingCaption, setPostComplaintReasons, complaintSubmit, setComplaintDescription, complaintDescription, isComplainted, comments, setCommentText, commentText, commentSubmit, likeSubmit, isLiked, post }) {
+function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], complaintReasons = [], moment, mediasPath = [], blobUrlsMedias = [], caption, isInCreating = false, setHashtagsInPost, postHashtags, setTagsInPost, postTags, setSharings, sharingSubmit, setSharingCaption, sharingCaption, setPostComplaintReasons, complaintSubmit, setComplaintDescription, complaintDescription, isComplainted, comments, setCommentText, commentText, commentSubmit, likeSubmit, isLiked, post }) {
     const [medias, setMedias] = useState([]);
-    const [hashtags, setHashtags] = useState([]);
     const [showHashtags, setShowHashtags] = useState(false);  
     const [selectedHashtags, setSelectedHashtags] = useState([]);
     const [filteredHashtags, setFilteredHashtags] = useState([]);
     const [searchTextHashtag, setSearchTextHashtag] = useState("");
-    const [tags, setTags] = useState([]);
     const [showTags, setShowTags] = useState(false);  
     const [selectedTags, setSelectedTags] = useState([]);
     const [filteredTags, setFilteredTags] = useState([]);
@@ -34,7 +31,6 @@ function Post({ authorUserName, authorPhotoPath, moment, mediasPath = [], blobUr
     const [searchTextSharing, setSearchTextSharing] = useState("");
     const [showComments, setShowComments] = useState(false); 
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
-    const [complaintReasons, setComplaintReasons] = useState([]);
     const [showComplaintReasons, setShowComplaintReasons] = useState(false);  
     const [selectedComplaintReasons, setSelectedComplaintReasons] = useState([]);
     const {profileId} = useProfile();
@@ -70,41 +66,16 @@ function Post({ authorUserName, authorPhotoPath, moment, mediasPath = [], blobUr
     }, [blobUrlsMedias]);
 
     useEffect(() => {
-        axios.get("http://localhost:5000/hashtags")
-        .then(resp => {
-            setHashtags(resp.data);
-            setFilteredHashtags(resp.data);
-        })
-        .catch(err => {
-            console.error('Erro ao fazer a requisição:', err);
-        });
-    }, []);
+        setFilteredHashtags(hashtags);      
+    }, [hashtags]);
 
     useEffect(() => {
-        axios.get("http://localhost:5000/tags")
-        .then(resp => {
-            const data = resp.data;
-            const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
-            const filteredData = data.filter(tag => tag.nome !== authorUserName && String(tag.id_perfil) !== String(confirmedProfileId));
+        const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
+        const filteredData = tags.filter(tag => tag.nome !== authorUserName && String(tag.id_perfil) !== String(confirmedProfileId));
 
-            setTags(filteredData);
-            setFilteredTags(filteredData);
-            setFilteredSharings(filteredData);
-        })
-        .catch(err => {
-            console.error('Erro ao fazer a requisição:', err);
-        });
-    }, [authorUserName, profileId]);
-
-    useEffect(() => {
-        axios.get("http://localhost:5000/complaintReasons")
-        .then(resp => {
-            setComplaintReasons(resp.data);
-        })
-        .catch(err => {
-            console.error('Erro ao fazer a requisição:', err);
-        });
-    }, []);
+        setFilteredTags(filteredData);
+        setFilteredSharings(filteredData);
+    }, [authorUserName, profileId, tags]);
 
     const handleVideoLoad = (index, videoElement) => {
         if (videoElement) {
