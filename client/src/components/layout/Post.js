@@ -66,8 +66,8 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
     }, [blobUrlsMedias]);
 
     useEffect(() => {
-        setFilteredHashtags(hashtags);      
-    }, [hashtags]);
+        if (isInCreating) setFilteredHashtags(hashtags);      
+    }, [hashtags, isInCreating]);
 
     useEffect(() => {
         const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
@@ -75,7 +75,7 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
 
         setFilteredTags(filteredData);
         setFilteredSharings(filteredData);
-    }, [authorUserName, profileId, tags]);
+    }, [authorUserName, isInCreating, profileId, tags]);
 
     const handleVideoLoad = (index, videoElement) => {
         if (videoElement) {
@@ -94,12 +94,14 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
     };
 
     useEffect(() => {
-        const filtered = hashtags.filter((hashtag) =>
-            hashtag.nome.toLowerCase().includes(searchTextHashtag.toLowerCase())
-        );
-
-        setFilteredHashtags(filtered);
-    }, [searchTextHashtag, hashtags]);
+        if (isInCreating) {
+            const filtered = hashtags.filter((hashtag) =>
+                hashtag.nome.toLowerCase().includes(searchTextHashtag.toLowerCase())
+            );
+    
+            setFilteredHashtags(filtered);
+        }
+    }, [searchTextHashtag, hashtags, isInCreating]);
     
     useEffect(() => {
         const filtered = tags.filter((tag) =>

@@ -75,10 +75,11 @@ function ProfilePreferences() {
                 formDataB.append("password", profile.passwordSignUp);
                 formDataB.append("bio", profile.bio);
                 formDataB.append("private", profile.private);
+                sportsIds.forEach(sportId => formDataB.append("preferences", sportId));
+
                 if (profile.photo && profile.photo.length > 0) {
                     formDataB.append("photo", profile.photo[0]);
                 }
-                sportsIds.forEach(sportId => formDataB.append("preferences", sportId));
 
                 axios.post("http://localhost:5000/profiles", formDataB, {
                     headers: { "Content-Type": "multipart/form-data" }, 
@@ -95,11 +96,13 @@ function ProfilePreferences() {
                 });
             } else {
                 setIsSubmitting(false);
+
                 navigate("/login", {state: {message: "Ocorreu um erro ao criar seu perfil. Tente novamente.", type: "error"}});
             }
         })
         .catch(err => {
             setIsSubmitting(false);
+            
             console.error("Erro ao fazer a requisição:", err);
         }); 
     }
@@ -108,6 +111,7 @@ function ProfilePreferences() {
         <main className={styles.profile_preferences_page}>
             <header className={styles.title_section}> 
                 <h1>Suas Preferências</h1>
+
                 <p>Selecione os esportes que te agradam para personalizarmos seu feed de acordo com seu gosto.</p>
             </header>
 

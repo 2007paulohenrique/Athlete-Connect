@@ -54,6 +54,7 @@ function Home() {
             })
             .catch(err => {
                 navigate("/login"); 
+
                 console.error('Erro ao fazer a requisição:', err);
             });
         }
@@ -106,13 +107,12 @@ function Home() {
         
         formData.append("profileId", confirmedProfileId);
         
-        axios.post(`http://localhost:5000/posts/${post["id_postagem"]}/like`, formData, {
+        axios.post(`http://localhost:5000/posts/${post.id_postagem}/like`, formData, {
             headers: { "Content-Type": "multipart/form-data" }, 
         })
         .then(resp => {
             setFeed(prevPosts =>
-                prevPosts.map(p => p.id_postagem === post.id_postagem ? { ...p, isLiked: !p.isLiked } : p
-                )
+                prevPosts.map(p => p.id_postagem === post.id_postagem ? { ...p, isLiked: !p.isLiked } : p)
             );
         })
         .catch(err => {
@@ -123,16 +123,16 @@ function Home() {
     function sharingSubmit(e, post) {
         e.preventDefault();
 
-        if (!sharings || sharings.length === 0) return       
+        if (!sharings || sharings.length === 0) return;     
         
         const formData = new FormData();
         const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
 
         formData.append("caption", sharingCaption.trim());
         formData.append("authorId", confirmedProfileId);
-        sharings.forEach(sharing => formData.append("targetProfilesIds", sharing["id_perfil"]));
+        sharings.forEach(sharing => formData.append("targetProfilesIds", sharing.id_perfil));
 
-        axios.post(`http://localhost:5000/posts/${post["id_postagem"]}/sharing`, formData, {
+        axios.post(`http://localhost:5000/posts/${post.id_postagem}/sharing`, formData, {
             headers: { "Content-Type": "multipart/form-data" }, 
         })
         .then(resp => {
@@ -154,9 +154,9 @@ function Home() {
 
         formData.append("description", complaintDescription.trim());
         formData.append("authorId", confirmedProfileId);
-        postComplaintReasons.forEach(reason => formData.append("complaintReasonsIds", reason["id_motivo_denuncia"]));
+        postComplaintReasons.forEach(reason => formData.append("complaintReasonsIds", reason.id_motivo_denuncia));
 
-        axios.post(`http://localhost:5000/posts/${post["id_postagem"]}/complaint`, formData, {
+        axios.post(`http://localhost:5000/posts/${post.id_postagem}/complaint`, formData, {
             headers: { "Content-Type": "multipart/form-data" }, 
         })
         .then(resp => {
@@ -184,16 +184,14 @@ function Home() {
         formData.append("text", commentText.trim());
         formData.append("authorId", confirmedProfileId);
 
-        axios.post(`http://localhost:5000/posts/${post["id_postagem"]}/comment`, formData, {
+        axios.post(`http://localhost:5000/posts/${post.id_postagem}/comment`, formData, {
             headers: { "Content-Type": "multipart/form-data" }, 
         })
         .then(resp => {
             const newComment = resp.data.newComment;
-            console.log(newComment);
 
             setFeed(prevPosts =>
-                prevPosts.map(p => p.id_postagem === post.id_postagem ? { ...p, comments: [...p.comments, newComment]} : p
-                )
+                prevPosts.map(p => p.id_postagem === post.id_postagem ? { ...p, comments: [...p.comments, newComment]} : p)
             );
 
             setCommentText("");
@@ -215,22 +213,22 @@ function Home() {
                 {feed.map((post) => (
                     <Post 
                         key={post.id_postagem}
-                        authorUserName={post["author"]["nome"]}
-                        authorPhotoPath={post["author"]["media"] ? post["author"]["media"]["caminho"] : ""}
-                        moment={post["data_publicacao"]}
-                        mediasPath={post["medias"].map(media => media["caminho"])}
-                        caption={post["legenda"]}
-                        postHashtags={post["hashtags"] || ""}
-                        postTags={post["tags"] || ""}
+                        authorUserName={post.author.nome}
+                        authorPhotoPath={post.author.media ? post.author.media.caminho : ""}
+                        moment={post.data_publicacao}
+                        mediasPath={post.medias.map(media => media.caminho)}
+                        caption={post.legenda}
+                        postHashtags={post.hashtags || ""}
+                        postTags={post.tags || ""}
                         likeSubmit={() => likeAction(post)}
-                        isLiked={post["isLiked"]}
+                        isLiked={post.isLiked}
                         setSharings={setSharings}
                         sharingSubmit={sharingSubmit}
                         setSharingCaption={setSharingCaption}
                         complaintReasons={complaintReasons}
                         tags={tags}
                         sharingCaption={sharingCaption}
-                        isComplainted={post["isComplainted"]}
+                        isComplainted={post.isComplainted}
                         setPostComplaintReasons={setPostComplaintReasons}
                         setComplaintDescription={setComplaintDescription}
                         complaintDescription={complaintDescription}
@@ -238,7 +236,7 @@ function Home() {
                         commentSubmit={commentSubmit}
                         commentText={commentText}
                         setCommentText={setCommentText}
-                        comments={post["comments"]}
+                        comments={post.comments}
                         post={post}
                     />
                 ))}
@@ -254,7 +252,7 @@ function Home() {
                 </button>
             </section>
 
-            <AppNavBar profilePhotoPath={profile && profile["media"] ? profile["media"]["caminho"] : ""}/>
+            <AppNavBar profilePhotoPath={profile && profile.media ? profile.media.caminho : ""}/>
         </main>
     );
 }

@@ -18,6 +18,7 @@
     width: max-content;
     display: flex;
     position: relative;
+    overflow: hidden;
 }
 
 .forms_container {

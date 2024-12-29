@@ -14,36 +14,32 @@ function PostItemsContainer({ searchText, filteredItems = [], handleClick, isSel
             )}
 
             {searchText && filteredItems.length > 0 ? filteredItems.map((item, index) => (
-                <>
-                    {isComment || isPostHashtags || isPostTags ? (
-                        <>  
-                            <li key={index}>
-                                {isPostHashtags && <># {item.nome}</>}
+                isComment || isPostHashtags || isPostTags ? (
+                    <li key={index}>
+                        {isPostHashtags && <># {item.nome}</>}
 
-                                {isComment && (
-                                    <>
-                                        <ProfilePhotoContainer profilePhotoPath={item.caminho} size="short"/>
-                                        <p className={styles.comment_text}>{item.texto}</p>
-                                    </>
-                                )}
+                        {isComment && (
+                            <>
+                                <ProfilePhotoContainer profilePhotoPath={item.caminho} size="short"/>
+                                <p className={styles.comment_text}>{item.texto}</p>
+                            </>
+                        )}
 
-                                {isPostTags && <><ProfileSmallerContainer profilePhotoPath={item.caminho} profileName={item.nome}/></>}
-                            </li>
-                        </>
-                    ) : (
-                        <li 
-                            key={index} 
-                            onClick={() => handleClick(item)}
-                            className={isSelectable && selectedItems.includes(item) ? styles.selectedItem : ""}
-                        >
-                            {isComplaintReasons && <>{item.motivo}</>}
+                        {isPostTags && <><ProfileSmallerContainer profilePhotoPath={item.caminho} profileName={item.nome}/></>}
+                    </li>
+                ) : (
+                    <li 
+                        key={index} 
+                        onClick={() => handleClick(item)}
+                        className={isSelectable && selectedItems.includes(item) ? styles.selectedItem : ""}
+                    >
+                        {isComplaintReasons && <>{item.motivo}</>}
 
-                            {isHashtags && <># {item.nome}</>}
-                            
-                            {haveProfile && <ProfileSmallerContainer profilePhotoPath={item.caminho} profileName={item.nome}/>}
-                        </li>
-                    )}
-                </>
+                        {isHashtags && <># {item.nome}</>}
+                        
+                        {haveProfile && <ProfileSmallerContainer profilePhotoPath={item.caminho} profileName={item.nome}/>}
+                    </li>
+                )
             )) : (
                 searchText && notFoundText && <li>{notFoundText}</li>
             )}

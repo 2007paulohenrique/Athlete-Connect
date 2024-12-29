@@ -9,13 +9,14 @@
     align-items: center;
 }
 
-.profile_preferences_page form{
+.profile_preferences_page > form{
     text-align: center;
     margin-top: 4em;
 }
 
-.profile_preferences_page hr {
+.profile_preferences_page > hr {
     width: calc(100% - 4em);
+    border: 1px solid black;
 }
 
 .title_section {
@@ -27,16 +28,13 @@
     align-items: center;
 }
 
-.title_section h1 {
+.title_section > * {
     color: var(--dark-font-color);
-    letter-spacing: 2px;
+    letter-spacing: 0.4px;
     text-shadow: 1px 1px 2px white;
 }
 
-.title_section p {
-    letter-spacing: 0.4px;
-    font-size: 1em;
-    color: var(--dark-font-color);
+.title_section > p {
     word-wrap: break-word;
     max-width: 24em;
 }
