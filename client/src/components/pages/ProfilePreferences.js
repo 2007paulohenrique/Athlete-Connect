@@ -5,6 +5,7 @@ import styles from "./ProfilePreferences.module.css";
 import SubmitButton from "../form/SubmitButton";
 import { useProfile } from '../../ProfileContext';
 import axios from "axios"
+import loading from "../../img/animations/loading.svg";
 
 function ProfilePreferences() {
     const [sports, setSports] = useState([]);
@@ -118,6 +119,10 @@ function ProfilePreferences() {
             <hr/>
 
             <div className={styles.sports_cards}>
+                {(!sports || sports.length === 0) && (
+                    <img className="loading" src={loading} alt="Loading"/>
+                )}
+
                 {sports.map((sport) => (
                     <SportCard 
                         key={sport.id_esporte}

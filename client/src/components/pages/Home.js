@@ -9,9 +9,10 @@ import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useProfile } from '../../ProfileContext';
 import Message from "../layout/Message";
+import loading from "../../img/animations/loading.svg";
 
 function Home() {
-    const [feed, setFeed] = useState([]);
+    const [feed, setFeed] = useState();
     const {profileId} = useProfile();
     const [profile, setProfile] = useState({});
     const [message, setMessage] = useState({});
@@ -205,12 +206,17 @@ function Home() {
         <main className={styles.home_page}>
             {message && <Message message={message.message} type={message.type}/>}
 
+
             <ProfileNavBar/>
 
             <FlashesSection/>
 
             <section className={styles.posts_section}> 
-                {feed.map((post) => (
+                {!feed && (
+                    <img className="loading" src={loading} alt="Loading"/>
+                )}
+
+                {feed && feed.map((post) => (
                     <Post 
                         key={post.id_postagem}
                         authorUserName={post.author.nome}
@@ -241,11 +247,13 @@ function Home() {
                     />
                 ))}
 
-                <div className={styles.posts_ending}>
-                    Você chegou ao fim das atividades. :´(
-                    <br/>
-                    Continue descendo para encontrar algo que te interesse! : )
-                </div>
+                {feed && feed.length > 0 && (
+                    <div className={styles.posts_ending}>
+                        Você chegou ao fim das atividades. :´(
+                        <br/>
+                        Continue descendo para encontrar algo que te interesse! : )
+                    </div>
+                )}
 
                 <button type="button" onClick={goToTop} className={styles.go_to_top}>
                     <img src={arrowIcon} alt="Go to top"/>

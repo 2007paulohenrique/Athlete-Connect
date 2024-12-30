@@ -6,8 +6,9 @@
 }
 
 .posts_section {
-    padding: 4.7em 0 3.9em 0;
-    margin-left: 5.1em;
+    margin: 4.7em 0 3.9em 5.1em;
+    position: relative;
+    flex: 1;
 }
 
 .posts_ending {
@@ -54,7 +55,7 @@
 
 @media screen and (min-width: 1500px) {
     .posts_section {
-        padding: 5.8em 0 5em 0;
+        margin: 5.8em 0 5em 0;
         margin-left: 5.1em;
     }
 }
