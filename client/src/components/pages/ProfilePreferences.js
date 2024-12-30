@@ -78,9 +78,7 @@ function ProfilePreferences() {
                 formDataB.append("private", profile.private);
                 sportsIds.forEach(sportId => formDataB.append("preferences", sportId));
 
-                if (profile.photo && profile.photo.length > 0) {
-                    formDataB.append("photo", profile.photo[0]);
-                }
+                if (profile.photo && profile.photo.length > 0) formDataB.append("photo", profile.photo[0]);
 
                 axios.post("http://localhost:5000/profiles", formDataB, {
                     headers: { "Content-Type": "multipart/form-data" }, 

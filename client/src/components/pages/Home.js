@@ -148,7 +148,7 @@ function Home() {
     function complaintSubmit(e, post) {
         e.preventDefault();
         
-        if (!complaintDescription && (!postComplaintReasons || postComplaintReasons.length === 0)) return       
+        if (!complaintDescription && (!postComplaintReasons || postComplaintReasons.length === 0)) return;     
         
         const formData = new FormData();
         const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
@@ -177,7 +177,7 @@ function Home() {
     function commentSubmit(e, post) {
         e.preventDefault();
         
-        if (!commentText || commentText.length === 0) return       
+        if (!commentText || commentText.length === 0) return;     
         
         const formData = new FormData();
         const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");

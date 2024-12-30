@@ -184,20 +184,18 @@ function NewPost() {
                 
                 <h2>Pré-visualização</h2>
 
-                <div className={styles.post}>
-                    <Post 
-                        authorUserName={profile.nome} 
-                        authorPhotoPath={profile.media && profile.media.caminho}
-                        moment={currentMoment} 
-                        caption={post.caption} 
-                        blobUrlsMedias={medias}
-                        isInCreating={true}
-                        hashtags={hashtags}
-                        tags={tags}
-                        setHashtagsInPost={setHashtagsInPost}
-                        setTagsInPost={setTagsInPost}
-                    />
-                </div>
+                <Post 
+                    authorUserName={profile.nome} 
+                    authorPhotoPath={profile.media && profile.media.caminho}
+                    moment={currentMoment} 
+                    caption={post.caption} 
+                    blobUrlsMedias={medias}
+                    isInCreating={true}
+                    hashtags={hashtags}
+                    tags={tags}
+                    setHashtagsInPost={setHashtagsInPost}
+                    setTagsInPost={setTagsInPost}
+                />
 
                 <SubmitButton text="Publicar"/>
             </form>

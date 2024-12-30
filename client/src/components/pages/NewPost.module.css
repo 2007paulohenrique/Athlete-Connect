@@ -10,7 +10,7 @@
     background-attachment: fixed;
 }
 
-.new_post_page h1 {
+.new_post_page > h1 {
     margin-bottom: 1em;
     text-align: center;
 }
@@ -23,12 +23,6 @@
     gap: 1em;
 }
 
-.post {
-    width: 80%;
-    min-width: min-content;
-    height: max-content;
-}
-
 .inputs {
     display: flex;
     align-items: center;
@@ -38,10 +32,7 @@
 
 @media screen and (max-width: 720px) {
     .inputs {
-        display: flex;
         flex-direction: column;
-        align-items: center;
-        gap: 1em;
     }
 }
 

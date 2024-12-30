@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import styles from "./Post.module.css";
 import likedIcon from "../../img/icons/socialMedia/likedIcon.png";
 import likeIcon from "../../img/icons/socialMedia/likeIcon.png";
@@ -307,6 +307,24 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
         setCommentText("");
     };
 
+    const validateSharingCaption = useCallback(() => {
+        return (sharingCaption && 
+            sharingCaption.length <= 255) || 
+            !sharingCaption;
+    }, [sharingCaption]);
+
+    const validateCommentText = useCallback(() => {
+        return (commentText && 
+            commentText.length <= 255) || 
+            !commentText;
+    }, [commentText]);
+
+    const validateComplaintDescription = useCallback(() => {
+        return (complaintDescription && 
+            complaintDescription.length <= 255) || 
+            !complaintDescription;
+    }, [complaintDescription]);
+
     return (
         <div className={styles.post}>
             <div className={styles.first_post_container}>
@@ -368,7 +386,7 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
                                             maxLength={255}
                                             alertMessage="A legenda não pode ter mais que 255 caracteres"
                                             handleChange={handleOnChangeSharingCaption}    
-                                            showAlert={sharingCaption && sharingCaption.length > 255}
+                                            showAlert={!validateSharingCaption()}
                                             value={sharingCaption}
                                         />
                                     </form>
@@ -410,7 +428,7 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
                                             maxLength={255} 
                                             alertMessage="Um comentário não pode ter mais que 255 caracteres"
                                             handleChange={handleOnChangeCommentText}    
-                                            showAlert={commentText && commentText.length > 255}
+                                            showAlert={!validateCommentText()}
                                             value={commentText}
                                         />
                                     </form>
@@ -516,7 +534,7 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
                                             maxLength={255}
                                             alertMessage="A descrição não pode ter mais que 255 caracteres"
                                             handleChange={handleOnChangeComplaintDescription}    
-                                            showAlert={complaintDescription && complaintDescription.length > 255}
+                                            showAlert={!validateComplaintDescription()}
                                             value={complaintDescription}
                                         />
                                     </form>
