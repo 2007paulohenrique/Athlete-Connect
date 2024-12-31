@@ -193,9 +193,9 @@ def get_feed_posts(con, profile_id):
           WHERE fk_perfil_id_perfil IN ({placeholders})
      """
      cursor.execute(sql, tuple(followeds_ids))
-     posts = cursor.fetchall()
+     result = cursor.fetchall()
 
-     posts_ids = [post["id_postagem"] for post in posts]
+     posts_ids = [post["id_postagem"] for post in result]
 
      if posts_ids:
           medias = get_post_medias_for_feed(con, posts_ids) 
@@ -203,10 +203,10 @@ def get_feed_posts(con, profile_id):
           tags = get_post_tags_for_feed(con, posts_ids) 
           comments = get_post_comments_for_feed(con, posts_ids)
 
-     authors_ids = [post["fk_perfil_id_perfil"] for post in posts]
+     authors_ids = [post["fk_perfil_id_perfil"] for post in result]
      authors = get_profiles_for_feed(con, authors_ids)
 
-     for post in posts:
+     for post in result:
           post["medias"] = medias.get(post["id_postagem"], [])
           post["author"] = authors.get(post["fk_perfil_id_perfil"], {})
           post["hashtags"] = hashtags.get(post["id_postagem"], [])
@@ -271,16 +271,16 @@ def get_post_medias_for_feed(con, posts_ids):
      cursor = con.cursor(dictionary=True)
      placeholders = ','.join(['%s'] * len(posts_ids))
      sql = f"""
-     SELECT * FROM midia
-     WHERE fk_postagem_id_postagem IN ({placeholders})
+          SELECT * FROM midia
+          WHERE fk_postagem_id_postagem IN ({placeholders})
      """
      cursor.execute(sql, tuple(posts_ids))
-     results = cursor.fetchall()
+     result = cursor.fetchall()
      cursor.close()
 
      medias = {}
 
-     for media in results:
+     for media in result:
           medias.setdefault(media['fk_postagem_id_postagem'], []).append(media)
 
      return medias
@@ -308,12 +308,12 @@ def get_post_hashtags_for_feed(con, posts_ids):
           WHERE ph.fk_postagem_id_postagem IN ({placeholders})
      """
      cursor.execute(sql, tuple(posts_ids))
-     results = cursor.fetchall()
+     result = cursor.fetchall()
      cursor.close()
 
      hashtags = {}
 
-     for hashtag in results:
+     for hashtag in result:
           hashtags.setdefault(hashtag['fk_postagem_id_postagem'], []).append(hashtag)
 
      return hashtags
@@ -520,13 +520,21 @@ def get_sports(con):
      sql = "SELECT * FROM esporte ORDER BY nome"
      cursor.execute(sql)
      result = cursor.fetchall()
-     cursor.close()
 
+     sports_ids = [sport["id_esporte"] for sport in result]
+     sports = []
+     
+     if sports_ids:
+          categories = get_sports_categories_for_preferences(con) 
+          icons = get_sports_icons_for_preferences(con)
+          
      for sport in result:
-          sport['categories'] = get_sport_categories(con, sport['id_esporte'])
-          sport['iconPath'] = get_sport_icon(con, sport['fk_midia_id_icone'])
+          sport['categories'] = categories.get(sport["id_esporte"], [])
+          sport['iconPath'] = icons.get(sport["id_esporte"], None)
+          sports.append(sport)
 
-     return result
+     cursor.close()
+     return sports
 
 def get_sport_categories(con, sport_id):
      cursor = con.cursor(dictionary=True)
@@ -542,17 +550,51 @@ def get_sport_categories(con, sport_id):
      cursor.close()
      return result
 
-def get_sport_icon(con, midia_id):
+def get_sports_categories_for_preferences(con):
+     cursor = con.cursor(dictionary=True)
+     sql = f"""
+          SELECT c.*, e.id_esporte
+          FROM esporte e
+          JOIN categorias_esporte cs ON e.id_esporte = cs.fk_esporte_id_esporte
+          JOIN categoria_esporte c ON cs.fk_categoria_esporte_id_categoria_esporte = c.id_categoria_esporte
+     """
+     cursor.execute(sql)
+     result = cursor.fetchall()
+     cursor.close()
+
+     categories = {}
+
+     for category in result:
+          categories.setdefault(category['id_esporte'], []).append(category)
+
+     return categories
+
+def get_sport_icon(con, media_id):
      cursor = con.cursor(dictionary=True)
      sql = """
           SELECT caminho 
           FROM midia 
           WHERE id_midia = %s
      """
-     cursor.execute(sql, (midia_id,))
+     cursor.execute(sql, (media_id,))
      result = cursor.fetchone()
      cursor.close()
      return result['caminho'] 
+
+def get_sports_icons_for_preferences(con):
+     cursor = con.cursor(dictionary=True)
+     sql = f"""
+          SELECT m.caminho, e.id_esporte
+          FROM esporte e
+          LEFT JOIN midia m ON e.fk_midia_id_icone = m.id_midia
+     """
+     cursor.execute(sql)
+     result = cursor.fetchall()
+     cursor.close()
+
+     sports_icons_paths = {icon['id_esporte']: icon["caminho"] for icon in result}
+
+     return sports_icons_paths
 
 def get_hashtags(con):
      cursor = con.cursor(dictionary=True)
