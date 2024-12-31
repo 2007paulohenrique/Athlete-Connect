@@ -124,7 +124,7 @@ function ProfilePreferences() {
                 {sports.map((sport) => (
                     <SportCard 
                         key={sport.id_esporte}
-                        iconPath={sport.iconPath.caminho} 
+                        iconPath={sport.iconPath} 
                         sportName={sport.nome} 
                         categories={sport.categories} 
                         handleClick={() => handleOnClick(sport)}

@@ -105,19 +105,22 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
     
     useEffect(() => {
         const filtered = tags.filter((tag) =>
-            tag.nome.toLowerCase().includes(searchTextTag.toLowerCase())
+            tag.nome.toLowerCase().includes(searchTextTag.toLowerCase()) &&
+            tag.nome !== authorUserName
         );
 
         setFilteredTags(filtered);
-    }, [searchTextTag, tags]);
+    }, [authorUserName, searchTextTag, tags]);
 
     useEffect(() => {
         const filtered = tags.filter((tag) =>
-            tag.nome.toLowerCase().includes(searchTextSharing.toLowerCase())
+            tag.nome.toLowerCase().includes(searchTextSharing.toLowerCase()) &&
+            tag.nome !== authorUserName &&
+            tag.id_perfil !== Number(localStorage.getItem("athleteConnectProfileId"))
         );
-        
+
         setFilteredSharings(filtered);
-    }, [searchTextSharing, tags]);
+    }, [authorUserName, profileId, searchTextSharing, tags]);
     
     useEffect(() => {
         const date = new Date(moment);
