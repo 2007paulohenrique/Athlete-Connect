@@ -122,17 +122,23 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
         setFilteredSharings(filtered);
     }, [authorUserName, profileId, searchTextSharing, tags]);
     
+    function formatDate(date) {
+        const notFormattedDate = new Date(date);
+
+        const day = String(notFormattedDate.getDate()).padStart(2, '0');
+        const month = String(notFormattedDate.getMonth() + 1).padStart(2, '0');
+        const year = notFormattedDate.getFullYear();
+
+        const hours = String(notFormattedDate.getHours()).padStart(2, '0');
+        const minutes = String(notFormattedDate.getMinutes() + 1).padStart(2, '0');
+
+        return `${day}/${month}/${year} ${hours}:${minutes}`;
+    }
+
     useEffect(() => {
-        const date = new Date(moment);
+        const formattedDate = formatDate(moment);
 
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-
-        const hours = String(date.getHours() + 1).padStart(2, '0');
-        const minutes = String(date.getMinutes() + 1).padStart(2, '0');
-
-        setFormattedMoment(`${day}/${month}/${year} ${hours}:${minutes}`);
+        setFormattedMoment(formattedDate);
     }, [moment]);
 
     const handleSearchHashtagChange = (e) => {

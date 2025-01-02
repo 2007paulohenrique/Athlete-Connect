@@ -75,6 +75,7 @@ CREATE TABLE IF NOT EXISTS compartilhamento (
 CREATE TABLE IF NOT EXISTS comentario (
     id_comentario int PRIMARY KEY AUTO_INCREMENT,
     texto varchar(255) NOT NULL,
+    data_comentario datetime NOT NULL,
     fk_postagem_id_postagem int NOT NULL,
     fk_perfil_id_perfil int NOT NULL,
     FOREIGN KEY (fk_postagem_id_postagem) REFERENCES postagem(id_postagem),
