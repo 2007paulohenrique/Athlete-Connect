@@ -88,7 +88,7 @@
     display: flex;
     list-style: none;
     justify-content: space-between;
-    gap: 0.6em;
+    gap: 1em;
 }
 
 .post_actions > div {
@@ -96,10 +96,23 @@
     gap: 0.6em;
 }
 
+.post_actions > div:where(:first-child, :last-child) > li {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2em;
+    width: 2.5em;
+}
+
 .post_actions > div > li > img {
     height: 1.3em;
     display: block;
     cursor: pointer;
+}
+
+.post_actions > div > li > span {
+    font-size: 0.6em;
+    letter-spacing: 1px;
 }
 
 .caption {
@@ -141,22 +154,35 @@
     z-index: 2;
 }
 
-.actions_itens {
+.actions_items {
     position: absolute;
-    top: 1em;
     right: 50%;
     transform: translateX(50%);
-    max-height: 15em;
-    height: max-content;
-    width: max-content;
+    top: 0;
+    height: 100%;
+    width: 100%;
     overflow: auto;
     background-color: var(--dark-bg-color);
     border: 2px solid var(--dark-theme-color);
-    border-radius: 10px;
     z-index: 3;
 }
 
-.actions_itens > form {
+.post_actions > div:nth-child(2) .actions_items {
+    top: 1em;
+    max-height: 15em;
+    height: max-content;
+    width: max-content;
+    border-radius: 10px;
+}
+
+.actions_items > span {
+    font-size: 0.8em;
+    position: relative;
+    top: 0.4em;
+    left: 0.4em;
+}
+
+.actions_items > form {
     padding: 0.5em 0.5em 0 0.5em;
     text-align: center;
 }
@@ -194,8 +220,8 @@
         aspect-ratio: 3 / 1;
     }
 
-    .actions_itens {
-        top: 2em;
+    .actions_items {
+        /* top: 2em; */
         font-size: 0.9em;
     }
 }

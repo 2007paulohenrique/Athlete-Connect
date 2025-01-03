@@ -27,6 +27,12 @@
     transform: scale(1.2);
 }
 
+.tiny {
+    height: 1.5em;
+    width: 1.5em;
+    border: 1px solid var(--dark-theme-color);
+}
+
 .short {
     height: 2.3em;
     width: 2.3em;

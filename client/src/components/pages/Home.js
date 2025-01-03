@@ -10,6 +10,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useProfile } from '../../ProfileContext';
 import Message from "../layout/Message";
 import loading from "../../img/animations/loading.svg";
+import formatDate from "../../utils/DateFormatter";
 
 function Home() {
     const [feed, setFeed] = useState();
@@ -17,12 +18,7 @@ function Home() {
     const [profile, setProfile] = useState({});
     const [message, setMessage] = useState({});
     const [tags, setTags] = useState([]);
-    const [sharings, setSharings] = useState([]);
-    const [commentText, setCommentText] = useState("");
-    const [postComplaintReasons, setPostComplaintReasons] = useState([]);
-    const [complaintDescription, setComplaintDescription] = useState("");
     const [complaintReasons, setComplaintReasons] = useState([]);
-    const [sharingCaption, setSharingCaption] = useState("");
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -41,7 +37,16 @@ function Home() {
                     axios.get(`http://localhost:5000/feeds/${confirmedProfileId}`)
                     .then(resp => {
                         if (resp.data) {
-                            setFeed(resp.data);
+                            const formattedFeed = resp.data.map(post => ({
+                                ...post,
+                                data_publicacao: formatDate(post.data_publicacao),
+                                comments: post.comments.map(comment => ({
+                                    ...comment,
+                                    data_comentario: formatDate(comment.data_comentario)
+                                }))
+                            }));
+                            
+                            setFeed(formattedFeed);
                         } else {
                             navigate("/login"); 
                         }
@@ -121,10 +126,8 @@ function Home() {
         });
     }
 
-    function sharingSubmit(e, post) {
+    function sharingSubmit(e, post, sharingCaption, sharings) {
         e.preventDefault();
-
-        if (!sharings || sharings.length === 0) return;     
         
         const formData = new FormData();
         const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
@@ -138,18 +141,15 @@ function Home() {
         })
         .then(resp => {
             setMessageWithReset("Postagem compartilhada com sucesso!", "success");
-            setSharingCaption("");
         })
         .catch(err => {
             console.error("Erro ao fazer a requisição:", err);
         });
     }
 
-    function complaintSubmit(e, post) {
+    function complaintSubmit(e, post, complaintDescription, postComplaintReasons) {
         e.preventDefault();
-        
-        if (!complaintDescription && (!postComplaintReasons || postComplaintReasons.length === 0)) return;     
-        
+                
         const formData = new FormData();
         const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
 
@@ -167,18 +167,15 @@ function Home() {
             );
 
             setMessageWithReset("Postagem denunciada! Aguarde para analisarmos a denúncia", "success");
-            setComplaintDescription("");
         })
         .catch(err => {
             console.error("Erro ao fazer a requisição:", err);
         });
     }
 
-    function commentSubmit(e, post) {
+    function commentSubmit(e, post, commentText) {
         e.preventDefault();
-        
-        if (!commentText || commentText.length === 0) return;     
-        
+                
         const formData = new FormData();
         const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
 
@@ -192,10 +189,8 @@ function Home() {
             const newComment = resp.data.newComment;
 
             setFeed(prevPosts =>
-                prevPosts.map(p => p.id_postagem === post.id_postagem ? { ...p, comments: [...p.comments, newComment]} : p)
+                prevPosts.map(p => p.id_postagem === post.id_postagem ? { ...p, comments: [...p.comments, {...newComment, data_comentario: formatDate(newComment.data_comentario)}]} : p)
             );
-
-            setCommentText("");
         })
         .catch(err => {
             console.error("Erro ao fazer a requisição:", err);
@@ -228,20 +223,12 @@ function Home() {
                         postTags={post.tags || ""}
                         likeSubmit={() => likeAction(post)}
                         isLiked={post.isLiked}
-                        setSharings={setSharings}
                         sharingSubmit={sharingSubmit}
-                        setSharingCaption={setSharingCaption}
                         complaintReasons={complaintReasons}
                         tags={tags}
-                        sharingCaption={sharingCaption}
                         isComplainted={post.isComplainted}
-                        setPostComplaintReasons={setPostComplaintReasons}
-                        setComplaintDescription={setComplaintDescription}
-                        complaintDescription={complaintDescription}
                         complaintSubmit={complaintSubmit}
                         commentSubmit={commentSubmit}
-                        commentText={commentText}
-                        setCommentText={setCommentText}
                         comments={post.comments}
                         post={post}
                     />

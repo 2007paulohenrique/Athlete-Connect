@@ -3,19 +3,6 @@ import ProfilePhotoContainer from "./ProfilePhotoContainer";
 import ProfileSmallerContainer from "./ProfileSmallerContainer";
 
 function PostItemsContainer({ searchText, filteredItems = [], handleClick, isSelectable = false, selectedItems, haveProfile = false, notFoundText, isComment = false, isHashtags = false, isComplaintReasons = false, isPostTags = false, isPostHashtags = false }) {
-    function formatDate(date) {
-        const notFormattedDate = new Date(date);
-
-        const day = String(notFormattedDate.getDate()).padStart(2, '0');
-        const month = String(notFormattedDate.getMonth() + 1).padStart(2, '0');
-        const year = notFormattedDate.getFullYear();
-
-        const hours = String(notFormattedDate.getHours()).padStart(2, '0');
-        const minutes = String(notFormattedDate.getMinutes() + 1).padStart(2, '0');
-
-        return `${day}/${month}/${year} ${hours}:${minutes}`;
-    }
-    
     return (
         <ul className={styles.post_items_container}>
             {isComplaintReasons && (
@@ -28,19 +15,26 @@ function PostItemsContainer({ searchText, filteredItems = [], handleClick, isSel
 
             {searchText && filteredItems.length > 0 ? filteredItems.map((item, index) => (
                 isComment || isPostHashtags || isPostTags ? (
-                    <li key={index}>
-                        {isPostHashtags && <># {item.nome}</>}
+                    <>
+                        {isComment && <hr/>}
 
-                        {isComment && (
-                            <>
-                                <ProfilePhotoContainer profilePhotoPath={item.caminho} size="short"/>
-                                <p className={styles.comment_text}>{item.texto}</p>
-                                <p className={styles.comment_date}>{formatDate(item.data_comentario)}</p>
-                            </>
-                        )}
+                        <li key={index} className={isComment && styles.comment}>
+                            {isPostHashtags && <># {item.nome}</>}
 
-                        {isPostTags && <><ProfileSmallerContainer profilePhotoPath={item.caminho} profileName={item.nome}/></>}
-                    </li>
+                            {isComment && (
+                                <>
+                                    <ProfilePhotoContainer profilePhotoPath={item.caminho} size="tiny"/>
+
+                                    <div className={styles.comment_content}>
+                                        <p className={styles.comment_date}>{item.data_comentario}</p>
+                                        <p className={styles.comment_text}>{item.texto}</p>
+                                    </div>
+                                </>
+                            )}
+
+                            {isPostTags && <><ProfileSmallerContainer profilePhotoPath={item.caminho} profileName={item.nome}/></>}
+                        </li>
+                    </>
                 ) : (
                     <li 
                         key={index} 

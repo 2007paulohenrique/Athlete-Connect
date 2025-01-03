@@ -9,6 +9,10 @@
     padding: 0.5em;
 }
 
+.post_items_container > hr {
+    border: 1px solid var(--ligth-bg-color);
+}
+
 .post_items_container > li {
     width: 100%;
     display: flex;
@@ -21,17 +25,32 @@
     position: relative;
 }
 
+.post_items_container > .comment {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8em;
+}
+
+.comment > div:first-child {
+    margin-top: 0.4em;
+}
+
+.comment_content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: min-content;
+    gap: 0.6em;
+}
+
 .comment_text {
     font-size: 0.8em;
     overflow-y: auto;
     max-height: 5em;
-    width: 19.8em;
     padding-right: 0.5em;
     text-align: justify;
     white-space: pre-wrap;
     word-break: break-all;
-    display: flex;
-    margin-top: 0.7em;
 }
 
 .comment_date {
@@ -39,12 +58,9 @@
     font-size: 0.6em;
     width: max-content;
     margin-left: auto;
-    position: absolute;
-    top: 0;
-    right: 0;
 }
 
-.post_items_container > li:hover,
+.post_items_container > li:where(:not(.comment)):hover,
 .selectedItem {
     background-color: var(--ligth-bg-color);
 }

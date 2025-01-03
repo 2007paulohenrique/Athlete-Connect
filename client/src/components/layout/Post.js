@@ -13,9 +13,10 @@ import SubmitButton from "../form/SubmitButton";
 import MainInput from "../form/MainInput";
 import ProfileSmallerContainer from "./ProfileSmallerContainer";
 import { useProfile } from "../../ProfileContext";
+import formatNumber from "../../utils/NumberFormatter";
 import PostItemsContainer from "./PostItemsContainer";
 
-function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], complaintReasons = [], moment, mediasPath = [], blobUrlsMedias = [], caption, isInCreating = false, setHashtagsInPost, postHashtags, setTagsInPost, postTags, setSharings, sharingSubmit, setSharingCaption, sharingCaption, setPostComplaintReasons, complaintSubmit, setComplaintDescription, complaintDescription, isComplainted, comments, setCommentText, commentText, commentSubmit, likeSubmit, isLiked, post }) {
+function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], complaintReasons = [], moment, mediasPath = [], blobUrlsMedias = [], caption, isInCreating = false, setHashtagsInPost, postHashtags, setTagsInPost, postTags, sharingSubmit, complaintSubmit, isComplainted, comments, commentSubmit, likeSubmit, isLiked, post }) {
     const [medias, setMedias] = useState([]);
     const [showHashtags, setShowHashtags] = useState(false);  
     const [selectedHashtags, setSelectedHashtags] = useState([]);
@@ -29,12 +30,16 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
     const [selectedSharings, setSelectedSharings] = useState([]);
     const [filteredSharings, setFilteredSharings] = useState([]);
     const [searchTextSharing, setSearchTextSharing] = useState("");
-    const [showComments, setShowComments] = useState(false); 
+    const [sharingCaption, setSharingCaption] = useState("");
+    const [showComments, setShowComments] = useState(false);
+    const [commentText, setCommentText] = useState("");
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
     const [showComplaintReasons, setShowComplaintReasons] = useState(false);  
+    const [postComplaintReasons, setPostComplaintReasons] = useState([]);
+    const [sharings, setSharings] = useState([]);
     const [selectedComplaintReasons, setSelectedComplaintReasons] = useState([]);
+    const [complaintDescription, setComplaintDescription] = useState("");
     const {profileId} = useProfile();
-    const [formattedMoment, setFormattedMoment] = useState();
 
     useEffect(() => {
         if (!blobUrlsMedias || blobUrlsMedias.length === 0) {
@@ -121,25 +126,6 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
 
         setFilteredSharings(filtered);
     }, [authorUserName, profileId, searchTextSharing, tags]);
-    
-    function formatDate(date) {
-        const notFormattedDate = new Date(date);
-
-        const day = String(notFormattedDate.getDate()).padStart(2, '0');
-        const month = String(notFormattedDate.getMonth() + 1).padStart(2, '0');
-        const year = notFormattedDate.getFullYear();
-
-        const hours = String(notFormattedDate.getHours()).padStart(2, '0');
-        const minutes = String(notFormattedDate.getMinutes() + 1).padStart(2, '0');
-
-        return `${day}/${month}/${year} ${hours}:${minutes}`;
-    }
-
-    useEffect(() => {
-        const formattedDate = formatDate(moment);
-
-        setFormattedMoment(formattedDate);
-    }, [moment]);
 
     const handleSearchHashtagChange = (e) => {
         setSearchTextHashtag(e.target.value);
@@ -225,15 +211,47 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
         });
     };
 
+    function showOffAll(currentItems) {
+        if (!(currentItems === "hashtags")) setShowHashtags(false); 
+
+        if (!(currentItems === "tags")) setShowTags(false)
+        
+        if (!(currentItems === "sharings")) {
+            setSelectedSharings([]);
+            setSearchTextSharing("");
+            setSharings([]);
+            setSharingCaption("");
+            setShowSharing(false); 
+        }
+        
+        if (!(currentItems === "complaint")) {
+            setSelectedComplaintReasons([]);
+            setPostComplaintReasons([])
+            setComplaintDescription("");
+            setShowComplaintReasons(false);  
+        }
+
+        if (!(currentItems === "comments")) {
+            setShowComments(false);
+            setCommentText("");
+        }
+    }
+    
     function viewHashtags() {
+        showOffAll("hashtags");
+
         setShowHashtags(!showHashtags);  
     }
 
     function viewTags() {
+        showOffAll("tags");
+
         setShowTags(!showTags);  
     }
 
     function viewSharing() {
+        showOffAll("sharings");
+
         setSelectedSharings([]);
         setSearchTextSharing("");
         setSharings([]);
@@ -242,6 +260,8 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
     }
 
     function viewComplaint() {
+        showOffAll("complaint");
+
         setSelectedComplaintReasons([]);
         setPostComplaintReasons([])
         setComplaintDescription("");
@@ -249,6 +269,8 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
     }
 
     function viewComments() {
+        showOffAll("comments");
+
         setShowComments(!showComments);
         setCommentText("");
     }
@@ -284,7 +306,7 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
 
         if (!selectedSharings || selectedSharings.length === 0 || (sharingCaption && sharingCaption.length > 255)) return;
     
-        sharingSubmit(e, post);
+        sharingSubmit(e, post, sharingCaption, sharings);
     
         setSelectedSharings([]);
         setSearchTextSharing("");
@@ -298,7 +320,7 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
 
         if ((!complaintDescription && (!selectedComplaintReasons || selectedComplaintReasons.length === 0)) || (complaintDescription && complaintDescription.length > 255)) return;
     
-        complaintSubmit(e, post);
+        complaintSubmit(e, post, complaintDescription, postComplaintReasons);
     
         setSelectedComplaintReasons([]);
         setPostComplaintReasons([]);
@@ -311,7 +333,7 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
 
         if (!commentText || commentText.length === 0 || (commentText && commentText.length > 255)) return;
     
-        commentSubmit(e, post);
+        commentSubmit(e, post, commentText);
     
         setCommentText("");
     };
@@ -333,6 +355,8 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
             complaintDescription.length <= 255) || 
             !complaintDescription;
     }, [complaintDescription]);
+
+
 
     return (
         <div className={styles.post}>
@@ -371,7 +395,7 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
             <div className={styles.container_divisor}></div>
 
             <div className={styles.second_post_container}>    
-                <span className={styles.date}>Publicado em: {formattedMoment}</span>
+                <span className={styles.date}>Publicado em: {moment}</span>
                 
                 <p className={styles.caption}><span>{authorUserName}:</span> {caption}</p>
 
@@ -379,12 +403,17 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
                     <div>
                         <li>
                             <img src={isLiked ? likedIcon : likeIcon} alt="Like" onClick={!isInCreating ? likeSubmit : undefined}/>
+                            <span>{formatNumber(120200000)}</span>
                         </li>
 
                         <li>
                             <img src={shareIcon} alt="Share" onClick={!isInCreating ? viewSharing : undefined}/>
+                            <span>{formatNumber(182900000000)}</span>
+
                             {!isInCreating && showSharing && (
-                                <div className={styles.actions_itens}>
+                                <div className={styles.actions_items}>
+                                    <span onClick={viewSharing}>Voltar</span>
+
                                     <form onSubmit={handleSharingSubmit}>
                                         <SubmitButton text="Compartilhar"/>
 
@@ -424,9 +453,12 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
 
                         <li>
                             <img src={commentIcon} alt="Comment" onClick={!isInCreating ? viewComments : undefined}/>
+                            <span>{formatNumber(182900)}</span>
 
                             {!isInCreating && showComments && (
-                                <div className={styles.actions_itens}>
+                                <div className={styles.actions_items}>
+                                    <span onClick={viewComments}>Voltar</span>
+
                                     <form onSubmit={handleCommentSubmit}>
                                         <SubmitButton text="Comentar"/>
 
@@ -458,7 +490,7 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
                             <img src={tagsIcon} alt="Tags" onClick={viewTags}/>
 
                             {isInCreating && showTags ? (
-                                <div className={styles.actions_itens}>
+                                <div className={styles.actions_items}>
                                     <SearchInput 
                                         type="text" 
                                         name="tagsSearch"
@@ -479,7 +511,7 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
                                     />
                                 </div>
                             ) : !isInCreating && showTags ? (
-                                <div className={styles.actions_itens}>
+                                <div className={styles.actions_items}>
                                     <PostItemsContainer
                                         searchText={true}
                                         filteredItems={postTags}
@@ -494,7 +526,7 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
                             <img src={hashtagsIcon} alt="Hashtags" onClick={viewHashtags}/>
 
                             {isInCreating && showHashtags ? (
-                                <div className={styles.actions_itens}>
+                                <div className={styles.actions_items}>
                                     <SearchInput 
                                         type="text" 
                                         name="hashtagsSearch"
@@ -515,7 +547,7 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
                                     />
                                 </div>
                             ) : !isInCreating && showHashtags ? (
-                                <div className={styles.actions_itens}>
+                                <div className={styles.actions_items}>
                                     <PostItemsContainer
                                         searchText={true}
                                         filteredItems={postHashtags}
@@ -530,9 +562,12 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
                     <div>
                         <li>
                             <img src={isComplainted ? complaintedIcon : complaintIcon} alt="Complaint" onClick={!isInCreating && !isComplainted ? viewComplaint : undefined}/>
-                        
+                            <span>{formatNumber(182)}</span>
+
                             {showComplaintReasons && (
-                                <div className={styles.actions_itens}>
+                                <div className={styles.actions_items}>
+                                    <span onClick={viewComplaint}>Voltar</span>
+
                                     <form onSubmit={handleComplaintSubmit}>
                                         <SubmitButton text="Denunciar"/>
                                         
