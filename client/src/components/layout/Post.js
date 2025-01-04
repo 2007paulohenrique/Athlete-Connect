@@ -403,12 +403,12 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
                     <div>
                         <li>
                             <img src={isLiked ? likedIcon : likeIcon} alt="Like" onClick={!isInCreating ? likeSubmit : undefined}/>
-                            <span>{formatNumber(120200000)}</span>
+                            <span>{formatNumber(post.total_curtidas)}</span>
                         </li>
 
                         <li>
                             <img src={shareIcon} alt="Share" onClick={!isInCreating ? viewSharing : undefined}/>
-                            <span>{formatNumber(182900000000)}</span>
+                            <span>{formatNumber(post.total_compartilhamentos)}</span>
 
                             {!isInCreating && showSharing && (
                                 <div className={styles.actions_items}>
@@ -453,7 +453,7 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
 
                         <li>
                             <img src={commentIcon} alt="Comment" onClick={!isInCreating ? viewComments : undefined}/>
-                            <span>{formatNumber(182900)}</span>
+                            <span>{formatNumber(post.total_comentarios)}</span>
 
                             {!isInCreating && showComments && (
                                 <div className={styles.actions_items}>
@@ -562,7 +562,6 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
                     <div>
                         <li>
                             <img src={isComplainted ? complaintedIcon : complaintIcon} alt="Complaint" onClick={!isInCreating && !isComplainted ? viewComplaint : undefined}/>
-                            <span>{formatNumber(182)}</span>
 
                             {showComplaintReasons && (
                                 <div className={styles.actions_items}>

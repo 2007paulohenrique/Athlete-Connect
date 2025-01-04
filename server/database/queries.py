@@ -432,7 +432,24 @@ def get_feed_posts(con, profile_id):
                     return []
 
                placeholders = ','.join(['%s'] * len(followeds_ids))
-               sql = f"SELECT * FROM postagem WHERE fk_perfil_id_perfil IN ({placeholders})"
+               # sql = f"""
+               #      SELECT *
+               #      FROM postagem 
+               #      WHERE fk_perfil_id_perfil IN ({placeholders})
+               # """
+
+               sql = f"""
+                    SELECT p.*,
+                         COUNT(DISTINCT c.fk_perfil_id_perfil) AS total_curtidas,
+                         COUNT(DISTINCT cp.id_compartilhamento) AS total_compartilhamentos,
+                         COUNT(DISTINCT co.id_comentario) AS total_comentarios
+                    FROM postagem p
+                    LEFT JOIN curte c ON c.fk_postagem_id_postagem = p.id_postagem
+                    LEFT JOIN compartilhamento cp ON cp.fk_postagem_id_postagem = p.id_postagem
+                    LEFT JOIN comentario co ON co.fk_postagem_id_postagem = p.id_postagem
+                    WHERE p.fk_perfil_id_perfil IN ({placeholders})
+                    GROUP BY p.id_postagem
+               """
                cursor.execute(sql, tuple(followeds_ids))
                result = cursor.fetchall()
 

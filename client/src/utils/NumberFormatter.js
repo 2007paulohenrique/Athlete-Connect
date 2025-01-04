@@ -1,4 +1,6 @@
 export default function formatNumber(num) {
+    if (!num) return 0;
+
     if (num >= 1e9) {
         return (num / 1e9).toFixed(1).replace('.0', '') + 'B'; 
     } else if (num >= 1e6) {

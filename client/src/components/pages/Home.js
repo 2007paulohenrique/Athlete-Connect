@@ -118,7 +118,11 @@ function Home() {
         })
         .then(resp => {
             setFeed(prevPosts =>
-                prevPosts.map(p => p.id_postagem === post.id_postagem ? { ...p, isLiked: !p.isLiked } : p)
+                prevPosts.map(p => p.id_postagem === post.id_postagem ? {
+                    ...p, 
+                    isLiked: !p.isLiked, 
+                    total_curtidas:  p.isLiked ? p.total_curtidas - 1 : p.total_curtidas + 1
+                } : p)
             );
         })
         .catch(err => {
@@ -140,6 +144,13 @@ function Home() {
             headers: { "Content-Type": "multipart/form-data" }, 
         })
         .then(resp => {
+            setFeed(prevPosts =>
+                prevPosts.map(p => p.id_postagem === post.id_postagem ? { 
+                    ...p, 
+                    total_compartilhamentos: p.total_compartilhamentos + 1
+                } : p)
+            );
+            
             setMessageWithReset("Postagem compartilhada com sucesso!", "success");
         })
         .catch(err => {
@@ -189,7 +200,11 @@ function Home() {
             const newComment = resp.data.newComment;
 
             setFeed(prevPosts =>
-                prevPosts.map(p => p.id_postagem === post.id_postagem ? { ...p, comments: [...p.comments, {...newComment, data_comentario: formatDate(newComment.data_comentario)}]} : p)
+                prevPosts.map(p => p.id_postagem === post.id_postagem ? { 
+                    ...p, 
+                    comments: [...p.comments, {...newComment, data_comentario: formatDate(newComment.data_comentario)}],
+                    total_comentarios: p.total_comentarios + 1
+                } : p)
             );
         })
         .catch(err => {
