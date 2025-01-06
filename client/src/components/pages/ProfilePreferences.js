@@ -18,7 +18,7 @@ function ProfilePreferences() {
     const location = useLocation();
 
     useEffect(() => {
-        const profile = location.state?.profileReady
+        const profile = location?.state?.profileReady
 
         if (!profile) {
             navigate("/login");
@@ -30,12 +30,18 @@ function ProfilePreferences() {
     useEffect(() => {
         axios.get("http://localhost:5000/sports")
         .then(resp => {
-            setSports(resp.data);
+            const data = resp.data;
+
+            if (data.error) {
+                navigate("/errorPage", {state: {error: data.error}})
+            } else {
+                setSports(resp.data);
+            }
         })
         .catch(err => {
             console.error('Erro ao fazer a requisição:', err);
         });
-    }, []);
+    }, [navigate]);
 
     function handleOnClick(sport) {
         setProfilePreferences(prevPreferences => {
@@ -65,7 +71,15 @@ function ProfilePreferences() {
         .then(resp => {
             const data = resp.data;
 
-            if (data !== "signUpError") {
+            if (data.error) {
+                setIsSubmitting(false);
+
+                if (data.error === "signup") {
+                    navigate("/login", {state: {message: "Ocorreu um erro ao criar seu perfil. Tente novamente.", type: "error"}});
+                } else {
+                    navigate("/errorPage", {state: {error: data.error}})
+                }
+            } else {
                 const sportsIds = profilePreferences.map(sport => sport.id_esporte);
                 profile.preferences = sportsIds;
 
@@ -84,19 +98,24 @@ function ProfilePreferences() {
                     headers: { "Content-Type": "multipart/form-data" }, 
                 })
                 .then(resp => {
-                    setProfileId(resp.data.profileId);
-                    localStorage.setItem('athleteConnectProfileId', resp.data.profileId)
-                    
-                    navigate("/", {state: {message: "Perfil criado com sucesso! Aproveite o Athlete Connect.", type: "success"}});
+                    const data = resp.data;
+
+                    if (data.error) {
+                        setIsSubmitting(false);
+
+                        navigate("/errorPage", {state: {error: data.error}})
+                    } else {
+                        setProfileId(resp.data.profileId);
+                        localStorage.setItem('athleteConnectProfileId', resp.data.profileId)
+                        
+                        navigate("/", {state: {message: "Perfil criado com sucesso! Aproveite o Athlete Connect.", type: "success"}});
+                    }
                 })
                 .catch(err => {
-                    console.error('Erro ao fazer a requisição:', err);
                     setIsSubmitting(false);
+                    
+                    console.error('Erro ao fazer a requisição:', err);
                 });
-            } else {
-                setIsSubmitting(false);
-
-                navigate("/login", {state: {message: "Ocorreu um erro ao criar seu perfil. Tente novamente.", type: "error"}});
             }
         })
         .catch(err => {

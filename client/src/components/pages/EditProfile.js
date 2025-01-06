@@ -2,19 +2,17 @@ import { useEffect, useState } from "react";
 import EditProfileForm from "../form/EditProfileForm";
 import styles from "./EditProfile.module.css";
 import { useLocation, useNavigate } from "react-router-dom";
-import Message from "../layout/Message";
 import axios from "axios";
 
 function EditProfile() {
     const [profile, setProfile] = useState({});
-    const [message, setMessage] = useState({});
     const [submitError, setSubmitError] = useState(false);
 
     const navigate = useNavigate();
     const location = useLocation();
 
     useEffect(() => {
-        const profile = location.state?.profile
+        const profile = location?.state?.profile
 
         if (!profile) {
             navigate("/login");
@@ -22,14 +20,6 @@ function EditProfile() {
             setProfile(profile);
         }
     }, [location, navigate]);
-
-    function setMessageWithReset(newMessage, type) {
-        setMessage(null);
-
-        setTimeout(() => {
-            setMessage({message: newMessage, type: type});
-        }, 1);
-    }
 
     function handleOnSubmit(e) {
         e.preventDefault();
@@ -47,13 +37,17 @@ function EditProfile() {
         .then(resp => {
             const data = resp.data;
 
-            if (data !== "signUpError") {
+            if (data.error) {
+                if (data.error === "signup") {
+                    navigate("/login", {state: {message: "Ocorreu um erro ao criar seu perfil. Tente novamente.", type: "error"}});
+                } else {
+                    navigate("/errorPage", {state: {error: data.error}})
+                }
+            } else {
                 if (!profile.bio) profile.bio = "";
                 if (profile.private === undefined) profile.private = false;      
     
                 navigate("/profilePreferences", {state: {profileReady: profile}});
-            } else {
-                setMessageWithReset("Já existe um perfil com o mesmo nome.", "error");
             }
         })
         .catch(err => {
@@ -63,8 +57,6 @@ function EditProfile() {
 
     return (
         <main className={styles.edit_profile_page}>
-            {message && <Message message={message.message} type={message.type}/>}
-
             <EditProfileForm 
                 handleSubmit={handleOnSubmit} 
                 profile={profile} 

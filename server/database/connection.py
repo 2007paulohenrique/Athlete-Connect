@@ -1,14 +1,23 @@
 import mysql.connector;
-# import mariadb
 
 def open_connection(host, user, password, database):
-    return mysql.connector.connect(host=host, user=user, password=password, database=database, charset="utf8mb4")
-    # try:
-    #     print("Deu certo!")
-    #     return mariadb.connect(host=host, user=usuario, password=senha, database=banco)
-    # except mariadb.Error as e:
-    #     print(f"Erro ao conectar: {e}")
-    #     return None
+    try:
+        con = mysql.connector.connect(
+            host=host,
+            user=user,
+            password=password,
+            database=database,
+            charset="utf8mb4"
+        )
 
+        if con.is_connected():
+            return con
+        else:
+            return None
+    except Exception as e:
+        print(f"Erro ao conectar ao banco de dados: {e}")
+        return None
+    
 def close_connection(con):
-    con.close
+    if con:
+        con.close

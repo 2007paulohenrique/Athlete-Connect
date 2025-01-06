@@ -19,9 +19,15 @@ function Home() {
     const [message, setMessage] = useState({});
     const [tags, setTags] = useState([]);
     const [complaintReasons, setComplaintReasons] = useState([]);
-
+    
     const navigate = useNavigate();
     const location = useLocation();
+    
+    useEffect(() => {
+        const msg = location?.state
+
+        if (msg) setMessageWithReset(msg.message, msg.type)
+    }, [location])
 
     useEffect(() => {
         const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
@@ -31,13 +37,25 @@ function Home() {
         } else {
             axios.get(`http://localhost:5000/profiles/${confirmedProfileId}`)
             .then(resp => {
-                if (resp.data) {
-                    setProfile(resp.data);
+                const data = resp.data;
+                
+                if (data.error) {
+                    if (resp.status === 404) {
+                        navigate("/login", {state: {message: data.error, type: "error"}});
+                    } else {
+                        navigate("/errorPage", {state: {error: data.error}})
+                    }
+                } else {
+                    setProfile(data);
 
-                    axios.get(`http://localhost:5000/feeds/${confirmedProfileId}`)
+                    axios.get(`http://localhost:5000/profiles/${confirmedProfileId}/feed`)
                     .then(resp => {
-                        if (resp.data) {
-                            const formattedFeed = resp.data.map(post => ({
+                        const data2 = resp.data;
+
+                        if (data2.error) {
+                            navigate("/errorPage", {state: {error: data2.error}});
+                        } else {
+                            const formattedFeed = data2.map(post => ({
                                 ...post,
                                 data_publicacao: formatDate(post.data_publicacao),
                                 comments: post.comments.map(comment => ({
@@ -47,15 +65,11 @@ function Home() {
                             }));
                             
                             setFeed(formattedFeed);
-                        } else {
-                            navigate("/login"); 
                         }
                     })
                     .catch(err => {
                         console.error('Erro ao fazer a requisição:', err);
                     });
-                } else {
-                    navigate("/login"); 
                 }
             })
             .catch(err => {
@@ -77,28 +91,35 @@ function Home() {
     useEffect(() => {
         axios.get("http://localhost:5000/complaintReasons")
         .then(resp => {
-            setComplaintReasons(resp.data);
+            const data = resp.data;
+
+            if (data.error) {
+                navigate("/errorPage", {state: {error: data.error}})
+            } else {
+                setComplaintReasons(data);
+            }
         })
         .catch(err => {
             console.error('Erro ao fazer a requisição:', err);
         });
-    }, []);
+    }, [navigate]);
 
     useEffect(() => {
         axios.get("http://localhost:5000/tags")
         .then(resp => {
-            setTags(resp.data);
+            const data = resp.data;
+
+            if (data.error) {
+                navigate("/errorPage", {state: {error: data.error}})
+            } else {
+                setTags(data);
+            }
         })
         .catch(err => {
             console.error('Erro ao fazer a requisição:', err);
         });
-    }, []);
+    }, [navigate]);
 
-    useEffect(() => {
-        if (location.state) {
-            setMessageWithReset(location.state.message, location.state.type)
-        }
-    }, [location.state])
 
     function goToTop() {
         window.scrollTo({
@@ -117,13 +138,20 @@ function Home() {
             headers: { "Content-Type": "multipart/form-data" }, 
         })
         .then(resp => {
-            setFeed(prevPosts =>
-                prevPosts.map(p => p.id_postagem === post.id_postagem ? {
-                    ...p, 
-                    isLiked: !p.isLiked, 
-                    total_curtidas:  p.isLiked ? p.total_curtidas - 1 : p.total_curtidas + 1
-                } : p)
-            );
+            const data = resp.data;
+
+            if (data.error) {
+                navigate("/errorPage", {state: {error: data.error}})
+            } else {
+                setFeed(prevPosts =>
+                    prevPosts.map(p => p.id_postagem === post.id_postagem ? {
+                        ...p, 
+                        isLiked: !p.isLiked, 
+                        total_curtidas:  p.isLiked ? p.total_curtidas - 1 : p.total_curtidas + 1
+                    } : p)
+                );
+            }
+            
         })
         .catch(err => {
             console.error("Erro ao fazer a requisição:", err);
@@ -144,14 +172,21 @@ function Home() {
             headers: { "Content-Type": "multipart/form-data" }, 
         })
         .then(resp => {
-            setFeed(prevPosts =>
-                prevPosts.map(p => p.id_postagem === post.id_postagem ? { 
-                    ...p, 
-                    total_compartilhamentos: p.total_compartilhamentos + 1
-                } : p)
-            );
+            const data = resp.data;
+
+            if (data.error) {
+                navigate("/errorPage", {state: {error: data.error}})
+            } else {
+                setFeed(prevPosts =>
+                    prevPosts.map(p => p.id_postagem === post.id_postagem ? { 
+                        ...p, 
+                        total_compartilhamentos: p.total_compartilhamentos + 1
+                    } : p)
+                );
+                
+                setMessageWithReset("Postagem compartilhada com sucesso!", "success");
+            }
             
-            setMessageWithReset("Postagem compartilhada com sucesso!", "success");
         })
         .catch(err => {
             console.error("Erro ao fazer a requisição:", err);
@@ -172,12 +207,19 @@ function Home() {
             headers: { "Content-Type": "multipart/form-data" }, 
         })
         .then(resp => {
-            setFeed(prevPosts =>
-                prevPosts.map(p => p.id_postagem === post.id_postagem ? { ...p, isComplainted: true } : p
-                )
-            );
+            const data = resp.data;
 
-            setMessageWithReset("Postagem denunciada! Aguarde para analisarmos a denúncia", "success");
+            if (data.error) {
+                navigate("/errorPage", {state: {error: data.error}})
+            } else {
+                setFeed(prevPosts =>
+                    prevPosts.map(p => p.id_postagem === post.id_postagem ? { ...p, isComplainted: true } : p
+                    )
+                );
+    
+                setMessageWithReset("Postagem denunciada! Aguarde para analisarmos a denúncia", "success");
+            }
+            
         })
         .catch(err => {
             console.error("Erro ao fazer a requisição:", err);
@@ -197,15 +239,21 @@ function Home() {
             headers: { "Content-Type": "multipart/form-data" }, 
         })
         .then(resp => {
-            const newComment = resp.data.newComment;
+            const data = resp.data;
 
-            setFeed(prevPosts =>
-                prevPosts.map(p => p.id_postagem === post.id_postagem ? { 
-                    ...p, 
-                    comments: [...p.comments, {...newComment, data_comentario: formatDate(newComment.data_comentario)}],
-                    total_comentarios: p.total_comentarios + 1
-                } : p)
-            );
+            if (data.error) {
+                navigate("/errorPage", {state: {error: data.error}})
+            } else {
+                const newComment = data.newComment;
+    
+                setFeed(prevPosts =>
+                    prevPosts.map(p => p.id_postagem === post.id_postagem ? { 
+                        ...p, 
+                        comments: [...p.comments, {...newComment, data_comentario: formatDate(newComment.data_comentario)}],
+                        total_comentarios: p.total_comentarios + 1
+                    } : p)
+                );
+            }
         })
         .catch(err => {
             console.error("Erro ao fazer a requisição:", err);

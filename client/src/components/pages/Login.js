@@ -26,8 +26,10 @@ function Login() {
     }
 
     useEffect(() => {
-        if (location.state) setMessageWithReset(location.state.message, location.state.type)
-    }, [location.state])
+        const msg = location?.state
+
+        if (msg) setMessageWithReset(msg.message, msg.type)
+    }, [location])
 
     function signUpSubmit(e) {
         e.preventDefault();
@@ -45,13 +47,18 @@ function Login() {
         .then(resp => {
             const data = resp.data;
 
-            if (data !== "signUpError") {
+            if (data.error) {
+                if (data.error === "signup") {
+                    setMessageWithReset("Já existe um perfil com o mesmo nome ou e-mail.", "error");
+                } else {
+                    navigate("/errorPage", {state: {error: data.error}});
+                }
+            } else {
                 const updatedProfile = { ...profile, confirmedNameSignUp: profile.nameSignUp };
             
                 setProfile(updatedProfile);
+
                 navigate("/editProfile", {state: {profile: updatedProfile}});
-            } else {
-                setMessageWithReset("Já existe um perfil com o mesmo nome ou e-mail.", "error");
             }
         })
         .catch(err => {
@@ -81,23 +88,19 @@ function Login() {
         .then(resp => {
             const data = resp.data;
 
-            if (data === "loginError") {
-                setLoginSubmitError(true)
-
-                return;
-            } 
-
-            if (data === "passwordError") {
-                setLoginSubmitError(true);
-
-                return;
+            if (data.error) {
+                if (data.error === "login") {
+                    setLoginSubmitError(true);
+                } else {
+                    navigate("/errorPage", {state: {error: data.error}});
+                }
+            } else {
+                setLoginSubmitError(false);
+                setProfileId(data.profileId);
+                localStorage.setItem('athleteConnectProfileId', data.profileId);
+    
+                navigate("/");
             }
-            
-            setLoginSubmitError(false);
-            setProfileId(data.profileId);
-            localStorage.setItem('athleteConnectProfileId', data.profileId);
-
-            navigate("/");
         })
         .catch(err => {
             console.error("Erro ao fazer a requisição:", err);

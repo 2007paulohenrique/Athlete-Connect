@@ -35,10 +35,16 @@ function NewPost() {
         } else {
             axios.get(`http://localhost:5000/profiles/${confirmedProfileId}`)
             .then(resp => {
-                if (resp.data) {
-                    setProfile(resp.data);
+                const data = resp.data;
+
+                if (data.error) {
+                    if (resp.status === 404) {
+                        navigate("/login", {state: {message: data.error, type: "error"}});
+                    } else {
+                        navigate("/errorPage", {state: {error: data.error}})
+                    }
                 } else {
-                    navigate("/login"); 
+                    setProfile(data);
                 }
             })
             .catch(err => {
@@ -50,22 +56,34 @@ function NewPost() {
     useEffect(() => {
         axios.get("http://localhost:5000/hashtags")
         .then(resp => {
-            setHashtags(resp.data);
+            const data = resp.data;
+
+            if (data.error) {
+                navigate("/errorPage", {state: {error: data.error}})
+            } else {
+                setHashtags(data);
+            }
         })
         .catch(err => {
             console.error('Erro ao fazer a requisição:', err);
         });
-    }, []);
+    }, [navigate]);
 
     useEffect(() => {
         axios.get("http://localhost:5000/tags")
         .then(resp => {
-            setTags(resp.data);
+            const data = resp.data;
+
+            if (data.error) {
+                navigate("/errorPage", {state: {error: data.error}})
+            } else {
+                setTags(data);
+            }
         })
         .catch(err => {
             console.error('Erro ao fazer a requisição:', err);
         });
-    }, []);
+    }, [navigate]);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -139,7 +157,13 @@ function NewPost() {
                 headers: { "Content-Type": "multipart/form-data" }, 
             })
             .then(resp => {
-                navigate("/", {state: {message: "Publicação feita com sucesso!", type: "success"}});
+                const data = resp.data;
+
+                if (data.error) {
+                    navigate("/errorPage", {state: {error: data.error}})
+                } else {
+                    navigate("/", {state: {message: "Publicação feita com sucesso!", type: "success"}});
+                }    
             })
             .catch(err => {
                 console.error("Erro ao fazer a requisição:", err);
