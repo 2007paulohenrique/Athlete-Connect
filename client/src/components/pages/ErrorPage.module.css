@@ -6,14 +6,13 @@
     gap: 2em;
     background-color: var(--dark-bg-color);
     text-align: center;
-    padding: 1em 10em;
+    padding: 1em 5em;
 }
 
 .error_page > img:first-child {
     height: 3em;
     width: 3em;
-    position: absolute;
-    top: 2em;
+    top: 0;
 }
 
 .error_page > h1 {
