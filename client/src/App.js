@@ -5,6 +5,7 @@ import EditProfile from "./components/pages/EditProfile";
 import ProfilePreferences from "./components/pages/ProfilePreferences";
 import NewPost from "./components/pages/NewPost";
 import { ProfileProvider } from './ProfileContext';
+import ErrorPage from "./components/pages/ErrorPage";
 
 function App() {
   document.addEventListener('keydown', function(event) {
@@ -35,6 +36,11 @@ function App() {
           <Route 
             path="/newPost" 
             element={<NewPost/>} 
+          />
+
+          <Route 
+            path="/errorPage" 
+            element={<ErrorPage/>} 
           />
 
           <Route 

@@ -1,0 +1,40 @@
+.error_page {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 2em;
+    background-color: var(--dark-bg-color);
+    text-align: center;
+    padding: 1em 10em;
+}
+
+.error_page > img:first-child {
+    height: 3em;
+    width: 3em;
+    position: absolute;
+    top: 2em;
+}
+
+.error_page > h1 {
+    font-size: 4em;
+}
+
+.error_page > img {
+    height: 7em;
+    width: 7em;
+    border-radius: 50%; 
+    box-shadow: 7px 7px 10px black;
+}
+
+.error_message {
+    margin-top: 1em;
+    font-size: 1.5em;
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+}
+
+.error_message > p:first-child {
+    color: var(--alert-color);
+}
