@@ -51,6 +51,8 @@ function EditProfile() {
             }
         })
         .catch(err => {
+            navigate("/errorPage", {state: {error: err.message}})
+
             console.error("Erro ao fazer a requisição:", err);
         }); 
     }

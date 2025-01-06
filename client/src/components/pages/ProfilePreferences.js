@@ -39,6 +39,8 @@ function ProfilePreferences() {
             }
         })
         .catch(err => {
+            navigate("/errorPage", {state: {error: err.message}})
+
             console.error('Erro ao fazer a requisição:', err);
         });
     }, [navigate]);
@@ -114,6 +116,8 @@ function ProfilePreferences() {
                 .catch(err => {
                     setIsSubmitting(false);
                     
+                    navigate("/errorPage", {state: {error: err.message}})
+
                     console.error('Erro ao fazer a requisição:', err);
                 });
             }

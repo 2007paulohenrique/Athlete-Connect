@@ -403,12 +403,12 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
                     <div>
                         <li>
                             <img src={isLiked ? likedIcon : likeIcon} alt="Like" onClick={!isInCreating ? likeSubmit : undefined}/>
-                            <span>{formatNumber(post.total_curtidas)}</span>
+                            <span>{!isInCreating ? formatNumber(post.total_curtidas) : 0}</span>
                         </li>
 
                         <li>
                             <img src={shareIcon} alt="Share" onClick={!isInCreating ? viewSharing : undefined}/>
-                            <span>{formatNumber(post.total_compartilhamentos)}</span>
+                            <span>{!isInCreating ? formatNumber(post.total_compartilhamentos) : 0}</span>
 
                             {!isInCreating && showSharing && (
                                 <div className={styles.actions_items}>
@@ -453,7 +453,7 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
 
                         <li>
                             <img src={commentIcon} alt="Comment" onClick={!isInCreating ? viewComments : undefined}/>
-                            <span>{formatNumber(post.total_comentarios)}</span>
+                            <span>{!isInCreating ? formatNumber(post.total_comentarios) : 0}</span>
 
                             {!isInCreating && showComments && (
                                 <div className={styles.actions_items}>

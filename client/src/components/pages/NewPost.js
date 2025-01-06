@@ -9,6 +9,7 @@ import FileInput from "../form/FileInput";
 import mediasIcon from "../../img/icons/socialMedia/mediasIcon.png";
 import captionIcon from "../../img/icons/socialMedia/captionIcon.png";
 import { useProfile } from "../../ProfileContext";
+import formatDate from "../../utils/DateFormatter";
 import Message from "../layout/Message";
 
 function NewPost() {
@@ -48,6 +49,8 @@ function NewPost() {
                 }
             })
             .catch(err => {
+                navigate("/errorPage", {state: {error: err.message}})
+
                 console.error('Erro ao fazer a requisição:', err);
             });
         }
@@ -65,6 +68,8 @@ function NewPost() {
             }
         })
         .catch(err => {
+            navigate("/errorPage", {state: {error: err.message}})
+
             console.error('Erro ao fazer a requisição:', err);
         });
     }, [navigate]);
@@ -81,13 +86,15 @@ function NewPost() {
             }
         })
         .catch(err => {
+            navigate("/errorPage", {state: {error: err.message}})
+
             console.error('Erro ao fazer a requisição:', err);
         });
     }, [navigate]);
 
     useEffect(() => {
         const interval = setInterval(() => {
-            setCurrentMoment(new Date());
+            setCurrentMoment(formatDate(new Date()));
         }, 1000);
 
         return () => clearInterval(interval);
@@ -166,6 +173,8 @@ function NewPost() {
                 }    
             })
             .catch(err => {
+                navigate("/errorPage", {state: {error: err.message}})
+
                 console.error("Erro ao fazer a requisição:", err);
             });
         } else {

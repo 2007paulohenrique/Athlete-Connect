@@ -22,6 +22,7 @@ function ErrorPage() {
     return (
         <main className={styles.error_page}>
             <img src={athleteConnectIcon} alt="App Icon"/>
+            
             <h1>Algum erro ocorreu</h1>
 
             <img src={errorIcon} alt="Error"/>
