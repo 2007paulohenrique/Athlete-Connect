@@ -48,7 +48,7 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
                 const isVideo = /\.(mp4|webm|ogg)$/i.test(mediaPath);
         
                 return {
-                    type: isImage ? 'image' : isVideo ? 'video' : 'unknown',
+                    type: isImage ? 'imagem' : isVideo ? 'video' : 'unknown',
                     path: require(`../../img/${mediaPath}`),
                     duration: isVideo ? null : undefined,
                 };
@@ -376,7 +376,7 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
                                 <div className={styles.slide_right} onClick={slideToRight}></div>
                             </div>
 
-                            {medias[currentMediaIndex].type === 'image' ? (
+                            {medias[currentMediaIndex].type === 'imagem' ? (
                                 <img src={medias[currentMediaIndex].path} alt={`Media ${currentMediaIndex + 1}`} />
                             ) : medias[currentMediaIndex].type === 'video' ? (
                                 <video 

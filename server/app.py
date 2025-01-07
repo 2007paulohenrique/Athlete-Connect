@@ -105,6 +105,32 @@ def get_profiles_route():
         if con:
             close_connection(con)
 
+# O usuário é recuperado através do id do perfil
+@app.route('/profiles/users/<int:profile_id>', methods=['GET'])
+def get_users_route(profile_id):
+    try:
+        con = open_connection(*con_params)
+
+        if con is None:
+            print('Erro ao abrir conexão com banco de dados')
+            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+
+        profile_viewer_id = request.args.get('viewerId', type=int)
+
+        user = get_user(con, profile_id, profile_viewer_id)
+
+        if user is None:
+            print('Erro ao recuperar usuário')
+            return jsonify({'error': 'Usuário indisponível ou inexistente.'}), 404
+        
+        return jsonify(user), 200
+    except Exception as e:
+        print(f'Erro ao recuperar usuário: {e}')
+        return jsonify({'error': 'Não foi possível recuperar o usuário devido a um erro no nosso servidor.'}), 500
+    finally:
+        if con:
+            close_connection(con)
+
 @app.route('/profiles', methods=['POST'])
 def post_profile():
     try:
@@ -259,6 +285,32 @@ def get_profile_route(profile_id):
         if con:
             close_connection(con)
 
+@app.route('/profiles/<int:profile_id>/follow', methods=['POST'])
+def post_follow(profile_id):
+    try:
+        con = open_connection(*con_params)
+
+        if con is None:
+            print('Erro ao abrir conexão com banco de dados')
+            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+
+        follower_id = int(request.form.get('followerId'))
+        is_followed = toggle_follow(con, follower_id, profile_id)
+
+        if is_followed is None:
+            print('Erro ao conferir estado de seguidor do perfil')
+            return jsonify({'error': 'Não foi possível conferir o estado de seguidor do perfil devido a um erro no nosso servidor.'}), 500
+
+        req_status = 201 if is_followed else 204
+
+        return jsonify({'isFollowed': is_followed}), req_status
+    except Exception as e:
+        print('Erro ao conferir estado de seguidor do perfil')
+        return jsonify({'error': 'Não foi possível conferir o estado de seguidor do perfil devido a um erro no nosso servidor.'}), 500
+    finally:
+        if con:
+            close_connection(con)
+
 @app.route('/profiles/<int:profile_id>/feed', methods=['GET'])
 def get_feed(profile_id):
     try:
@@ -356,7 +408,9 @@ def post_like(post_id):
             print('Erro ao conferir estado de curtida da postagem')
             return jsonify({'error': 'Não foi possível conferir o estado de curtida da postagem devido a um erro no nosso servidor.'}), 500
 
-        return jsonify({'isLiked': is_liked}), 200
+        req_status = 201 if is_liked else 204
+
+        return jsonify({'isLiked': is_liked}), req_status
     except Exception as e:
         print('Erro ao conferir estado de curtida da postagem')
         return jsonify({'error': 'Não foi possível conferir o estado de curtida da postagem devido a um erro no nosso servidor.'}), 500

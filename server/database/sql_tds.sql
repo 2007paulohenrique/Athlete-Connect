@@ -168,6 +168,7 @@ CREATE TABLE IF NOT EXISTS responde (
 );
 
 CREATE TABLE IF NOT EXISTS curso_instituicao (
+    id_curso_instituicao int PRIMARY KEY AUTO_INCREMENT,
     fk_instituicao_id_instituicao int NOT NULL,
     fk_curso_id_curso int NOT NULL,
     FOREIGN KEY (fk_instituicao_id_instituicao) REFERENCES instituicao(id_instituicao),
@@ -329,8 +330,8 @@ CREATE TABLE IF NOT EXISTS formacao (
     conclusao date NOT NULL,
     fk_grau_formacao_id_grau_formacao int NOT NULL,
     fk_usuario_id_usuario int NOT NULL,
-    fk_curso_id_curso int NOT NULL,
+    fk_curso_instituicao_id_curso_instituicao int NOT NULL,
     FOREIGN KEY (fk_grau_formacao_id_grau_formacao) REFERENCES grau_formacao(id_grau_formacao),
     FOREIGN KEY (fk_usuario_id_usuario) REFERENCES usuario(id_usuario),
-    FOREIGN KEY (fk_curso_id_curso) REFERENCES curso(id_curso)
+    FOREIGN KEY (fk_curso_instituicao_id_curso_instituicao) REFERENCES curso_instituicao(id_curso_instituicao)
 );

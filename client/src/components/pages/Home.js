@@ -75,7 +75,7 @@ function Home() {
                 }
             })
             .catch(err => {
-                navigate("/errorPage", {state: {error: err.message}})
+                navigate("/login", {state: {message: "Não foi possível encontrar nenhum perfil com o id fornecido. Tente fazer login ou criar um perfil.", type: "error"}})
 
                 console.error('Erro ao fazer a requisição:', err);
             });

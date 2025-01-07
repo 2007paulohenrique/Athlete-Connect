@@ -4,7 +4,6 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    max-width: 3em;
     overflow: hidden;
     background-color: var(--ligth-bg-color);
     transition: all 0.15s ease-in-out;

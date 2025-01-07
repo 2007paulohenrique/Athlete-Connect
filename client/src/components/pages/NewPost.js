@@ -127,7 +127,7 @@ function NewPost() {
             const blobUrl = URL.createObjectURL(file); 
             
             return {
-                type: file.type.startsWith('image/') ? 'image' : 'video',
+                type: file.type.startsWith('image/') ? 'imagem' : 'video',
                 path: blobUrl,
                 duration: file.type.startsWith('video/') ? null : undefined,
             };

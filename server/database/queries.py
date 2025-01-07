@@ -13,7 +13,7 @@ def get_profiles(con):
           print(f"Erro ao recuperar perfis: {e}")
           return None
           
-def get_profile(con, profile_id):
+def get_profile(con, profile_id, profile_viewer_id = None):
      try:
           with con.cursor(dictionary=True) as cursor:
                sql = "SELECT * FROM perfil WHERE id_perfil = %s"
@@ -28,9 +28,159 @@ def get_profile(con, profile_id):
 
                          if result["media"] is None:
                               raise Exception("Erro ao recuperar foto de perfil.")
+                         
+                    result["preferences"] = get_profile_preferences(con, profile_id)
+
+                    if result["preferences"] is None:
+                         raise Exception("Erro ao recuperar preferências do perfil.")  
+
+                    result["posts"] = get_profile_posts(con, profile_id)
+
+                    if result["posts"] is None:
+                         raise Exception("Erro ao recuperar postagens do perfil.")  
+
+                    result["followers"] = get_followers(con, profile_id)
+                    
+                    if result["followers"] is None:
+                         raise Exception("Erro ao recuperar seguidores do perfil.")  
+                    
+                    likes = get_profile_likes(con, profile_id)
+                    
+                    if likes is None:
+                         raise Exception("Erro ao recuperar número de curtidas do perfil.")  
+                    
+                    result["likes"] = likes
+                    
+                    if profile_viewer_id:
+                         result["isFollowed"] = check_follow(con, profile_viewer_id, profile_id)
+                         
+                         if result["isFollowed"] is None:
+                              raise Exception("Erro ao recuperar estado de seguidor do perfil.")
+                    
           return result
      except Exception as e:
           print(f"Erro ao recuperar perfil: {e}")
+          return None
+     
+def get_profile_likes(con, profile_id):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               sql = """
+                    SELECT COUNT(c.fk_postagem_id_postagem) AS total_likes
+                    FROM postagem po
+                    JOIN curte c ON po.id_postagem = c.fk_postagem_id_postagem
+                    JOIN perfil p ON po.fk_perfil_id_perfil = p.id_perfil
+                    WHERE p.id_perfil = %s
+               """
+               cursor.execute(sql, (profile_id,))
+               result = cursor.fetchone()
+
+          return result['total_likes'] if result else 0  
+     except Exception as e:
+          print(f"Erro ao recuperar número de curtidas do perfil: {e}")
+          return None
+     
+def get_profile_preferences(con, profile_id):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               sql = """
+                    SELECT 
+                    e.nome,
+                    m.caminho AS icone
+                    FROM preferencia p
+                    JOIN esporte e ON p.fk_esporte_id_esporte = e.id_esporte
+                    JOIN midia m ON e.fk_midia_id_icone = m.id_midia
+                    WHERE p.fk_perfil_id_perfil = %s
+               """
+               cursor.execute(sql, (profile_id,))
+               result = cursor.fetchall()
+
+          return result
+     except Exception as e:
+          print(f"Erro ao recuperar preferências do perfil: {e}")
+          return None
+     
+# O usuário é recuperado através do id do perfil
+def get_user(con, profile_id, profile_viewer_id):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               sql = "SELECT * FROM usuario WHERE fk_perfil_id_perfil = %s"
+               cursor.execute(sql, (profile_id,))
+               result = cursor.fetchone()
+
+               if result:
+                    profile = get_profile(con, profile_id, profile_viewer_id)
+
+                    if profile is None:
+                         raise Exception("Erro ao recuperar perfil do usuário.")  
+                    
+                    profile["qualifications"] = get_user_qualifications(con, result.get("id_usuario"))
+
+                    if profile["qualifications"] is None:
+                         raise Exception("Erro ao recuperar formações do usuário.")  
+
+          return profile
+     except Exception as e:
+          print(f"Erro ao recuperar usuário: {e}")
+          return None
+     
+def get_profile_posts(con, profile_id):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               sql = f"""
+                    SELECT p.*,
+                    COUNT(DISTINCT c.fk_perfil_id_perfil) AS total_curtidas,
+                    COUNT(DISTINCT cp.id_compartilhamento) AS total_compartilhamentos,
+                    COUNT(DISTINCT co.id_comentario) AS total_comentarios
+                    FROM postagem p
+                    LEFT JOIN curte c ON c.fk_postagem_id_postagem = p.id_postagem
+                    LEFT JOIN compartilhamento cp ON cp.fk_postagem_id_postagem = p.id_postagem
+                    LEFT JOIN comentario co ON co.fk_postagem_id_postagem = p.id_postagem
+                    WHERE p.fk_perfil_id_perfil = %s
+                    GROUP BY p.id_postagem
+               """
+               cursor.execute(sql, (profile_id,))
+               result = cursor.fetchall()
+
+               if not result:
+                    return []
+
+               posts_ids = [post["id_postagem"] for post in result]
+          
+               medias = get_post_medias_for_feed(con, posts_ids) 
+               # hashtags = get_post_hashtags_for_feed(con, posts_ids) 
+               # tags = get_post_tags_for_feed(con, posts_ids) 
+               # comments = get_post_comments_for_feed(con, posts_ids)       
+               # profile = get_profile(con, profile_id)
+
+               if medias is None:
+                    raise Exception("Erro ao recuperar dados das postagens do perfil.")
+
+               # if medias is None or hashtags is None or tags is None or comments is None or profile is None:
+               #      raise Exception("Erro ao recuperar dados das postagens do perfil.")
+
+               posts = []
+
+               for post in result:
+                    post["medias"] = medias.get(post["id_postagem"], [])
+
+                    if not post["medias"]:
+                         raise Exception("Erro ao recuperar mídias da postagem.")
+
+                    # post["author"] = profile
+                    
+                    # if not post["author"]:
+                    #      raise Exception("Erro ao recuperar autor da postagem.")
+
+                    # post["hashtags"] = hashtags.get(post["id_postagem"], [])
+                    # post["tags"] = tags.get(post["id_postagem"], [])
+                    # post["comments"] = comments.get(post["id_postagem"], [])
+                    
+                    posts.append(post)
+
+          return posts
+     except Exception as e:
+          print(f"Erro ao recuperar postagens do perfil: {e}")
           return None
           
 def insert_profile(con, email, password, name, bio, private):
@@ -70,6 +220,53 @@ def insert_profile_preferences(con, profile_id, sports_ids):
           print(f"Erro ao inserir preferências do perfil: {e}")
           return False
              
+def get_user_qualifications(con, user_id):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               sql = """
+                    SELECT 
+                    c.nome AS curso,
+                    i.nome AS instituicao,
+                    gf.grau AS grau,
+                    e.sigla AS estado,
+                    ci.nome AS cidade
+                    FROM formacao f
+                    JOIN grau_formacao gf ON f.fk_grau_formacao_id_grau_formacao = gf.id_grau_formacao
+                    JOIN curso_instituicao cui ON f.fk_curso_instituicao_id_curso_instituicao = cui.id_curso_instituicao
+                    JOIN curso c ON cui.fk_curso_id_curso = c.id_curso
+                    JOIN instituicao i ON cui.fk_instituicao_id_instituicao = i.id_instituicao
+                    JOIN cidade ci ON i.fk_cidade_id_cidade = ci.id_cidade
+                    JOIN estado e ON ci.fk_estado_id_estado = e.id_estado
+                    WHERE f.fk_usuario_id_usuario = %s
+               """
+               cursor.execute(sql, (user_id,))
+               result = cursor.fetchall()
+
+          return result
+     except Exception as e:
+          print(f"Erro ao recuperar formações do usuário: {e}")
+          return None
+     
+def get_profile_preferences(con, profile_id):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               sql = """
+                    SELECT 
+                    e.nome,
+                    m.caminho AS icone
+                    FROM preferencia p
+                    JOIN esporte e ON p.fk_esporte_id_esporte = e.id_esporte
+                    JOIN midia m ON e.fk_midia_id_icone = m.id_midia
+                    WHERE p.fk_perfil_id_perfil = %s
+               """
+               cursor.execute(sql, (profile_id,))
+               result = cursor.fetchall()
+
+          return result
+     except Exception as e:
+          print(f"Erro ao recuperar preferências do perfil: {e}")
+          return None
+     
 def insert_user(con, profile_id):
      try:
           with con.cursor() as cursor:
@@ -256,6 +453,21 @@ def get_followeds(con, follower_profile_id):
      except Exception as e:
           print(f"Erro ao recuperar perfis seguidos: {e}")
           return None
+     
+def get_followers(con, followed_profile_id):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               sql = "SELECT * FROM segue WHERE fk_perfil_id_seguido = %s"
+               cursor.execute(sql, (followed_profile_id,))
+               result = cursor.fetchall()
+
+               followers_ids = [item['fk_perfil_id_seguidor'] for item in result]
+
+          con.commit()
+          return followers_ids
+     except Exception as e:
+          print(f"Erro ao recuperar perfis seguidores: {e}")
+          return None
 
 def get_feed_posts(con, profile_id):
      try:
@@ -316,12 +528,12 @@ def get_feed_posts(con, profile_id):
                     post["isLiked"] = check_like(con, profile_id, post["id_postagem"])
                     
                     if post["isLiked"] is None:
-                         raise Exception("Erro ao recuperar status de curtida da postagem.")
+                         raise Exception("Erro ao recuperar estado de curtida da postagem.")
 
                     post["isComplainted"] = check_complaint(con, profile_id, post["id_postagem"])
                     
                     if post["isComplainted"] is None:
-                         raise Exception("Erro ao recuperar status de denúncia da postagem. ")
+                         raise Exception("Erro ao recuperar estado de denúncia da postagem. ")
 
                     feed.append(post)
 
@@ -554,7 +766,42 @@ def toggle_like(con, profile_id, post_id):
           con.rollback()
           print(f"Erro ao curtir postagem: {e}")
           return None
-          
+     
+def toggle_follow(con, follower_id, followed_id):
+     try:
+          with con.cursor() as cursor:
+               sql_check = "SELECT * FROM segue WHERE fk_perfil_id_seguidor = %s AND fk_perfil_id_seguido = %s"
+               cursor.execute(sql_check, (follower_id, followed_id))
+               result = cursor.fetchone()
+
+               if result:
+                    sql_delete = "DELETE FROM segue WHERE fk_perfil_id_seguidor = %s AND fk_perfil_id_seguido = %s"
+                    cursor.execute(sql_delete, (follower_id, followed_id))
+                    is_followed = False
+               else:
+                    sql_insert = "INSERT INTO segue (fk_perfil_id_seguidor, fk_perfil_id_seguido) VALUES (%s, %s)"
+                    cursor.execute(sql_insert, (follower_id, followed_id))
+                    is_followed = True
+                    
+          con.commit()
+          return is_followed
+     except Exception as e:
+          con.rollback()
+          print(f"Erro ao seguir perfil: {e}")
+          return None
+
+def check_follow(con, follower_id, followed_id):
+     try:
+          with con.cursor() as cursor:
+               sql = "SELECT * FROM segue WHERE fk_perfil_id_seguidor = %s AND fk_perfil_id_seguido = %s"
+               cursor.execute(sql, (follower_id, followed_id))
+               result = cursor.fetchone()
+
+          return result is not None
+     except Exception as e:
+          print(f"Erro ao conferir estado de seguidor do perfil: {e}")
+          return None
+               
 def check_like(con, profile_id, post_id):
      try:
           with con.cursor() as cursor:
@@ -564,7 +811,7 @@ def check_like(con, profile_id, post_id):
 
           return result is not None
      except Exception as e:
-          print(f"Erro ao conferir curtida da postagem: {e}")
+          print(f"Erro ao conferir estado de curtida da postagem: {e}")
           return None
 
 def check_complaint(con, profile_id, post_id):
