@@ -37,3 +37,9 @@
 .error_message > p:first-child {
     color: var(--alert-color);
 }
+
+@media screen and (max-width: 720px) {
+    .error_page {
+        font-size: 0.85em;
+    }
+}
