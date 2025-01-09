@@ -15,8 +15,9 @@ import ProfileSmallerContainer from "./ProfileSmallerContainer";
 import { useProfile } from "../../ProfileContext";
 import formatNumber from "../../utils/NumberFormatter";
 import PostItemsContainer from "./PostItemsContainer";
+import { useNavigate } from "react-router-dom";
 
-function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], complaintReasons = [], moment, mediasPath = [], blobUrlsMedias = [], caption, isInCreating = false, setHashtagsInPost, postHashtags, setTagsInPost, postTags, sharingSubmit, complaintSubmit, isComplainted, comments, commentSubmit, likeSubmit, isLiked, post }) {
+function Post({ author, hashtags = [], tags = [], complaintReasons = [], moment, mediasPath = [], blobUrlsMedias = [], caption, isInCreating = false, setHashtagsInPost, postHashtags, setTagsInPost, postTags, sharingSubmit, complaintSubmit, isComplainted, comments, commentSubmit, likeSubmit, isLiked, post }) {
     const [medias, setMedias] = useState([]);
     const [showHashtags, setShowHashtags] = useState(false);  
     const [selectedHashtags, setSelectedHashtags] = useState([]);
@@ -36,10 +37,12 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
     const [showComplaintReasons, setShowComplaintReasons] = useState(false);  
     const [postComplaintReasons, setPostComplaintReasons] = useState([]);
-    const [sharings, setSharings] = useState([]);
     const [selectedComplaintReasons, setSelectedComplaintReasons] = useState([]);
     const [complaintDescription, setComplaintDescription] = useState("");
+    const [sharings, setSharings] = useState([]);
     const {profileId} = useProfile();
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (!blobUrlsMedias || blobUrlsMedias.length === 0) {
@@ -76,11 +79,11 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
 
     useEffect(() => {
         const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
-        const filteredData = tags.filter(tag => tag.nome !== authorUserName && String(tag.id_perfil) !== String(confirmedProfileId));
+        const filteredData = tags.filter(tag => tag.nome !== author.nome && String(tag.id_perfil) !== String(confirmedProfileId));
 
         setFilteredTags(filteredData);
         setFilteredSharings(filteredData);
-    }, [authorUserName, isInCreating, profileId, tags]);
+    }, [author.nome, isInCreating, profileId, tags]);
 
     const handleVideoLoad = (index, videoElement) => {
         if (videoElement) {
@@ -111,21 +114,21 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
     useEffect(() => {
         const filtered = tags.filter((tag) =>
             tag.nome.toLowerCase().includes(searchTextTag.toLowerCase()) &&
-            tag.nome !== authorUserName
+            tag.nome !== author.nome
         );
 
         setFilteredTags(filtered);
-    }, [authorUserName, searchTextTag, tags]);
+    }, [author.nome, searchTextTag, tags]);
 
     useEffect(() => {
         const filtered = tags.filter((tag) =>
             tag.nome.toLowerCase().includes(searchTextSharing.toLowerCase()) &&
-            tag.nome !== authorUserName &&
+            tag.nome !== author.nome &&
             tag.id_perfil !== Number(localStorage.getItem("athleteConnectProfileId"))
         );
 
         setFilteredSharings(filtered);
-    }, [authorUserName, profileId, searchTextSharing, tags]);
+    }, [author.nome, profileId, searchTextSharing, tags]);
 
     const handleSearchHashtagChange = (e) => {
         setSearchTextHashtag(e.target.value);
@@ -356,12 +359,14 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
             !complaintDescription;
     }, [complaintDescription]);
 
-
-
     return (
         <div className={styles.post}>
             <div className={styles.first_post_container}>
-                <ProfileSmallerContainer profilePhotoPath={authorPhotoPath} profileName={authorUserName}/>
+                <ProfileSmallerContainer 
+                    profilePhotoPath={author.media ? author.media.caminho : ""} 
+                    profileName={author.nome} 
+                    handleClick={!isInCreating ? () => navigate(`/profile/${author.id_perfil}`) : undefined}
+                />
 
                 <div className={styles.medias}>
                     {medias.length > 0 && (
@@ -397,7 +402,7 @@ function Post({ authorUserName, authorPhotoPath, hashtags = [], tags = [], compl
             <div className={styles.second_post_container}>    
                 <span className={styles.date}>Publicado em: {moment}</span>
                 
-                <p className={styles.caption}><span>{authorUserName}:</span> {caption}</p>
+                <p className={styles.caption}><span>{author.nome}:</span> {caption}</p>
 
                 <ul className={styles.post_actions}>
                     <div>

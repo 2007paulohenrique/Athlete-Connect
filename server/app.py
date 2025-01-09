@@ -311,6 +311,34 @@ def post_follow(profile_id):
         if con:
             close_connection(con)
 
+@app.route('/profiles/<int:profile_id>/complaint', methods=['POST'])
+def profile_complaint(profile_id):
+    try:
+        con = open_connection(*con_params)
+
+        if con is None:
+            print('Erro ao abrir conexão com banco de dados')
+            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+
+        description = request.form.get('description')
+        author_id = int(request.form.get('authorId'))
+        complaint_reasons_ids = request.form.getlist('complaintReasonsIds')
+        reasons_ids = [int(reason_id) for reason_id in complaint_reasons_ids]
+    
+        complaint_result = insert_profile_complaint(con, description, author_id, profile_id, reasons_ids)
+
+        if not complaint_result:
+            print('Erro ao denunciar perfil')
+            return jsonify({'error': 'Não foi possível denunciar o perfil devido a um erro no nosso servidor.'}), 500
+        
+        return ({'success': 'success'}), 201
+    except Exception as e:
+        print('Erro ao denunciar perfil')
+        return jsonify({'error': 'Não foi possível denunciar o perfil devido a um erro no nosso servidor.'}), 500
+    finally:
+        if con:
+            close_connection(con)
+
 @app.route('/profiles/<int:profile_id>/feed', methods=['GET'])
 def get_feed(profile_id):
     try:
@@ -458,9 +486,9 @@ def post_complaint(post_id):
         description = request.form.get('description')
         author_id = int(request.form.get('authorId'))
         complaint_reasons_ids = request.form.getlist('complaintReasonsIds')
-        reason_ids = [int(reason_id) for reason_id in complaint_reasons_ids]
+        reasons_ids = [int(reason_id) for reason_id in complaint_reasons_ids]
     
-        complaint_result = insert_post_complaint(con, description, author_id, post_id, reason_ids)
+        complaint_result = insert_post_complaint(con, description, author_id, post_id, reasons_ids)
 
         if not complaint_result:
             print('Erro ao denunciar postagem')

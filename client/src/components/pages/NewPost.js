@@ -218,8 +218,7 @@ function NewPost() {
                 <h2>Pré-visualização</h2>
 
                 <Post 
-                    authorUserName={profile.nome} 
-                    authorPhotoPath={profile.media && profile.media.caminho}
+                    author={profile}
                     moment={currentMoment} 
                     caption={post.caption} 
                     blobUrlsMedias={medias}

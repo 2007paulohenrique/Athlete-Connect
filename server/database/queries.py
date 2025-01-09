@@ -56,6 +56,11 @@ def get_profile(con, profile_id, profile_viewer_id = None):
                          
                          if result["isFollowed"] is None:
                               raise Exception("Erro ao recuperar estado de seguidor do perfil.")
+
+                         result["isComplainted"] = check_profile_complaint(con, profile_viewer_id, profile_id)
+                    
+                         if result["isComplainted"] is None:
+                              raise Exception("Erro ao recuperar estado de denúncia do perfil. ")
                     
           return result
      except Exception as e:
@@ -530,7 +535,7 @@ def get_feed_posts(con, profile_id):
                     if post["isLiked"] is None:
                          raise Exception("Erro ao recuperar estado de curtida da postagem.")
 
-                    post["isComplainted"] = check_complaint(con, profile_id, post["id_postagem"])
+                    post["isComplainted"] = check_post_complaint(con, profile_id, post["id_postagem"])
                     
                     if post["isComplainted"] is None:
                          raise Exception("Erro ao recuperar estado de denúncia da postagem. ")
@@ -814,16 +819,28 @@ def check_like(con, profile_id, post_id):
           print(f"Erro ao conferir estado de curtida da postagem: {e}")
           return None
 
-def check_complaint(con, profile_id, post_id):
+def check_post_complaint(con, author_id, post_id):
      try:
           with con.cursor() as cursor:
                sql = "SELECT * FROM denuncia WHERE fk_perfil_id_autor = %s AND fk_postagem_id_postagem = %s"
-               cursor.execute(sql, (profile_id, post_id))
+               cursor.execute(sql, (author_id, post_id))
                result = cursor.fetchone()
 
           return result is not None
      except Exception as e:
           print(f"Erro ao conferir denúncia da postagem: {e}")
+          return None
+     
+def check_profile_complaint(con, author_id, profile_id):
+     try:
+          with con.cursor() as cursor:
+               sql = "SELECT * FROM denuncia WHERE fk_perfil_id_autor = %s AND fk_perfil_id_denunciado = %s"
+               cursor.execute(sql, (author_id, profile_id))
+               result = cursor.fetchone()
+
+          return result is not None
+     except Exception as e:
+          print(f"Erro ao conferir denúncia do perfil: {e}")
           return None
 
 def insert_sharing(con, caption, post_id, profile_id, shared_profiles_ids):
@@ -888,15 +905,15 @@ def insert_comment(con, text, post_id, profile_id):
           print(f"Erro ao comentar na postagem: {e}")
           return None
 
-def insert_post_complaint(con, description, profile_id, post_id, complaint_reasons_ids):
+def insert_post_complaint(con, description, author_id, post_id, complaint_reasons_ids):
      try:
           with con.cursor() as cursor:
                sql = "INSERT INTO denuncia (descricao, fk_perfil_id_autor, fk_postagem_id_postagem) VALUES (%s, %s, %s)"
-               cursor.execute(sql, (description, profile_id, post_id))
+               cursor.execute(sql, (description, author_id, post_id))
                complaint_id = cursor.lastrowid
 
                if complaint_reasons_ids:
-                    if not insert_post_complaint_reasons(con, complaint_reasons_ids, complaint_id):
+                    if not insert_complaint_reasons(con, complaint_reasons_ids, complaint_id):
                          raise Exception("Erro ao inserir motivos da denúncia.")
 
           con.commit() 
@@ -906,7 +923,25 @@ def insert_post_complaint(con, description, profile_id, post_id, complaint_reaso
           print(f"Erro ao denúnciar postagem: {e}")
           return False
 
-def insert_post_complaint_reasons(con, complaint_reasons_ids, complaint_id):
+def insert_profile_complaint(con, description, author_id, profile_id, complaint_reasons_ids):
+     try:
+          with con.cursor() as cursor:
+               sql = "INSERT INTO denuncia (descricao, fk_perfil_id_autor, fk_perfil_id_denunciado) VALUES (%s, %s, %s)"
+               cursor.execute(sql, (description, author_id, profile_id))
+               complaint_id = cursor.lastrowid
+
+               if complaint_reasons_ids:
+                    if not insert_complaint_reasons(con, complaint_reasons_ids, complaint_id):
+                         raise Exception("Erro ao inserir motivos da denúncia.")
+
+          con.commit() 
+          return True
+     except Exception as e:
+          con.rollback()
+          print(f"Erro ao denúnciar perfil: {e}")
+          return False
+
+def insert_complaint_reasons(con, complaint_reasons_ids, complaint_id):
      if not complaint_reasons_ids:
           return False
 

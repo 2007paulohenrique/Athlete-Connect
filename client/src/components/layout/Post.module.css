@@ -38,13 +38,14 @@
 }
 
 .medias {
-    width: 100%;
-    height: 100%;
+    flex: 1;
+    aspect-ratio: 3 / 2 ;
     display: flex;
     justify-content: center;
     align-items: center;
     overflow: hidden;
     position: relative;
+    display: block;
 }
 
 .media_info {
@@ -68,11 +69,6 @@
     top: 0.6em;
     left: 0.6em;
 }
-
-/* .media_info > p:nth-child(2) {
-    top: 0.6em;
-    right: 0.6em;
-} */
 
 .medias > img,
 .medias > video {

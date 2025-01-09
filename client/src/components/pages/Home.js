@@ -278,7 +278,6 @@ function Home() {
         <main className={styles.home_page}>
             {message && <Message message={message.message} type={message.type}/>}
 
-
             <ProfileNavBar/>
 
             <FlashesSection/>
@@ -291,8 +290,7 @@ function Home() {
                 {feed && feed.map((post) => (
                     <Post 
                         key={post.id_postagem}
-                        authorUserName={post.author.nome}
-                        authorPhotoPath={post.author.media ? post.author.media.caminho : ""}
+                        author={post.author}
                         moment={post.data_publicacao}
                         mediasPath={post.medias.map(media => media.caminho)}
                         caption={post.legenda}
