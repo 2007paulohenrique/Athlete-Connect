@@ -29,9 +29,31 @@
     max-width: 25em;
 }
 
-/* .profile_qualifications {
+.profile_qualifications {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    max-height: 8em;
+    overflow: auto;
+    text-align: center;
+    width: 100%;
+    letter-spacing: 0.5px;
+}
 
-} */
+.profile_qualifications > li {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+}
+
+.profile_qualifications > li > span:first-child {
+    color: var(--ligth-theme-color);
+}
+
+.profile_qualifications > li > span:last-child {
+    font-size: 0.8em;
+}
 
 .profile_stats {
     display: flex;
@@ -134,7 +156,6 @@
 .complaint_button_selected,
 .complaint_button:hover {
     background-color: var(--red-color);
-    border: none;
 }
 
 .complaint_button > img {
@@ -177,9 +198,16 @@
 .profile_posts {
     width: calc(100dvw - 2em);
     height: max-content;
+    min-height: 5em;
     display: flex;
     flex-wrap: wrap;
     position: relative;
+}
+
+.profile_posts > p {
+    width: 100%;
+    text-align: center;
+    margin-top: auto;
 }
 
 .profile_posts > div {

@@ -50,6 +50,11 @@ function App() {
           />
 
           <Route 
+            path="/myProfile" 
+            element={<Profile/>} 
+          />
+
+          <Route 
             exact
             path="/" 
             element={<Home/>} 

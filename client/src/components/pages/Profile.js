@@ -29,9 +29,15 @@ function Profile() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const followerId = profileId || localStorage.getItem("athleteConnectProfileId");
+        const viwerId = profileId || localStorage.getItem("athleteConnectProfileId");
 
-        axios.get(`http://localhost:5000/profiles/users/${id}?viewerId=${followerId}`)
+        if (id === viwerId) navigate("/myProfile");
+
+        const url = id
+        ? `http://localhost:5000/profiles/users/${id}?viewerId=${viwerId}`
+        : `http://localhost:5000/profiles/users/${viwerId}`;
+        
+        axios.get(url)
         .then(resp => {
             const data = resp.data;
 
@@ -238,16 +244,20 @@ function Profile() {
                 <p>{profile.biografia}</p>
             </div>
 
-            {(profile.qualifications && profile.qualifications.length !== 0) && (                    
-                <ul className={styles.profile_qualifications}>
-                    {profile.qualifications.map((qualification, index) => (
-                        <li key={index}>
-                            <span>{`${qualification.grau} em ${qualification.curso}`}</span>
+            {(profile.qualifications && profile.qualifications.length !== 0) && (   
+                <>
+                    {/* <hr/> */}
 
-                            <span>{`${qualification.instituicao} - ${qualification.estado} - ${qualification.cidade}`}</span>
-                        </li>
-                    ))}
-                </ul>
+                    <ul className={styles.profile_qualifications}>
+                        {profile.qualifications.map((qualification, index) => (
+                            <li key={index}>
+                                <span>{`${qualification.grau} em ${qualification.curso}`}</span>
+
+                                <span>{`${qualification.instituicao} - ${qualification.estado} - ${qualification.cidade}`}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </>
             )}
 
             <hr/>
@@ -274,57 +284,72 @@ function Profile() {
             <hr/>
 
             {(profile.preferences && profile.preferences.length !== 0) && (
-                <ul className={styles.profile_preferences}>
-                    {profile.preferences.map((sport, index) => (
-                        <li key={index}>
-                            <img src={sport.icone} alt={`${sport.nome} Icon`}/>
+                <>
+                    <ul className={styles.profile_preferences}>
+                        {profile.preferences.map((sport, index) => (
+                            <li key={index}>
+                                <img src={sport.icone} alt={`${sport.nome} Icon`}/>
 
-                            <span>{sport.nome}</span>
-                        </li>
-                    ))}
-                </ul>   
+                                <span>{sport.nome}</span>
+                            </li>
+                        ))}
+                    </ul>   
+
+                    <hr/>
+                </>
             )}
 
-            <hr/>
 
             <div className={styles.profile_actions}>
-                <button className={`${styles.follow_button} ${profile.isFollowed && styles.follow_button_selected}`} onClick={followProfile}>
-                    {profile.isFollowed ? "Seguindo" : "Seguir"}
-                </button>
+                {id ? (
+                    <>
+                        <button className={`${styles.follow_button} ${profile.isFollowed && styles.follow_button_selected}`} onClick={followProfile}>
+                            {profile.isFollowed ? "Seguindo" : "Seguir"}
+                        </button>
 
-                <button className={`${styles.complaint_button} ${profile.isComplainted && styles.complaint_button_selected}`}>
-                    <img src={profile.isComplainted ? complaintIcon : complaintedIcon} alt="Complaint" onClick={!profile.isComplainted ? viewComplaint : undefined}/>
+                        <button className={`${styles.complaint_button} ${profile.isComplainted && styles.complaint_button_selected}`}>
+                            <img src={profile.isComplainted ? complaintIcon : complaintedIcon} alt="Complaint" onClick={!profile.isComplainted ? viewComplaint : undefined}/>
 
-                    {showComplaintReasons && (
-                        <div className={styles.profile_complaint}>
-                            <span onClick={viewComplaint}>Voltar</span>
+                            {showComplaintReasons && (
+                                <div className={styles.profile_complaint}>
+                                    <span onClick={viewComplaint}>Voltar</span>
 
-                            <form onSubmit={complaintSubmit}>
-                                <SubmitButton text="Denunciar"/>
-                                
-                                <MainInput 
-                                    type="text" 
-                                    name="complaintDescription" 
-                                    placeholder="Descreva o motivo da sua denúncia" 
-                                    maxLength={255}
-                                    alertMessage="A descrição não pode ter mais que 255 caracteres"
-                                    handleChange={handleOnChangeComplaintDescription}    
-                                    showAlert={!validateComplaintDescription()}
-                                    value={complaintDescription}
-                                />
-                            </form>
+                                    <form onSubmit={complaintSubmit}>
+                                        <SubmitButton text="Denunciar"/>
+                                        
+                                        <MainInput 
+                                            type="text" 
+                                            name="complaintDescription" 
+                                            placeholder="Descreva o motivo da sua denúncia" 
+                                            maxLength={255}
+                                            alertMessage="A descrição não pode ter mais que 255 caracteres"
+                                            handleChange={handleOnChangeComplaintDescription}    
+                                            showAlert={!validateComplaintDescription()}
+                                            value={complaintDescription}
+                                        />
+                                    </form>
 
-                            <PostItemsContainer
-                                searchText={true}
-                                filteredItems={complaintReasons}
-                                handleClick={handleClickComplaintReason}
-                                isSelectable
-                                selectedItems={selectedComplaintReasons}
-                                isComplaintReasons
-                            />
-                        </div>
-                    )}
-                </button>
+                                    <PostItemsContainer
+                                        searchText={true}
+                                        filteredItems={complaintReasons}
+                                        handleClick={handleClickComplaintReason}
+                                        isSelectable
+                                        selectedItems={selectedComplaintReasons}
+                                        isComplaintReasons
+                                    />
+                                </div>
+                            )}
+                        </button>
+                    </>
+                ) : (
+                    <>
+                        <button className={styles.follow_button}>Editar perfil</button>
+
+                        <button className={styles.follow_button}>Editar preferências</button>
+
+                        <button className={styles.follow_button}>Adicionar formação</button>
+                    </>
+                )}
             </div>
 
             <section className={styles.profile_posts}>
@@ -334,15 +359,15 @@ function Profile() {
                 
                 {profile.posts ? 
                     profile.posts.length !== 0 ? profile.posts.map((post, index) => (
-                    <div key={index}>
-                        <span>{post.medias.length > 1 ? `${post.medias.length - 1} +` : ""}</span>
+                        <div key={index}>
+                            <span>{post.medias.length > 1 ? `${post.medias.length - 1} +` : ""}</span>
 
-                        <img 
-                            src={thumbnails[index]} 
-                            alt={`Post ${index}`} 
-                        />
-                    </div>
-                    )) : <p>O perfil ainda não publicou nada.</p>
+                            <img 
+                                src={thumbnails[index]} 
+                                alt={`Post ${index}`} 
+                            />
+                        </div>
+                    )) : <p>{id ? `${profile.nome} ainda não publicou nada.` : "Faça sua primeira publicação!"}</p>
                 : null}
             </section>
         </main>

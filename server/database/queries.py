@@ -106,7 +106,7 @@ def get_profile_preferences(con, profile_id):
           return None
      
 # O usuário é recuperado através do id do perfil
-def get_user(con, profile_id, profile_viewer_id):
+def get_user(con, profile_id, profile_viewer_id = None):
      try:
           with con.cursor(dictionary=True) as cursor:
                sql = "SELECT * FROM usuario WHERE fk_perfil_id_perfil = %s"
