@@ -36,7 +36,7 @@ function AppNavBar({ profilePhotoPath }) {
                     <img src={favPlacesIcon} alt="Favorite Places"/>
                 </li>
                 
-                <li className={profilePhoto && styles.profile_photo}>
+                <li className={profilePhoto && styles.profile_photo} onClick={() => navigate("/myProfile")}>
                     <img src={profilePhoto} alt="Profile"/>
                 </li>
             </ul>

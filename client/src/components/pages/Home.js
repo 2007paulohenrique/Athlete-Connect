@@ -322,7 +322,7 @@ function Home() {
                 </button>
             </section>
 
-            <AppNavBar profilePhotoPath={profile && profile.media ? profile.media.caminho : ""}/>
+            <AppNavBar profilePhotoPath={profile?.media ? profile.media.caminho : ""}/>
         </main>
     );
 }

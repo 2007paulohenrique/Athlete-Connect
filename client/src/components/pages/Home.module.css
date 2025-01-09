@@ -3,10 +3,11 @@
     flex-direction: column;
     background-color: var(--ligth-bg-color);
     min-width: 22.3em;
+    position: relative;
 }
 
 .posts_section {
-    margin: 4.7em 0 3.9em 4.6em;
+    margin-left: 4.6em;
     position: relative;
     flex: 1;
 }

@@ -17,7 +17,7 @@
     border-right: 1px solid var(--ligth-font-color);
     overflow-y: auto;
     position: fixed;
-    top: calc(4.6em + 1px);
+    top: 4.2em;
     bottom: 4em;
     scrollbar-width: thin; 
     scrollbar-color: var(--dark-theme-color) var(--dark-bg-color);
@@ -67,6 +67,7 @@
         overflow-y: unset;
         overflow-x: auto;
         bottom: unset;
+        top: unset;
         position: relative;
     }
 }

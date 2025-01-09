@@ -12,6 +12,8 @@ import MainInput from "../form/MainInput";
 import PostItemsContainer from "../layout/PostItemsContainer";
 import Message from "../layout/Message";
 import loading from "../../img/animations/loading.svg";
+import AppNavBar from "../layout/AppNavBar";
+import ProfileNavBar from "../layout/ProfileNavBar";
 
 function Profile() {
     const [thumbnails, setThumbnails] = useState([]);
@@ -236,6 +238,8 @@ function Profile() {
         <main className={styles.profile_page}>
             {message && <Message message={message.message} type={message.type}/>}
 
+            <ProfileNavBar/>
+
             <div className={styles.profile_main_info}>
                 <ProfilePhotoContainer profilePhotoPath={profile.media?.caminho} size="large"/>
                 
@@ -246,8 +250,6 @@ function Profile() {
 
             {(profile.qualifications && profile.qualifications.length !== 0) && (   
                 <>
-                    {/* <hr/> */}
-
                     <ul className={styles.profile_qualifications}>
                         {profile.qualifications.map((qualification, index) => (
                             <li key={index}>
@@ -370,6 +372,8 @@ function Profile() {
                     )) : <p>{id ? `${profile.nome} ainda não publicou nada.` : "Faça sua primeira publicação!"}</p>
                 : null}
             </section>
+
+            <AppNavBar profilePhotoPath={profile?.media ? profile.media.caminho : ""}/>
         </main>
     );
 }

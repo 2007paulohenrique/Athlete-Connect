@@ -101,7 +101,7 @@ function Login() {
                 setProfileId(data.profileId);
                 localStorage.setItem('athleteConnectProfileId', data.profileId);
     
-                navigate("/");
+                navigate("/", {state: {message: "Bem-vindo de volta!", type: "success"}});
             }
         })
         .catch(err => {
