@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import SportCard from "../layout/SportCard";
 import styles from "./ProfilePreferences.module.css";
@@ -16,6 +16,23 @@ function ProfilePreferences() {
 
     const navigate = useNavigate();
     const location = useLocation();
+    
+    const fetchSports = useCallback(async () => {
+        try {
+            const resp = await axios.get("http://localhost:5000/sports");
+            const data = resp.data;
+            
+            if (data.error) {
+                navigate("/errorPage", {state: {error: data.error}});
+            } else {
+                setSports(data);
+            }
+        } catch (err) {
+            navigate("/errorPage", {state: {error: err.message}});
+    
+            console.error('Erro ao fazer a requisição:', err);
+        }
+    }, [navigate]);
 
     useEffect(() => {
         const profile = location?.state?.profileReady
@@ -24,27 +41,11 @@ function ProfilePreferences() {
             navigate("/login");
         } else {
             setProfile(location.state.profileReady);
+
+            fetchSports();
         }
-    }, [location, navigate]);
-
-    useEffect(() => {
-        axios.get("http://localhost:5000/sports")
-        .then(resp => {
-            const data = resp.data;
-
-            if (data.error) {
-                navigate("/errorPage", {state: {error: data.error}})
-            } else {
-                setSports(resp.data);
-            }
-        })
-        .catch(err => {
-            navigate("/errorPage", {state: {error: err.message}})
-
-            console.error('Erro ao fazer a requisição:', err);
-        });
-    }, [navigate]);
-
+    }, [fetchSports, location, navigate]);
+    
     function handleOnClick(sport) {
         setProfilePreferences(prevPreferences => {
             if (prevPreferences.includes(sport)) {
@@ -62,15 +63,59 @@ function ProfilePreferences() {
 
         setIsSubmitting(true);
 
-        const formDataA = new FormData();
-                
-        formDataA.append("email", profile.emailSignUp);
-        formDataA.append("name", profile.confirmedNameSignUp);
+        checkProfile();
+    }
 
-        axios.post(`http://localhost:5000/signup`, formDataA, {
-            headers: { "Content-Type": "multipart/form-data" }, 
-        })
-        .then(resp => {
+    const createProfile = async () => {
+        try {
+            const sportsIds = profilePreferences.map(sport => sport.id_esporte);
+            profile.preferences = sportsIds;
+
+            const formDataB = new FormData();
+
+            formDataB.append("name", profile.confirmedNameSignUp);
+            formDataB.append("email", profile.emailSignUp);
+            formDataB.append("password", profile.passwordSignUp);
+            formDataB.append("bio", profile.bio);
+            formDataB.append("private", profile.private);
+            sportsIds.forEach(sportId => formDataB.append("preferences", sportId));
+
+            if (profile.photo && profile.photo.length > 0) formDataB.append("photo", profile.photo[0]);
+
+            const resp = await axios.post("http://localhost:5000/profiles", formDataB, {
+                headers: { "Content-Type": "multipart/form-data" }, 
+            })
+            const data = resp.data;
+
+            if (data.error) {
+                setIsSubmitting(false);
+
+                navigate("/errorPage", {state: {error: data.error}})
+            } else {
+                setProfileId(data.profileId);
+                localStorage.setItem('athleteConnectProfileId', data.profileId)
+                
+                navigate("/", {state: {message: "Perfil criado com sucesso! Aproveite o Athlete Connect.", type: "success"}});
+            }
+        } catch (err) {
+            setIsSubmitting(false);
+                    
+            navigate("/errorPage", {state: {error: err.message}})
+
+            console.error('Erro ao fazer a requisição:', err);
+        }
+    }
+
+    const checkProfile = async () => {
+        try {
+            const formData = new FormData();
+        
+            formData.append("email", profile.emailSignUp);
+            formData.append("name", profile.confirmedNameSignUpnameSignUp); 
+
+            const resp = await axios.post(`http://localhost:5000/signup`, formData, {
+                headers: { "Content-Type": "multipart/form-data" }, 
+            })
             const data = resp.data;
 
             if (data.error) {
@@ -82,51 +127,15 @@ function ProfilePreferences() {
                     navigate("/errorPage", {state: {error: data.error}})
                 }
             } else {
-                const sportsIds = profilePreferences.map(sport => sport.id_esporte);
-                profile.preferences = sportsIds;
-
-                const formDataB = new FormData();
-
-                formDataB.append("name", profile.confirmedNameSignUp);
-                formDataB.append("email", profile.emailSignUp);
-                formDataB.append("password", profile.passwordSignUp);
-                formDataB.append("bio", profile.bio);
-                formDataB.append("private", profile.private);
-                sportsIds.forEach(sportId => formDataB.append("preferences", sportId));
-
-                if (profile.photo && profile.photo.length > 0) formDataB.append("photo", profile.photo[0]);
-
-                axios.post("http://localhost:5000/profiles", formDataB, {
-                    headers: { "Content-Type": "multipart/form-data" }, 
-                })
-                .then(resp => {
-                    const data = resp.data;
-
-                    if (data.error) {
-                        setIsSubmitting(false);
-
-                        navigate("/errorPage", {state: {error: data.error}})
-                    } else {
-                        setProfileId(resp.data.profileId);
-                        localStorage.setItem('athleteConnectProfileId', resp.data.profileId)
-                        
-                        navigate("/", {state: {message: "Perfil criado com sucesso! Aproveite o Athlete Connect.", type: "success"}});
-                    }
-                })
-                .catch(err => {
-                    setIsSubmitting(false);
-                    
-                    navigate("/errorPage", {state: {error: err.message}})
-
-                    console.error('Erro ao fazer a requisição:', err);
-                });
+                createProfile();
             }
-        })
-        .catch(err => {
+        } catch (err) {
             setIsSubmitting(false);
+
+            navigate("/errorPage", {state: {error: err.message}})
             
             console.error("Erro ao fazer a requisição:", err);
-        }); 
+        }
     }
 
     return (

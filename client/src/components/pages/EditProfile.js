@@ -21,20 +21,16 @@ function EditProfile() {
         }
     }, [location, navigate]);
 
-    function handleOnSubmit(e) {
-        e.preventDefault();
-
-        if (submitError) return;
-
-        const formData = new FormData();
+    const checkProfile = async () => {
+        try {
+            const formData = new FormData();
         
-        formData.append("email", profile.emailSignUp);
-        formData.append("name", profile.confirmedNameSignUp);
+            formData.append("email", profile.emailSignUp);
+            formData.append("name", profile.confirmedNameSignUp);    
 
-        axios.post(`http://localhost:5000/signup`, formData, {
-            headers: { "Content-Type": "multipart/form-data" }, 
-        })
-        .then(resp => {
+            const resp = await axios.post(`http://localhost:5000/signup`, formData, {
+                headers: { "Content-Type": "multipart/form-data" }, 
+            })
             const data = resp.data;
 
             if (data.error) {
@@ -46,15 +42,22 @@ function EditProfile() {
             } else {
                 if (!profile.bio) profile.bio = "";
                 if (profile.private === undefined) profile.private = false;      
-    
+
                 navigate("/profilePreferences", {state: {profileReady: profile}});
             }
-        })
-        .catch(err => {
+        } catch (err) {
             navigate("/errorPage", {state: {error: err.message}})
 
             console.error("Erro ao fazer a requisição:", err);
-        }); 
+        }
+    }
+
+    function handleOnSubmit(e) {
+        e.preventDefault();
+
+        if (submitError) return;
+
+        checkProfile();
     }
 
     return (

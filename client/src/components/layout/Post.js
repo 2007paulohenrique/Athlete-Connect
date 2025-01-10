@@ -309,7 +309,7 @@ function Post({ author, hashtags = [], tags = [], complaintReasons = [], moment,
 
         if (!selectedSharings || selectedSharings.length === 0 || (sharingCaption && sharingCaption.length > 255)) return;
     
-        sharingSubmit(e, post, sharingCaption, sharings);
+        sharingSubmit(post, sharingCaption, sharings);
     
         setSelectedSharings([]);
         setSearchTextSharing("");
@@ -323,7 +323,7 @@ function Post({ author, hashtags = [], tags = [], complaintReasons = [], moment,
 
         if ((!complaintDescription && (!selectedComplaintReasons || selectedComplaintReasons.length === 0)) || (complaintDescription && complaintDescription.length > 255)) return;
     
-        complaintSubmit(e, post, complaintDescription, postComplaintReasons);
+        complaintSubmit(post, complaintDescription, postComplaintReasons);
     
         setSelectedComplaintReasons([]);
         setPostComplaintReasons([]);
@@ -336,7 +336,7 @@ function Post({ author, hashtags = [], tags = [], complaintReasons = [], moment,
 
         if (!commentText || commentText.length === 0 || (commentText && commentText.length > 255)) return;
     
-        commentSubmit(e, post, commentText);
+        commentSubmit(post, commentText);
     
         setCommentText("");
     };

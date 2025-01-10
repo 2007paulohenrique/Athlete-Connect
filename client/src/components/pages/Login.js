@@ -31,20 +31,16 @@ function Login() {
         if (msg) setMessageWithReset(msg.message, msg.type)
     }, [location])
 
-    function signUpSubmit(e) {
-        e.preventDefault();
+    const checkProfile = async () => {
+        try {
+            const formData = new FormData();
+        
+            formData.append("email", profile.emailSignUp);
+            formData.append("name", profile.nameSignUp); 
 
-        if (signUpSubmitError) return;
-
-        const formData = new FormData();
-
-        formData.append("email", profile.emailSignUp);
-        formData.append("name", profile.nameSignUp);
-
-        axios.post(`http://localhost:5000/signup`, formData, {
-            headers: { "Content-Type": "multipart/form-data" }, 
-        })
-        .then(resp => {
+            const resp = await axios.post(`http://localhost:5000/signup`, formData, {
+                headers: { "Content-Type": "multipart/form-data" }, 
+            })
             const data = resp.data;
 
             if (data.error) {
@@ -60,34 +56,23 @@ function Login() {
 
                 navigate("/editProfile", {state: {profile: updatedProfile}});
             }
-        })
-        .catch(err => {
+        } catch (err) {
             navigate("/errorPage", {state: {error: err.message}})
-
+            
             console.error("Erro ao fazer a requisição:", err);
-        }); 
+        }
     }
 
-    function loginSubmit(e) {  
-        e.preventDefault();
-
-        setLoginSubmitError(false);
-
-        if (!(profile.nameOrEmailLogin && profile.passwordLogin)) {
-            setLoginSubmitError(true);
-
-            return;
-        }
-
-        const formData = new FormData();
-
-        formData.append("nameOrEmail", profile.nameOrEmailLogin);
-        formData.append("password", profile.passwordLogin);
-
-        axios.post(`http://localhost:5000/login`, formData, {
-            headers: { "Content-Type": "multipart/form-data" }, 
-        })
-        .then(resp => {
+    const checkLogin = async () => {
+        try {
+            const formData = new FormData();
+        
+            formData.append("nameOrEmail", profile.nameOrEmailLogin);
+            formData.append("password", profile.passwordLogin);
+            
+            const resp = await axios.post(`http://localhost:5000/login`, formData, {
+                headers: { "Content-Type": "multipart/form-data" }, 
+            })
             const data = resp.data;
 
             if (data.error) {
@@ -100,17 +85,38 @@ function Login() {
                 setLoginSubmitError(false);
                 setProfileId(data.profileId);
                 localStorage.setItem('athleteConnectProfileId', data.profileId);
-    
+                
                 navigate("/", {state: {message: "Bem-vindo de volta!", type: "success"}});
             }
-        })
-        .catch(err => {
+        } catch (err) {
             navigate("/errorPage", {state: {error: err.message}})
-
+            
             console.error("Erro ao fazer a requisição:", err);
-        }); 
+        }
+    }
+    
+    function loginSubmit(e) {  
+        e.preventDefault();
+        
+        setLoginSubmitError(false);
+        
+        if (!(profile.nameOrEmailLogin && profile.passwordLogin)) {
+            setLoginSubmitError(true);
+            
+            return;
+        }
+        
+        checkLogin();
     }
 
+    function signUpSubmit(e) {
+        e.preventDefault();
+
+        if (signUpSubmitError) return;
+
+        checkProfile();
+    }
+    
     return (
         <main className={styles.login_page}>
             {message && <Message message={message.message} type={message.type}/>}

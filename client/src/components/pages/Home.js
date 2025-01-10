@@ -4,7 +4,7 @@ import Post from "../layout/Post";
 import ProfileNavBar from "../layout/ProfileNavBar";
 import styles from "./Home.module.css";
 import arrowIcon from "../../img/icons/socialMedia/arrowIcon.png";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useProfile } from '../../ProfileContext';
@@ -14,7 +14,7 @@ import formatDate from "../../utils/DateFormatter";
 
 function Home() {
     const [feed, setFeed] = useState();
-    const {profileId} = useProfile();
+    const { profileId}  = useProfile();
     const [profile, setProfile] = useState({});
     const [message, setMessage] = useState({});
     const [tags, setTags] = useState([]);
@@ -25,62 +25,105 @@ function Home() {
     
     useEffect(() => {
         const msg = location?.state
-
+        
         if (msg) setMessageWithReset(msg.message, msg.type)
-    }, [location])
-
+        }, [location])
+    
+    const fetchComplaintReasons = useCallback(async () => {
+        try {
+            const resp = await axios.get("http://localhost:5000/complaintReasons");
+            const data = resp.data;
+    
+            if (data.error) {
+                navigate("/errorPage", {state: {error: data.error}});
+            } else {
+                setComplaintReasons(data);
+            }
+        } catch (err) {
+            navigate("/errorPage", {state: {error: err.message}});
+    
+            console.error('Erro ao fazer a requisição:', err);
+        }
+    }, [navigate]);
+    
+    const fetchTags = useCallback(async () => {
+        try {
+            const resp = await axios.get("http://localhost:5000/tags");
+            const data = resp.data;
+    
+            if (data.error) {
+                navigate("/errorPage", {state: {error: data.error}});
+            } else {
+                setTags(data);
+            }
+        } catch (err) {
+            navigate("/errorPage", {state: {error: err.message}});
+    
+            console.error('Erro ao fazer a requisição:', err);
+        }
+    }, [navigate]);
+    
+    const fetchFeed = useCallback(async (id) => {
+        try {
+            const resp = await axios.get(`http://localhost:5000/profiles/${id}/feed`);
+            const data = resp.data;
+    
+            if (data.error) {
+                navigate("/errorPage", {state: {error: data.error}});
+            } else {
+                const formattedFeed = data.map(post => ({
+                    ...post,
+                    data_publicacao: formatDate(post.data_publicacao),
+                    comments: post.comments.map(comment => ({
+                        ...comment,
+                        data_comentario: formatDate(comment.data_comentario)
+                    }))
+                }));
+                
+                setFeed(formattedFeed);
+                
+                fetchComplaintReasons();
+                fetchTags();
+            }
+        } catch (err) {
+            navigate("/errorPage", {state: {error: err.message}});
+            
+            console.error('Erro ao fazer a requisição:', err);
+        }
+    }, [fetchComplaintReasons, fetchTags, navigate]);
+    
+    const fetchProfile = useCallback(async (id) => {
+        try {
+            const resp = await axios.get(`http://localhost:5000/profiles/${id}`);
+            const data = resp.data;
+            
+            if (data.error) {
+                if (resp.status === 404) {
+                    navigate("/login", {state: {message: data.error, type: "error"}});
+                } else {
+                    navigate("/errorPage", {state: {error: data.error}})
+                }
+            } else {
+                setProfile(data);
+    
+                fetchFeed(id);
+            }
+        } catch (err) {
+            navigate("/errorPage", {state: {error: err.message}});
+    
+            console.error('Erro ao fazer a requisição:', err);
+        }
+    }, [fetchFeed, navigate]);   
+    
     useEffect(() => {
         const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
 
         if (!confirmedProfileId) {
             navigate("/login");
         } else {
-            axios.get(`http://localhost:5000/profiles/${confirmedProfileId}`)
-            .then(resp => {
-                const data = resp.data;
-                
-                if (data.error) {
-                    if (resp.status === 404) {
-                        navigate("/login", {state: {message: data.error, type: "error"}});
-                    } else {
-                        navigate("/errorPage", {state: {error: data.error}})
-                    }
-                } else {
-                    setProfile(data);
-
-                    axios.get(`http://localhost:5000/profiles/${confirmedProfileId}/feed`)
-                    .then(resp => {
-                        const data2 = resp.data;
-
-                        if (data2.error) {
-                            navigate("/errorPage", {state: {error: data2.error}});
-                        } else {
-                            const formattedFeed = data2.map(post => ({
-                                ...post,
-                                data_publicacao: formatDate(post.data_publicacao),
-                                comments: post.comments.map(comment => ({
-                                    ...comment,
-                                    data_comentario: formatDate(comment.data_comentario)
-                                }))
-                            }));
-                            
-                            setFeed(formattedFeed);
-                        }
-                    })
-                    .catch(err => {
-                        navigate("/errorPage", {state: {error: err.message}})
-
-                        console.error('Erro ao fazer a requisição:', err);
-                    });
-                }
-            })
-            .catch(err => {
-                navigate("/login", {state: {message: "Não foi possível encontrar nenhum perfil com o id fornecido. Tente fazer login ou criar um perfil.", type: "error"}})
-
-                console.error('Erro ao fazer a requisição:', err);
-            });
+            fetchProfile(confirmedProfileId);
         }
-    }, [navigate, profileId, setProfile]);
+    }, [fetchProfile, navigate, profileId, setProfile]);
 
     function setMessageWithReset(newMessage, type) {
         setMessage(null);
@@ -90,43 +133,6 @@ function Home() {
         }, 1);
     }
 
-    useEffect(() => {
-        axios.get("http://localhost:5000/complaintReasons")
-        .then(resp => {
-            const data = resp.data;
-
-            if (data.error) {
-                navigate("/errorPage", {state: {error: data.error}})
-            } else {
-                setComplaintReasons(data);
-            }
-        })
-        .catch(err => {
-            navigate("/errorPage", {state: {error: err.message}})
-
-            console.error('Erro ao fazer a requisição:', err);
-        });
-    }, [navigate]);
-
-    useEffect(() => {
-        axios.get("http://localhost:5000/tags")
-        .then(resp => {
-            const data = resp.data;
-
-            if (data.error) {
-                navigate("/errorPage", {state: {error: data.error}})
-            } else {
-                setTags(data);
-            }
-        })
-        .catch(err => {
-            navigate("/errorPage", {state: {error: err.message}})
-
-            console.error('Erro ao fazer a requisição:', err);
-        });
-    }, [navigate]);
-
-
     function goToTop() {
         window.scrollTo({
             top: 0,
@@ -135,15 +141,20 @@ function Home() {
     }
 
     function likeAction(post) {
-        const formData = new FormData();
         const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
         
-        formData.append("profileId", confirmedProfileId);
-        
-        axios.post(`http://localhost:5000/posts/${post.id_postagem}/like`, formData, {
-            headers: { "Content-Type": "multipart/form-data" }, 
-        })
-        .then(resp => {
+        toggleLike(confirmedProfileId, post);
+    }
+
+    const toggleLike = async (id, post) => {
+        try {
+            const formData = new FormData();
+
+            formData.append("profileId", id);
+
+            const resp = await axios.post(`http://localhost:5000/posts/${post.id_postagem}/like`, formData, {
+                headers: { "Content-Type": "multipart/form-data" }, 
+            })
             const data = resp.data;
 
             if (data.error) {
@@ -157,29 +168,30 @@ function Home() {
                     } : p)
                 );
             }
-            
-        })
-        .catch(err => {
+        } catch (err) {
             navigate("/errorPage", {state: {error: err.message}})
 
             console.error("Erro ao fazer a requisição:", err);
-        });
+        }
     }
 
-    function sharingSubmit(e, post, sharingCaption, sharings) {
-        e.preventDefault();
-        
-        const formData = new FormData();
+    function sharingSubmit(post, sharingCaption, sharings) {     
         const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
+        
+       createSharing(confirmedProfileId, post, sharings, sharingCaption);
+    }
 
-        formData.append("caption", sharingCaption.trim());
-        formData.append("authorId", confirmedProfileId);
-        sharings.forEach(sharing => formData.append("targetProfilesIds", sharing.id_perfil));
+    const createSharing = async (id, post, sharings, sharingCaption) => {
+        try {
+            const formData = new FormData();
 
-        axios.post(`http://localhost:5000/posts/${post.id_postagem}/sharing`, formData, {
-            headers: { "Content-Type": "multipart/form-data" }, 
-        })
-        .then(resp => {
+            formData.append("caption", sharingCaption.trim());
+            formData.append("authorId", id);
+            sharings.forEach(sharing => formData.append("targetProfilesIds", sharing.id_perfil));
+
+            const resp = await axios.post(`http://localhost:5000/posts/${post.id_postagem}/sharing`, formData, {
+                headers: { "Content-Type": "multipart/form-data" }, 
+            })
             const data = resp.data;
 
             if (data.error) {
@@ -194,29 +206,30 @@ function Home() {
                 
                 setMessageWithReset("Postagem compartilhada com sucesso!", "success");
             }
-            
-        })
-        .catch(err => {
+        } catch (err) {
             navigate("/errorPage", {state: {error: err.message}})
 
             console.error("Erro ao fazer a requisição:", err);
-        });
+        }
     }
 
-    function complaintSubmit(e, post, complaintDescription, postComplaintReasons) {
-        e.preventDefault();
-                
-        const formData = new FormData();
+    function complaintSubmit(post, complaintDescription, postComplaintReasons) {                
         const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
 
-        formData.append("description", complaintDescription.trim());
-        formData.append("authorId", confirmedProfileId);
-        postComplaintReasons.forEach(reason => formData.append("complaintReasonsIds", reason.id_motivo_denuncia));
+        createComplaint(confirmedProfileId, post, complaintDescription, postComplaintReasons);
+    }
 
-        axios.post(`http://localhost:5000/posts/${post.id_postagem}/complaint`, formData, {
-            headers: { "Content-Type": "multipart/form-data" }, 
-        })
-        .then(resp => {
+    const createComplaint = async (id, post, postComplaintReasons, complaintDescription) => {
+        try {
+            const formData = new FormData();
+
+            formData.append("description", complaintDescription.trim());
+            formData.append("authorId", id);
+            postComplaintReasons.forEach(reason => formData.append("complaintReasonsIds", reason.id_motivo_denuncia));
+
+            const resp = await axios.post(`http://localhost:5000/posts/${post.id_postagem}/complaint`, formData, {
+                headers: { "Content-Type": "multipart/form-data" }, 
+            })
             const data = resp.data;
 
             if (data.error) {
@@ -229,28 +242,29 @@ function Home() {
     
                 setMessageWithReset("Postagem denunciada! Aguarde para analisarmos a denúncia", "success");
             }
-            
-        })
-        .catch(err => {
+        } catch (err) {
             navigate("/errorPage", {state: {error: err.message}})
 
             console.error("Erro ao fazer a requisição:", err);
-        });
+        }
     }
 
-    function commentSubmit(e, post, commentText) {
-        e.preventDefault();
-                
-        const formData = new FormData();
+    function commentSubmit(post, commentText) {        
         const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
+        
+        createComment(confirmedProfileId, post, commentText);
+    }
 
-        formData.append("text", commentText.trim());
-        formData.append("authorId", confirmedProfileId);
+    const createComment = async (id, post, commentText) => {
+        try {
+            const formData = new FormData();
 
-        axios.post(`http://localhost:5000/posts/${post.id_postagem}/comment`, formData, {
-            headers: { "Content-Type": "multipart/form-data" }, 
-        })
-        .then(resp => {
+            formData.append("text", commentText.trim());
+            formData.append("authorId", id);
+    
+            const resp = await axios.post(`http://localhost:5000/posts/${post.id_postagem}/comment`, formData, {
+                headers: { "Content-Type": "multipart/form-data" }, 
+            })
             const data = resp.data;
 
             if (data.error) {
@@ -266,12 +280,11 @@ function Home() {
                     } : p)
                 );
             }
-        })
-        .catch(err => {
+        } catch (err) {
             navigate("/errorPage", {state: {error: err.message}})
 
             console.error("Erro ao fazer a requisição:", err);
-        });
+        }
     }
 
     return (

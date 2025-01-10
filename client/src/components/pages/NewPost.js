@@ -28,69 +28,100 @@ function NewPost() {
 
     const navigate = useNavigate();
 
+    const fetchHashtags = useCallback(async () => {
+        try {
+            const resp = await axios.get("http://localhost:5000/hashtags");
+            const data = resp.data;
+    
+            if (data.error) {
+                navigate("/errorPage", {state: {error: data.error}});
+            } else {
+                setHashtags(data);
+            }
+        } catch (err) {
+            navigate("/errorPage", {state: {error: err.message}});
+    
+            console.error('Erro ao fazer a requisição:', err);
+        }
+    }, [navigate]);
+
+    const fetchTags = useCallback(async () => {
+        try {
+            const resp = await axios.get("http://localhost:5000/tags");
+            const data = resp.data;
+    
+            if (data.error) {
+                navigate("/errorPage", {state: {error: data.error}});
+            } else {
+                setTags(data);
+            }
+        } catch (err) {
+            navigate("/errorPage", {state: {error: err.message}});
+    
+            console.error('Erro ao fazer a requisição:', err);
+        }
+    }, [navigate]);
+
+    const fetchProfile = useCallback(async (id) => {
+        try {
+            const resp = await axios.get(`http://localhost:5000/profiles/${id}`);
+            const data = resp.data;
+            
+            if (data.error) {
+                if (resp.status === 404) {
+                    navigate("/login", {state: {message: data.error, type: "error"}});
+                } else {
+                    navigate("/errorPage", {state: {error: data.error}})
+                }
+            } else {
+                setProfile(data);
+
+                fetchHashtags();
+                fetchTags();
+            }
+        } catch (err) {
+            navigate("/errorPage", {state: {error: err.message}});
+    
+            console.error('Erro ao fazer a requisição:', err);
+        }
+    }, [fetchHashtags, fetchTags, navigate]); 
+
+    const createPost = async () => {
+        try {
+            const formData = new FormData();
+    
+            formData.append("caption", post.caption || "");
+            hashtagsInPost.forEach(hashtag => formData.append("hashtags", hashtag.id_hashtag));
+            tagsInPost.forEach(tag => formData.append("tags", tag.id_perfil));
+    
+            files.forEach(file => formData.append(`medias`, file));
+    
+            const resp = await axios.post(`http://localhost:5000/profiles/${profile.id_perfil}/posts`, formData, {
+                headers: { "Content-Type": "multipart/form-data" }, 
+            })    
+            const data = resp.data;
+
+            if (data.error) {
+                navigate("/errorPage", {state: {error: data.error}})
+            } else {
+                navigate("/", {state: {message: "Publicação feita com sucesso!", type: "success"}});
+            }    
+        } catch (err) {
+            navigate("/errorPage", {state: {error: err.message}})
+
+            console.error("Erro ao fazer a requisição:", err);
+        }
+    }
+
     useEffect(() => {
         const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
 
         if (!confirmedProfileId) {
             navigate("/login");
         } else {
-            axios.get(`http://localhost:5000/profiles/${confirmedProfileId}`)
-            .then(resp => {
-                const data = resp.data;
-
-                if (data.error) {
-                    if (resp.status === 404) {
-                        navigate("/login", {state: {message: data.error, type: "error"}});
-                    } else {
-                        navigate("/errorPage", {state: {error: data.error}})
-                    }
-                } else {
-                    setProfile(data);
-                }
-            })
-            .catch(err => {
-                navigate("/errorPage", {state: {error: err.message}})
-
-                console.error('Erro ao fazer a requisição:', err);
-            });
+            fetchProfile(confirmedProfileId);
         }
-    }, [navigate, profileId]);
-
-    useEffect(() => {
-        axios.get("http://localhost:5000/hashtags")
-        .then(resp => {
-            const data = resp.data;
-
-            if (data.error) {
-                navigate("/errorPage", {state: {error: data.error}})
-            } else {
-                setHashtags(data);
-            }
-        })
-        .catch(err => {
-            navigate("/errorPage", {state: {error: err.message}})
-
-            console.error('Erro ao fazer a requisição:', err);
-        });
-    }, [navigate]);
-
-    useEffect(() => {
-        axios.get("http://localhost:5000/tags")
-        .then(resp => {
-            const data = resp.data;
-
-            if (data.error) {
-                navigate("/errorPage", {state: {error: data.error}})
-            } else {
-                setTags(data);
-            }
-        })
-        .catch(err => {
-            navigate("/errorPage", {state: {error: err.message}})
-
-            console.error('Erro ao fazer a requisição:', err);
-        });
-    }, [navigate]);
+    }, [fetchProfile, navigate, profileId]);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -152,31 +183,7 @@ function NewPost() {
         if (medias.length >= 1) {  
             setPost({...post, hashtags: hashtagsInPost, tags: tagsInPost});
 
-            const formData = new FormData();
-
-            formData.append("caption", post.caption || "");
-            hashtagsInPost.forEach(hashtag => formData.append("hashtags", hashtag.id_hashtag));
-            tagsInPost.forEach(tag => formData.append("tags", tag.id_perfil));
-
-            files.forEach(file => formData.append(`medias`, file));
-
-            axios.post(`http://localhost:5000/profiles/${profile.id_perfil}/posts`, formData, {
-                headers: { "Content-Type": "multipart/form-data" }, 
-            })
-            .then(resp => {
-                const data = resp.data;
-
-                if (data.error) {
-                    navigate("/errorPage", {state: {error: data.error}})
-                } else {
-                    navigate("/", {state: {message: "Publicação feita com sucesso!", type: "success"}});
-                }    
-            })
-            .catch(err => {
-                navigate("/errorPage", {state: {error: err.message}})
-
-                console.error("Erro ao fazer a requisição:", err);
-            });
+            createPost();
         } else {
             setMessageWithReset("Selecione pelo menos uma foto ou vídeo para publicar", "error");
         }

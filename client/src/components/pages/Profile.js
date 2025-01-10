@@ -29,18 +29,31 @@ function Profile() {
 
     const { id } = useParams();
     const navigate = useNavigate();
+    
+    const fetchComplaintReasons = useCallback(async () => {
+        try {
+            const resp = await axios.get("http://localhost:5000/complaintReasons");
+            const data = resp.data;
+    
+            if (data.error) {
+                navigate("/errorPage", {state: {error: data.error}});
+            } else {
+                setComplaintReasons(data);
+            }
+        } catch (err) {
+            navigate("/errorPage", {state: {error: err.message}});
+    
+            console.error('Erro ao fazer a requisição:', err);
+        }
+    }, [navigate]);
 
-    useEffect(() => {
-        const viwerId = profileId || localStorage.getItem("athleteConnectProfileId");
-
-        if (id === viwerId) navigate("/myProfile");
-
-        const url = id
-        ? `http://localhost:5000/profiles/users/${id}?viewerId=${viwerId}`
-        : `http://localhost:5000/profiles/users/${viwerId}`;
-        
-        axios.get(url)
-        .then(resp => {
+    const fetchUser = useCallback(async (viwerId) => {
+        try {
+            const url = id
+            ? `http://localhost:5000/profiles/users/${id}?viewerId=${viwerId}`
+            : `http://localhost:5000/profiles/users/${viwerId}`;
+            
+            const resp = await axios.get(url)
             const data = resp.data;
 
             if (data.error) {
@@ -50,36 +63,27 @@ function Profile() {
                     ...data, 
                     preferences: data.preferences.map(sport => (
                         {...sport, icone: require(`../../img/${sport.icone}`)}
-                    ))
-                });
+                    ))    
+                });    
 
                 setFollowersNumber(data.followers.length);
-            }
-        })
-        .catch(err => {
-            navigate("/errorPage", {state: {error: err.message}})
 
+                fetchComplaintReasons();
+            }    
+        } catch (err) {
+            navigate("/errorPage", {state: {error: err.message}})
+    
             console.error('Erro ao fazer a requisição:', err);
-        });
-    }, [id, navigate, profileId])
+        }    
+    }, [fetchComplaintReasons, id, navigate])    
 
     useEffect(() => {
-        axios.get("http://localhost:5000/complaintReasons")
-        .then(resp => {
-            const data = resp.data;
+        const viwerId = profileId || localStorage.getItem("athleteConnectProfileId");
 
-            if (data.error) {
-                navigate("/errorPage", {state: {error: data.error}})
-            } else {
-                setComplaintReasons(data);
-            }
-        })
-        .catch(err => {
-            navigate("/errorPage", {state: {error: err.message}})
+        if (id === viwerId) navigate("/myProfile");
 
-            console.error('Erro ao fazer a requisição:', err);
-        });
-    }, [navigate]);
+        fetchUser(viwerId);
+    }, [fetchUser, id, navigate, profileId])    
 
     function setMessageWithReset(newMessage, type) {
         setMessage(null);
@@ -132,30 +136,34 @@ function Profile() {
     }, [profile.posts]);
 
     function followProfile() {
-        const formData = new FormData();
         const followerId = profileId || localStorage.getItem("athleteConnectProfileId");
-        
-        formData.append("followerId", followerId);
-        
-        axios.post(`http://localhost:5000/profiles/${id}/follow`, formData, {
-            headers: { "Content-Type": "multipart/form-data" }, 
-        })
-        .then(resp => {
-            const data = resp.data;
+    
+        toggleFollow(followerId);
+}
 
+    const toggleFollow = async (followerId) => {
+        try {
+            const formData = new FormData();
+            
+            formData.append("followerId", followerId);
+            
+            const resp = await axios.post(`http://localhost:5000/profiles/${id}/follow`, formData, {
+                headers: { "Content-Type": "multipart/form-data" }, 
+            })
+            const data = resp.data;
+        
             if (data.error) {
                 navigate("/errorPage", {state: {error: data.error}})
             } else {
                 setFollowersNumber(profile.isFollowed ? followersNumber - 1 : followersNumber + 1);
-
+        
                 setProfile({...profile, isFollowed: !profile.isFollowed});
             }
-        })
-        .catch(err => {
+        } catch (err) {
             navigate("/errorPage", {state: {error: err.message}})
-
+        
             console.error("Erro ao fazer a requisição:", err);
-        });
+        }
     }
 
     function complaintSubmit(e) {
@@ -163,17 +171,26 @@ function Profile() {
 
         if ((!complaintDescription && (!selectedComplaintReasons || selectedComplaintReasons.length === 0)) || (complaintDescription && complaintDescription.length > 255)) return;
        
-        const formData = new FormData();
-        const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
+        createComplaint();
 
-        formData.append("description", complaintDescription.trim());
-        formData.append("authorId", confirmedProfileId);
-        profileComplaintReasons.forEach(reason => formData.append("complaintReasonsIds", reason.id_motivo_denuncia));
+        setSelectedComplaintReasons([]);
+        setProfileComplaintReasons([]);
+        setComplaintDescription("");
+        setShowComplaintReasons(!showComplaintReasons);                  
+    }
 
-        axios.post(`http://localhost:5000/profiles/${id}/complaint`, formData, {
-            headers: { "Content-Type": "multipart/form-data" }, 
-        })
-        .then(resp => {
+    const createComplaint = async () => {
+        try {
+            const formData = new FormData();
+            const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
+    
+            formData.append("description", complaintDescription.trim());
+            formData.append("authorId", confirmedProfileId);
+            profileComplaintReasons.forEach(reason => formData.append("complaintReasonsIds", reason.id_motivo_denuncia));
+    
+            const resp = await axios.post(`http://localhost:5000/profiles/${id}/complaint`, formData, {
+                headers: { "Content-Type": "multipart/form-data" }, 
+            })
             const data = resp.data;
 
             if (data.error) {
@@ -183,19 +200,12 @@ function Profile() {
     
                 setMessageWithReset("Perfil denunciado! Aguarde para analisarmos a denúncia", "success");
             }
-        })
-        .catch(err => {
+        } catch (err) {
             navigate("/errorPage", {state: {error: err.message}})
 
             console.error("Erro ao fazer a requisição:", err);
-        });
-
-        setSelectedComplaintReasons([]);
-        setProfileComplaintReasons([]);
-        setComplaintDescription("");
-        setShowComplaintReasons(!showComplaintReasons);                  
+        }
     }
-
 
     const handleClickComplaintReason = (item) => {
         setProfileComplaintReasons(prevs => {
