@@ -6,7 +6,6 @@
     display: flex;
     flex-direction: column;
     list-style: none;
-    padding: 0.5em;
 }
 
 .post_items_container > hr {

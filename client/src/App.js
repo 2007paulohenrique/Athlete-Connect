@@ -7,6 +7,7 @@ import NewPost from "./components/pages/NewPost";
 import { ProfileProvider } from './ProfileContext';
 import ErrorPage from "./components/pages/ErrorPage";
 import Profile from "./components/pages/Profile";
+import SearchPage from "./components/pages/SearchPage";
 
 function App() {
   document.addEventListener('keydown', function(event) {
@@ -52,6 +53,11 @@ function App() {
           <Route 
             path="/myProfile" 
             element={<Profile/>} 
+          />
+
+          <Route 
+            path="/search" 
+            element={<SearchPage/>} 
           />
 
           <Route 

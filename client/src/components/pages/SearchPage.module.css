@@ -1,0 +1,16 @@
+.search_page {
+    background-color: var(--dark-bg-color);
+    padding: 1em;
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+}
+
+.search_text {
+    font-size: 2em;
+    word-break: break-all;
+}
+
+.search_text > span {
+    color: var(--white-bg-color);
+}

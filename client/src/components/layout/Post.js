@@ -131,14 +131,20 @@ function Post({ author, hashtags = [], tags = [], complaintReasons = [], moment,
     }, [author.nome, profileId, searchTextSharing, tags]);
 
     const handleSearchHashtagChange = (e) => {
+        e.target.value = e.target.value.trim();
+
         setSearchTextHashtag(e.target.value);
     };
 
     const handleSearchTagChange = (e) => {
+        e.target.value = e.target.value.trim();
+
         setSearchTextTag(e.target.value);
     };
 
     const handleSearchSharingChange = (e) => {
+        e.target.value = e.target.value.trim();
+
         setSearchTextSharing(e.target.value);
     };
 

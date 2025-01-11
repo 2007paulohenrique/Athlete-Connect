@@ -1,0 +1,28 @@
+.search_nav_bar > ul {
+    display: flex;
+    list-style: none;
+    justify-content: space-around;
+    gap: 1.5em;
+}
+
+.search_nav_bar > ul > li {
+    color: var(--ligth-theme-color);
+    cursor: pointer;
+    position: relative;
+    padding: 0.2em;
+}
+
+.search_nav_bar > ul > :where(li, .selected_type)::before {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background-color: var(--ligth-theme-color);
+    transition: all 0.2s ease-in-out;
+}
+
+.search_nav_bar > ul > :where(.selected_type, li:hover)::before {
+    width: 100%;
+}
