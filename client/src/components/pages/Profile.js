@@ -245,146 +245,148 @@ function Profile() {
     }, [complaintDescription]);
 
     return (
-        <main className={styles.profile_page}>
-            {message && <Message message={message.message} type={message.type}/>}
-
+        <>
             <ProfileNavBar/>
 
-            <div className={styles.profile_main_info}>
-                <ProfilePhotoContainer profilePhotoPath={profile.media?.caminho} size="large"/>
-                
-                <span>{profile.nome}</span>
+            <main className={styles.profile_page}>
+                {message && <Message message={message.message} type={message.type}/>}
 
-                <p>{profile.biografia}</p>
-            </div>
+                <div className={styles.profile_main_info}>
+                    <ProfilePhotoContainer profilePhotoPath={profile.media?.caminho} size="large"/>
+                    
+                    <span>{profile.nome}</span>
 
-            {(profile.qualifications && profile.qualifications.length !== 0) && (   
-                <>
-                    <ul className={styles.profile_qualifications}>
-                        {profile.qualifications.map((qualification, index) => (
-                            <li key={index}>
-                                <span>{`${qualification.grau} em ${qualification.curso}`}</span>
-
-                                <span>{`${qualification.instituicao} - ${qualification.estado} - ${qualification.cidade}`}</span>
-                            </li>
-                        ))}
-                    </ul>
-                </>
-            )}
-
-            <hr/>
-
-            <div className={styles.profile_stats}>
-                <div>
-                    <span>{formatNumber(profile.posts ? profile.posts.length : 0)}</span>
-                    <span>Postagens</span>
+                    <p>{profile.biografia}</p>
                 </div>
 
-                <div>
-                    <span>{formatNumber(followersNumber)}</span>
-
-                    <span>Seguidores</span>
-                </div>
-
-                <div>
-                    <span>{formatNumber(profile.likes)}</span>
-
-                    <span>Curtidas</span>
-                </div>
-            </div>
-
-            <hr/>
-
-            {(profile.preferences && profile.preferences.length !== 0) && (
-                <>
-                    <ul className={styles.profile_preferences}>
-                        {profile.preferences.map((sport, index) => (
-                            <li key={index}>
-                                <img src={sport.icone} alt={`${sport.nome} Icon`}/>
-
-                                <span>{sport.nome}</span>
-                            </li>
-                        ))}
-                    </ul>   
-
-                    <hr/>
-                </>
-            )}
-
-
-            <div className={styles.profile_actions}>
-                {id ? (
+                {(profile.qualifications && profile.qualifications.length !== 0) && (   
                     <>
-                        <button className={`${styles.follow_button} ${profile.isFollowed && styles.follow_button_selected}`} onClick={followProfile}>
-                            {profile.isFollowed ? "Seguindo" : "Seguir"}
-                        </button>
+                        <ul className={styles.profile_qualifications}>
+                            {profile.qualifications.map((qualification, index) => (
+                                <li key={index}>
+                                    <span>{`${qualification.grau} em ${qualification.curso}`}</span>
 
-                        <button className={`${styles.complaint_button} ${profile.isComplainted && styles.complaint_button_selected}`}>
-                            <img src={profile.isComplainted ? complaintIcon : complaintedIcon} alt="Complaint" onClick={!profile.isComplainted ? viewComplaint : undefined}/>
+                                    <span>{`${qualification.instituicao} - ${qualification.estado} - ${qualification.cidade}`}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    </>
+                )}
 
-                            {showComplaintReasons && (
-                                <div className={styles.profile_complaint}>
-                                    <span onClick={viewComplaint}>Voltar</span>
+                <hr/>
 
-                                    <form onSubmit={complaintSubmit}>
-                                        <SubmitButton text="Denunciar"/>
-                                        
-                                        <MainInput 
-                                            type="text" 
-                                            name="complaintDescription" 
-                                            placeholder="Descreva o motivo da sua denúncia" 
-                                            maxLength={255}
-                                            alertMessage="A descrição não pode ter mais que 255 caracteres"
-                                            handleChange={handleOnChangeComplaintDescription}    
-                                            showAlert={!validateComplaintDescription()}
-                                            value={complaintDescription}
+                <div className={styles.profile_stats}>
+                    <div>
+                        <span>{formatNumber(profile.posts ? profile.posts.length : 0)}</span>
+                        <span>Postagens</span>
+                    </div>
+
+                    <div>
+                        <span>{formatNumber(followersNumber)}</span>
+
+                        <span>Seguidores</span>
+                    </div>
+
+                    <div>
+                        <span>{formatNumber(profile.likes)}</span>
+
+                        <span>Curtidas</span>
+                    </div>
+                </div>
+
+                <hr/>
+
+                {(profile.preferences && profile.preferences.length !== 0) && (
+                    <>
+                        <ul className={styles.profile_preferences}>
+                            {profile.preferences.map((sport, index) => (
+                                <li key={index}>
+                                    <img src={sport.icone} alt={`${sport.nome} Icon`}/>
+
+                                    <span>{sport.nome}</span>
+                                </li>
+                            ))}
+                        </ul>   
+
+                        <hr/>
+                    </>
+                )}
+
+                <div className={styles.profile_actions}>
+                    {id ? (
+                        <>
+                            <button className={`${styles.follow_button} ${profile.isFollowed && styles.follow_button_selected}`} onClick={followProfile}>
+                                {profile.isFollowed ? "Seguindo" : "Seguir"}
+                            </button>
+
+                            <button className={`${styles.complaint_button} ${profile.isComplainted && styles.complaint_button_selected}`}>
+                                <img src={profile.isComplainted ? complaintIcon : complaintedIcon} alt="Complaint" onClick={!profile.isComplainted ? viewComplaint : undefined}/>
+
+                                {showComplaintReasons && (
+                                    <div className={styles.profile_complaint}>
+                                        <span onClick={viewComplaint}>Voltar</span>
+
+                                        <form onSubmit={complaintSubmit}>
+                                            <SubmitButton text="Denunciar"/>
+                                            
+                                            <MainInput 
+                                                type="text" 
+                                                name="complaintDescription" 
+                                                placeholder="Descreva o motivo da sua denúncia" 
+                                                maxLength={255}
+                                                alertMessage="A descrição não pode ter mais que 255 caracteres"
+                                                handleChange={handleOnChangeComplaintDescription}    
+                                                showAlert={!validateComplaintDescription()}
+                                                value={complaintDescription}
+                                            />
+                                        </form>
+
+                                        <PostItemsContainer
+                                            searchText={true}
+                                            filteredItems={complaintReasons}
+                                            handleClick={handleClickComplaintReason}
+                                            isSelectable
+                                            selectedItems={selectedComplaintReasons}
+                                            isComplaintReasons
                                         />
-                                    </form>
+                                    </div>
+                                )}
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <button className={styles.follow_button}>Editar perfil</button>
 
-                                    <PostItemsContainer
-                                        searchText={true}
-                                        filteredItems={complaintReasons}
-                                        handleClick={handleClickComplaintReason}
-                                        isSelectable
-                                        selectedItems={selectedComplaintReasons}
-                                        isComplaintReasons
-                                    />
-                                </div>
-                            )}
-                        </button>
-                    </>
-                ) : (
-                    <>
-                        <button className={styles.follow_button}>Editar perfil</button>
+                            <button className={styles.follow_button}>Editar preferências</button>
 
-                        <button className={styles.follow_button}>Editar preferências</button>
+                            <button className={styles.follow_button}>Adicionar formação</button>
+                        </>
+                    )}
+                </div>
 
-                        <button className={styles.follow_button}>Adicionar formação</button>
-                    </>
-                )}
-            </div>
+                <section className={styles.profile_posts}>
+                    {!profile.posts && (
+                        <img className="loading" src={loading} alt="Loading"/>
+                    )}
+                    
+                    {profile.posts ? 
+                        profile.posts.length !== 0 ? profile.posts.map((post, index) => (
+                            <div key={index}>
+                                <span>{post.medias.length > 1 ? `${post.medias.length - 1} +` : ""}</span>
 
-            <section className={styles.profile_posts}>
-                {!profile.posts && (
-                    <img className="loading" src={loading} alt="Loading"/>
-                )}
-                
-                {profile.posts ? 
-                    profile.posts.length !== 0 ? profile.posts.map((post, index) => (
-                        <div key={index}>
-                            <span>{post.medias.length > 1 ? `${post.medias.length - 1} +` : ""}</span>
-
-                            <img 
-                                src={thumbnails[index]} 
-                                alt={`Post ${index}`} 
-                            />
-                        </div>
-                    )) : <p>{id ? `${profile.nome} ainda não publicou nada.` : "Faça sua primeira publicação!"}</p>
-                : null}
-            </section>
-
+                                <img 
+                                    src={thumbnails[index]} 
+                                    alt={`Post ${index}`} 
+                                />
+                            </div>
+                        )) : <p>{id ? `${profile.nome} ainda não publicou nada.` : "Faça sua primeira publicação!"}</p>
+                    : null}
+                </section>
+            </main>
+            
             <AppNavBar profilePhotoPath={profile?.media ? profile.media.caminho : ""}/>
-        </main>
+        </>
+
     );
 }
 

@@ -31,6 +31,21 @@
     padding: 0.6em;
     border-radius: 50%;
     transition: all 0.2s ease-in-out;
+    position: relative;
+}
+
+.search {
+    background-color: var(--dark-bg-color);
+}
+
+.search > form {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 2.8em;
+    width: 11.3em;
+    background-color: var(--dark-bg-color);
+    z-index: 1;
 }
 
 .profile_nav_bar > ul > div > li:hover {
@@ -50,6 +65,17 @@
     display: flex;
     gap: 1em;
 }
+
+@media screen and (max-width: 720px) {
+    .profile_nav_bar > ul {
+        padding: 0.75em 4%;
+    }
+
+    .profile_nav_bar > ul > li {
+        display: none;
+    }
+}
+
 
 @media screen and (min-width: 1500px) {
     .profile_nav_bar > ul > div > li > img {

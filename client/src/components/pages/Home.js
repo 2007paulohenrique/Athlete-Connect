@@ -288,55 +288,58 @@ function Home() {
     }
 
     return (
-        <main className={styles.home_page}>
-            {message && <Message message={message.message} type={message.type}/>}
-
+        <>
             <ProfileNavBar/>
+        
+            <main className={styles.home_page}>
+                {message && <Message message={message.message} type={message.type}/>}
 
-            <FlashesSection/>
+                <FlashesSection/>
 
-            <section className={styles.posts_section}> 
-                {!feed && (
-                    <img className="loading" src={loading} alt="Loading"/>
-                )}
+                <section className={styles.posts_section}> 
+                    {!feed && (
+                        <img className="loading" src={loading} alt="Loading"/>
+                    )}
 
-                {feed && feed.map((post) => (
-                    <Post 
-                        key={post.id_postagem}
-                        author={post.author}
-                        moment={post.data_publicacao}
-                        mediasPath={post.medias.map(media => media.caminho)}
-                        caption={post.legenda}
-                        postHashtags={post.hashtags || ""}
-                        postTags={post.tags || ""}
-                        likeSubmit={() => likeAction(post)}
-                        isLiked={post.isLiked}
-                        sharingSubmit={sharingSubmit}
-                        complaintReasons={complaintReasons}
-                        tags={tags}
-                        isComplainted={post.isComplainted}
-                        complaintSubmit={complaintSubmit}
-                        commentSubmit={commentSubmit}
-                        comments={post.comments}
-                        post={post}
-                    />
-                ))}
+                    {feed && feed.map((post) => (
+                        <Post 
+                            key={post.id_postagem}
+                            author={post.author}
+                            moment={post.data_publicacao}
+                            mediasPath={post.medias.map(media => media.caminho)}
+                            caption={post.legenda}
+                            postHashtags={post.hashtags || ""}
+                            postTags={post.tags || ""}
+                            likeSubmit={() => likeAction(post)}
+                            isLiked={post.isLiked}
+                            sharingSubmit={sharingSubmit}
+                            complaintReasons={complaintReasons}
+                            tags={tags}
+                            isComplainted={post.isComplainted}
+                            complaintSubmit={complaintSubmit}
+                            commentSubmit={commentSubmit}
+                            comments={post.comments}
+                            post={post}
+                        />
+                    ))}
 
-                {feed && feed.length > 0 && (
-                    <div className={styles.posts_ending}>
-                        Você chegou ao fim das atividades. :´(
-                        <br/>
-                        Continue descendo para encontrar algo que te interesse! : )
-                    </div>
-                )}
+                    {feed && feed.length > 0 && (
+                        <div className={styles.posts_ending}>
+                            Você chegou ao fim das atividades. :´(
+                            <br/>
+                            Continue descendo para encontrar algo que te interesse! : )
+                        </div>
+                    )}
 
-                <button type="button" onClick={goToTop} className={styles.go_to_top}>
-                    <img src={arrowIcon} alt="Go to top"/>
-                </button>
-            </section>
+                    <button type="button" onClick={goToTop} className={styles.go_to_top}>
+                        <img src={arrowIcon} alt="Go to top"/>
+                    </button>
+                </section>
 
+            </main>
+        
             <AppNavBar profilePhotoPath={profile?.media ? profile.media.caminho : ""}/>
-        </main>
+        </>
     );
 }
 

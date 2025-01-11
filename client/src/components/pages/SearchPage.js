@@ -4,6 +4,8 @@ import SearchInput from "../layout/SearchInput";
 import styles from "./SearchPage.module.css";
 import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
+import ProfileNavBar from "../layout/ProfileNavBar";
+import AppNavBar from "../layout/AppNavBar";
 
 function SearchPage() {
     const [searchParams] = useSearchParams();
@@ -62,29 +64,33 @@ function SearchPage() {
     }
 
     return (
-        <main className={styles.search_page}>
-            <form onSubmit={handleSubmitSearch}>
-                <SearchInput 
-                    name="search" 
-                    handleChange={handleOnChangeSearch} 
-                    maxLength={50} 
-                    placeholder="Insira o texto da pesquisa" 
-                    haveSubmit={true}
-                    value={searchText}
-                />
-            </form>
+        <>
+            <ProfileNavBar/>
+            <main className={styles.search_page}>
 
-            <span className={styles.search_text}>
-                Você pesquisou por:
-                <span> {text}</span>
-            </span>
+                <form onSubmit={handleSubmitSearch}>
+                    <SearchInput 
+                        name="search" 
+                        handleChange={handleOnChangeSearch} 
+                        maxLength={50} 
+                        placeholder="Insira o texto da pesquisa" 
+                        haveSubmit={true}
+                        value={searchText}
+                    />
+                </form>
 
-            <hr/>
+                <span className={styles.search_text}>
+                    Você pesquisou por:
+                    <span> {text}</span>
+                </span>
 
-            <SearchNavBar selectedType={type}/>
+                <hr/>
 
-            
-        </main>
+                <SearchNavBar selectedType={type}/>
+
+            </main>
+            <AppNavBar/>
+        </>
     );
 }
 
