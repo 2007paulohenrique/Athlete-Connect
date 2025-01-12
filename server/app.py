@@ -551,6 +551,7 @@ def get_flashs_route(profile_id):
         if con:
             close_connection(con)
 
+
 @app.route('/profiles/<int:profile_id>/flashs', methods=['POST'])
 def post_flash(profile_id):
     try:
@@ -627,6 +628,29 @@ def get_sports_route():
     except Exception as e:
         print('Erro ao recuperar os esportes')
         return jsonify({'error': 'Não foi possível recuperar os esportes devido a um erro no nosso servidor.'}), 500
+    finally:
+        if con:
+            close_connection(con)
+
+@app.route('/search/<string:text>', methods=['GET'])
+def get_search(text):
+    try:
+        con = open_connection(*con_params)
+
+        if con is None:
+            print('Erro ao abrir conexão com banco de dados')
+            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+
+        result = get_search_result(con, text)
+
+        if result is None:
+            print('Erro ao recuperar resultados da pesquisa')
+            return jsonify({'error': 'Não foi possível recuperar os resultados da pesquisa devido a um erro no nosso servidor.'}), 500
+        
+        return jsonify(result), 200
+    except Exception as e:
+        print('Erro ao recuperar resultados da pesquisa')
+        return jsonify({'error': 'Não foi possível recuperar os resultados da pesquisa devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
             close_connection(con)

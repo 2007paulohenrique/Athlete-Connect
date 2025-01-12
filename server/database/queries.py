@@ -1003,17 +1003,34 @@ def get_flashs(con, profile_id):
           print(f"Erro ao recuperar flashs: {e}")
           return None
      
-def get_sports(con):
+def get_sports(con, text=None):
      try:
           with con.cursor(dictionary=True) as cursor:
-               sql = "SELECT * FROM esporte ORDER BY nome"
-               cursor.execute(sql)
+               if text is None:
+                    sql = """
+                         SELECT * 
+                         FROM esporte 
+                         ORDER BY nome
+                    """
+                    cursor.execute(sql)
+               else:
+                    sql = """
+                         SELECT DISTINCT e.* 
+                         FROM esporte e
+                         LEFT JOIN categorias_esporte cse ON cse.fk_esporte_id_esporte = e.id_esporte
+                         JOIN categoria_esporte ce ON ce.id_categoria_esporte = cse.fk_categoria_esporte_id_categoria_esporte
+                         WHERE LOWER(e.nome) LIKE LOWER(%s) OR LOWER(ce.nome) LIKE LOWER(%s)
+                         ORDER BY e.nome
+                    """
+                    search_text = f"%{text}%"
+                    cursor.execute(sql, (search_text, search_text))
+                    
                result = cursor.fetchall()
 
+               if not result:
+                    return []
+               
                sports_ids = [sport["id_esporte"] for sport in result]
-
-               if not sports_ids:
-                    return None
 
                categories = get_sports_categories_for_preferences(con) 
                icons = get_sports_icons_for_preferences(con)
@@ -1101,11 +1118,22 @@ def get_sports_icons_for_preferences(con):
           print(f"Erro ao recuperar ícones dos esportes: {e}")
           return None
 
-def get_hashtags(con):
+def get_hashtags(con, text=None):
      try:
           with con.cursor(dictionary=True) as cursor:
-               sql = "SELECT * FROM hashtag ORDER BY nome"
-               cursor.execute(sql)
+               if text is None:
+                    sql = "SELECT * FROM hashtag ORDER BY nome"
+                    cursor.execute(sql)
+               else:
+                    sql = """
+                         SELECT * 
+                         FROM hashtag 
+                         WHERE LOWER(nome) LIKE LOWER(%s)
+                         ORDER BY nome
+                    """
+                    search_text = f"%{text}%"
+                    cursor.execute(sql, (search_text,))
+
                result = cursor.fetchall()
 
           return result
@@ -1113,15 +1141,26 @@ def get_hashtags(con):
           print(f"Erro ao recuperar hashtags: {e}")
           return None
 
-def get_tags(con):
+def get_tags(con, text=None):
      try:
           with con.cursor(dictionary=True) as cursor:
-               sql = """
-                    SELECT p.id_perfil, p.nome, m.caminho 
-                    FROM perfil p
-                    LEFT JOIN midia m ON m.id_midia = p.fk_midia_id_midia
-               """
-               cursor.execute(sql)
+               if text is None:
+                    sql = """
+                         SELECT p.id_perfil, p.nome, m.caminho 
+                         FROM perfil p
+                         LEFT JOIN midia m ON m.id_midia = p.fk_midia_id_midia
+                    """
+                    cursor.execute(sql)
+               else:
+                    sql = """
+                         SELECT p.id_perfil, p.nome, m.caminho 
+                         FROM perfil p
+                         LEFT JOIN midia m ON m.id_midia = p.fk_midia_id_midia
+                         WHERE LOWER(p.nome) LIKE LOWER(%s)
+                    """
+                    search_text = f"%{text}%"
+                    cursor.execute(sql, (search_text,))
+
                result = cursor.fetchall()
 
           return result
@@ -1129,6 +1168,79 @@ def get_tags(con):
           print(f"Erro ao recuperar tags dos perfis: {e}")
           return None
 
+def get_search_result(con, text):
+     try:
+          result = {}
+
+          result["hashtags"] = get_hashtags(con, text)
+          result["profiles"] = get_tags(con, text)
+          result["sports"] = get_sports(con, text)
+          result["posts"] = get_posts_for_search(con, text)
+
+          if result["hashtags"] is None or result["profiles"] is None or result["sports"] is None or result["posts"] is None:
+               print("jajajajajajajajaj")
+               raise Exception("Erro ao recuperar resultados da pesquisa.")
+
+          return result
+     except Exception as e:
+          print(f"Erro ao recuperar resultados da pesquisa: {e}")
+          return None
+     
+def get_posts_for_search(con, text):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               sql = """
+                    SELECT DISTINCT p.*
+                    FROM postagem p
+                    INNER JOIN postagem_hashtag ph ON p.id_postagem = ph.fk_postagem_id_postagem
+                    INNER JOIN hashtag h ON ph.fk_hashtag_id_hashtag = h.id_hashtag
+                    WHERE LOWER(h.nome) LIKE LOWER(%s)
+               """
+               search_text = f"%{text}%"
+               cursor.execute(sql, (search_text,))
+               result = cursor.fetchall()
+
+               if not result:
+                    return []
+
+               posts_ids = [post["id_postagem"] for post in result]
+          
+               medias = get_post_medias_for_feed(con, posts_ids) 
+               hashtags = get_post_hashtags_for_feed(con, posts_ids) 
+               # tags = get_post_tags_for_feed(con, posts_ids) 
+               # comments = get_post_comments_for_feed(con, posts_ids)       
+               # profile = get_profile(con, profile_id)
+
+               if medias is None or hashtags is None:
+                    raise Exception("Erro ao recuperar dados das postagens.")
+
+               # if medias is None or hashtags is None or tags is None or comments is None or profile is None:
+               #      raise Exception("Erro ao recuperar dados das postagens do perfil.")
+
+               posts = []
+
+               for post in result:
+                    post["medias"] = medias.get(post["id_postagem"], [])
+
+                    if not post["medias"]:
+                         raise Exception("Erro ao recuperar mídias da postagem.")
+
+                    # post["author"] = profile
+                    
+                    # if not post["author"]:
+                    #      raise Exception("Erro ao recuperar autor da postagem.")
+
+                    post["hashtags"] = hashtags.get(post["id_postagem"], [])
+                    # post["tags"] = tags.get(post["id_postagem"], [])
+                    # post["comments"] = comments.get(post["id_postagem"], [])
+                    
+                    posts.append(post)
+
+          return posts
+     except Exception as e:
+          print(f"Erro ao recuperar resultados de postagens: {e}")
+          return None
+     
 def create_database(con):
      try: 
           with open("database/sql_tds.sql", "r", encoding="utf-8") as file:

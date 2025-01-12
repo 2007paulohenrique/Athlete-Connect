@@ -204,64 +204,6 @@
     position: relative;
 }
 
-.profile_posts > p {
-    width: 100%;
-    text-align: center;
-    margin-top: auto;
-}
-
-.profile_posts > div {
-    width: 20%;
-    aspect-ratio: 1 / 1;
-    border: 1px solid var(--ligth-theme-color);
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    position: relative;
-    z-index: 1; 
-}
-
-.profile_posts > div::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    box-shadow: inset 10px 10px 60px black, inset -10px -10px 60px black;
-    opacity: 0; 
-    transition: all 0.3s ease; 
-    z-index: 2; 
-}
-
-.profile_posts > div:hover::after {
-    opacity: 1; 
-}
-
-.profile_posts > div > span {
-    position: absolute;
-    top: 0.5em;
-    right: 0.5em;
-    z-index: 2;
-    font-weight: bold;
-    text-shadow: 2px 2px 1px black;
-}
-
-.profile_posts > div > img {
-    height: calc(100% + 2.8em);
-    width: calc(100% + 2.8em);
-    object-fit: cover;
-    display: block;
-    z-index: 1; 
-    transition: all 0.3s ease; 
-}
-
-.profile_posts > div:hover > img {
-    transform: scale(0.9);
-}
-
 @media screen and (max-width: 720px) {
     .profile_page {
         padding: 1em 1em 0;
@@ -269,10 +211,6 @@
 
     .profile_posts {
         width: calc(100dvw - 0.7em);
-    }
-
-    .profile_posts > div {
-        width: 33.33%;
     }
 
     .profile_stats {

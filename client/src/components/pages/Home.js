@@ -14,7 +14,7 @@ import formatDate from "../../utils/DateFormatter";
 
 function Home() {
     const [feed, setFeed] = useState();
-    const { profileId}  = useProfile();
+    const { profileId }  = useProfile();
     const [profile, setProfile] = useState({});
     const [message, setMessage] = useState({});
     const [tags, setTags] = useState([]);

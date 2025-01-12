@@ -11,9 +11,9 @@ import SubmitButton from "../form/SubmitButton";
 import MainInput from "../form/MainInput";
 import PostItemsContainer from "../layout/PostItemsContainer";
 import Message from "../layout/Message";
-import loading from "../../img/animations/loading.svg";
 import AppNavBar from "../layout/AppNavBar";
 import ProfileNavBar from "../layout/ProfileNavBar";
+import PostsInSection from "../layout/PostsInSection";
 
 function Profile() {
     const [thumbnails, setThumbnails] = useState([]);
@@ -365,22 +365,11 @@ function Profile() {
                 </div>
 
                 <section className={styles.profile_posts}>
-                    {!profile.posts && (
-                        <img className="loading" src={loading} alt="Loading"/>
-                    )}
-                    
-                    {profile.posts ? 
-                        profile.posts.length !== 0 ? profile.posts.map((post, index) => (
-                            <div key={index}>
-                                <span>{post.medias.length > 1 ? `${post.medias.length - 1} +` : ""}</span>
-
-                                <img 
-                                    src={thumbnails[index]} 
-                                    alt={`Post ${index}`} 
-                                />
-                            </div>
-                        )) : <p>{id ? `${profile.nome} ainda não publicou nada.` : "Faça sua primeira publicação!"}</p>
-                    : null}
+                    <PostsInSection 
+                        posts={profile.posts} 
+                        thumbnails={thumbnails} 
+                        notFoundText={id ? `${profile.nome} ainda não publicou nada.` : "Faça sua primeira publicação!"}
+                    />
                 </section>
             </main>
             
