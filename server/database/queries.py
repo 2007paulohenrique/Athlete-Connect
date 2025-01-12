@@ -1146,17 +1146,21 @@ def get_tags(con, text=None):
           with con.cursor(dictionary=True) as cursor:
                if text is None:
                     sql = """
-                         SELECT p.id_perfil, p.nome, m.caminho 
+                         SELECT p.id_perfil, p.nome, m.caminho, COUNT(s.fk_perfil_id_seguidor) AS numero_seguidores
                          FROM perfil p
                          LEFT JOIN midia m ON m.id_midia = p.fk_midia_id_midia
+                         LEFT JOIN segue s ON s.fk_perfil_id_seguido = p.id_perfil
+                         GROUP BY p.id_perfil;
                     """
                     cursor.execute(sql)
                else:
                     sql = """
-                         SELECT p.id_perfil, p.nome, m.caminho 
+                         SELECT p.id_perfil, p.nome, m.caminho, COUNT(s.fk_perfil_id_seguidor) AS numero_seguidores
                          FROM perfil p
                          LEFT JOIN midia m ON m.id_midia = p.fk_midia_id_midia
+                         LEFT JOIN segue s ON s.fk_perfil_id_seguido = p.id_perfil
                          WHERE LOWER(p.nome) LIKE LOWER(%s)
+                         GROUP BY p.id_perfil;
                     """
                     search_text = f"%{text}%"
                     cursor.execute(sql, (search_text,))

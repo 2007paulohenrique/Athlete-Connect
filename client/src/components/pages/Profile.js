@@ -16,7 +16,6 @@ import ProfileNavBar from "../layout/ProfileNavBar";
 import PostsInSection from "../layout/PostsInSection";
 
 function Profile() {
-    const [thumbnails, setThumbnails] = useState([]);
     const [followersNumber, setFollowersNumber] = useState(0);
     const [profile, setProfile] = useState({});
     const { profileId } = useProfile();
@@ -93,53 +92,11 @@ function Profile() {
         }, 1);
     }
 
-    const generateVideoThumbnail = (videoPath) => {
-        return new Promise((resolve) => {
-            const video = document.createElement("video");
-            video.src = videoPath;
-
-            video.addEventListener("loadeddata", () => {
-                const canvas = document.createElement("canvas");
-
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-
-                const context = canvas.getContext("2d");
-
-                context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-                const thumbnailURL = canvas.toDataURL("image/png");
-
-                resolve(thumbnailURL);
-            });
-        });
-    };
-
-    useEffect(() => {
-        if (profile.posts) {
-            const fetchThumbnails = async () => {
-                const newThumbnails = await Promise.all(
-                    profile.posts.map(async (post) => {
-                        if (post.medias[0].tipo === "video") {
-                            return await generateVideoThumbnail(post.medias[0].caminho);
-                        } else {
-                            return require(`../../img/${post.medias[0].caminho}`)
-                        }    
-                    })
-                );
-    
-                setThumbnails(newThumbnails);
-            };
-    
-            fetchThumbnails();
-        }
-    }, [profile.posts]);
-
     function followProfile() {
         const followerId = profileId || localStorage.getItem("athleteConnectProfileId");
     
         toggleFollow(followerId);
-}
+    }
 
     const toggleFollow = async (followerId) => {
         try {
@@ -284,7 +241,7 @@ function Profile() {
                     <div>
                         <span>{formatNumber(followersNumber)}</span>
 
-                        <span>Seguidores</span>
+                        <span>{followersNumber === 1 ? "seguidor" : "seguidores"}</span>
                     </div>
 
                     <div>
@@ -367,7 +324,6 @@ function Profile() {
                 <section className={styles.profile_posts}>
                     <PostsInSection 
                         posts={profile.posts} 
-                        thumbnails={thumbnails} 
                         notFoundText={id ? `${profile.nome} ainda não publicou nada.` : "Faça sua primeira publicação!"}
                     />
                 </section>

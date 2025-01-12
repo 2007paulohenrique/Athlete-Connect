@@ -1,3 +1,33 @@
 .results_list {
-    
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 3em;
+}
+
+.results_list > li {
+    cursor: pointer;
+    position: relative;
+}
+
+.profiles_result {
+    flex-wrap: nowrap;
+    justify-content: unset;
+    gap: 1em;
+}
+
+.hashtags_result > li::before {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background-color: var(--ligth-font-color);
+    transition: all 0.2s ease-in-out;
+}
+
+.hashtags_result > li:hover::before {
+    width: 100%;
 }

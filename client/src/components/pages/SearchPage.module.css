@@ -1,9 +1,14 @@
 .search_page {
     background-color: var(--dark-bg-color);
+    max-height: max-content;
     padding: 1em;
     display: flex;
     flex-direction: column;
     gap: 1em;
+}
+
+.search_page > form {
+    width: 100%;
 }
 
 .search_text {
@@ -13,4 +18,55 @@
 
 .search_text > span {
     color: var(--white-bg-color);
+}
+
+.result {
+    margin-top: 5em;
+    display: flex;
+    flex-direction: column;
+    gap: 3em;
+    text-align: center;
+    height: max-content;
+}
+
+.result > p {
+    width: 100%;
+    text-align: center;
+}
+
+.result > div {
+    padding: 0 1em;
+    height: max-content;
+    overflow: auto;
+}
+
+.result > .posts {
+    display: flex;
+    flex-wrap: wrap;
+    max-height: 60em;
+    padding: 0;
+}
+
+.hashtags {
+    max-height: 14em;
+}
+
+.sports {
+    max-height: 28em;
+}
+
+@media screen and (max-width: 720px) {
+    .posts {
+        width: 100dvw;
+        margin: 0 -1em;
+    }
+
+    .sports { 
+        max-height: 46em;
+    }
+
+    .result {
+        font-size: 0.85em;
+        margin: 4em -1em 0;
+    }
 }

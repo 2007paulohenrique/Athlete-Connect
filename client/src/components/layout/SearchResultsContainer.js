@@ -1,7 +1,7 @@
 import styles from "./SearchResultsContainer.module.css";
 import loading from "../../img/animations/loading.svg"
 import SportCard from "./SportCard";
-import ProfileSmallerContainer from "./ProfileSmallerContainer";
+import ProfileBiggerContainer from "./ProfileBiggerContainer";
 import { useNavigate } from "react-router-dom";
 
 function SearchResultsContainer({ results, resultType, notFoundText }) {
@@ -14,13 +14,14 @@ function SearchResultsContainer({ results, resultType, notFoundText }) {
             )}
 
             {results ? 
-                <ul className={styles.results_list}>
+                <ul className={`${styles.results_list} ${styles[`${resultType}_result`]}`}>
                     {results.length !== 0 ? results.map((item, index) => (
                         <li key={index}>
                             {resultType === "profiles" ? (
-                                <ProfileSmallerContainer 
+                                <ProfileBiggerContainer 
                                     profilePhotoPath={item.caminho} 
                                     profileName={item.nome} 
+                                    followersNumber={item.numero_seguidores}
                                     handleClick={() => navigate(`/profile/${item.id_perfil}`)}
                                 />
                             ) : resultType === "hashtags" ? (

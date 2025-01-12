@@ -15,7 +15,6 @@ function SearchPage() {
     const text = searchParams.get('text') || "";
     const type = searchParams.get('type') || "all";
 
-    const [thumbnails, setThumbnails] = useState([]);
     const [postsResult, setPostsResult] = useState();
     const [profilesResult, setProfilesResult] = useState();
     const [hashtagsResult, setHashtagsResult] = useState();
@@ -52,7 +51,7 @@ function SearchPage() {
     }, [fetchSearchResult])
 
     function handleOnChangeSearch(e) {
-        e.target.value = e.target.value.trim();
+        e.target.value = e.target.value.replace(/\s/g, "");
 
         setSearchText(e.target.value);
     }
@@ -62,48 +61,6 @@ function SearchPage() {
 
         navigate(`/search?text=${searchText}&type=${type}`);
     }
-
-    const generateVideoThumbnail = (videoPath) => {
-        return new Promise((resolve) => {
-            const video = document.createElement("video");
-            video.src = videoPath;
-
-            video.addEventListener("loadeddata", () => {
-                const canvas = document.createElement("canvas");
-
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-
-                const context = canvas.getContext("2d");
-
-                context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-                const thumbnailURL = canvas.toDataURL("image/png");
-
-                resolve(thumbnailURL);
-            });
-        });
-    };
-
-    useEffect(() => {
-        if (postsResult) {
-            const fetchThumbnails = async () => {
-                const newThumbnails = await Promise.all(
-                    postsResult.map(async (post) => {
-                        if (post.medias[0].tipo === "video") {
-                            return await generateVideoThumbnail(post.medias[0].caminho);
-                        } else {
-                            return require(`../../img/${post.medias[0].caminho}`)
-                        }    
-                    })
-                );
-    
-                setThumbnails(newThumbnails);
-            };
-    
-            fetchThumbnails();
-        }
-    }, [postsResult]);
 
     return (
         <>
@@ -150,40 +107,64 @@ function SearchPage() {
                             notFoundText="Nenhum esporte encontrado."
                         />
                     ) : type === "posts" ? (
-                        <PostsInSection 
-                            posts={postsResult} 
-                            thumbnails={thumbnails} 
-                            notFoundText="Nenhuma postagem encontrada."
-                        />
+                        <div className={styles.posts}>
+                            <PostsInSection 
+                                posts={postsResult} 
+                                notFoundText="Nenhuma postagem encontrada."
+                            />
+                        </div>
                     ) : type === "all" ? (
                         <>
-                            <div>
-                                <SearchResultsContainer 
-                                    results={hashtagsResult} 
-                                    resultType="hashtags" 
-                                />
-                            </div>
+                            {(hashtagsResult?.length === 0 && postsResult.length === 0 && profilesResult.length === 0 && sportsResult.length === 0) && (
+                                <p>Nada foi encontrado.</p>
+                            )}
 
-                            <div>
-                                <PostsInSection 
-                                    posts={postsResult} 
-                                    thumbnails={thumbnails} 
-                                />
-                            </div>
+                            {hashtagsResult?.length !== 0 && (
+                                <>
+                                    <div className={styles.hashtags}>
+                                        <SearchResultsContainer 
+                                            results={hashtagsResult} 
+                                            resultType="hashtags" 
+                                        />
+                                    </div>
 
-                            <div>
-                                <SearchResultsContainer 
-                                    results={profilesResult} 
-                                    resultType="profiles"
-                                />
-                            </div>
+                                    <hr/>
+                                </>
+                            )}
 
-                            <div>
-                                <SearchResultsContainer
-                                    results={sportsResult}
-                                    resultType="sports"
-                                />
-                            </div>
+                            {postsResult?.length !== 0 && (
+                                <>
+                                    <div className={styles.posts}>
+                                        <PostsInSection 
+                                            posts={postsResult} 
+                                        />
+                                    </div>
+
+                                    <hr/>
+                                </>
+                            )}
+
+                            {profilesResult?.length !== 0 && (
+                                <>
+                                    <div className={styles.profiles}>
+                                        <SearchResultsContainer 
+                                            results={profilesResult} 
+                                            resultType="profiles"
+                                        />
+                                    </div>
+
+                                    <hr/>
+                                </>
+                            )}
+
+                            {sportsResult?.length !== 0 && (
+                                <div className={styles.sports}>
+                                    <SearchResultsContainer
+                                        results={sportsResult}
+                                        resultType="sports"
+                                    />
+                                </div>
+                            )}
                         </>
                     ) : null}
                 </section>

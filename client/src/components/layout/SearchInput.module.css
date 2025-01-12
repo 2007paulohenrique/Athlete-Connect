@@ -18,6 +18,7 @@
 
 .search_input > input {
     width: 100%;
+    height: max-content;
     background-color: unset;
     border: none;
     outline: none;
