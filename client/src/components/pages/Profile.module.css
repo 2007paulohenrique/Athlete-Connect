@@ -5,6 +5,7 @@
     align-items: center;
     background-color: var(--dark-bg-color);
     gap: 1.5em;
+    min-height: 100dvh;
 }
 
 .profile_page > hr {

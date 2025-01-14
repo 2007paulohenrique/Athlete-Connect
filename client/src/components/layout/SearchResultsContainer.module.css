@@ -8,6 +8,7 @@
 
 .results_list > li {
     cursor: pointer;
+    width: max-content;
     position: relative;
 }
 
@@ -30,4 +31,25 @@
 
 .hashtags_result > li:hover::before {
     width: 100%;
+}
+
+
+@media screen and (max-width: 720px) {
+    .hashtags_result {
+
+        flex-direction: column;
+        gap: 0.4em;
+        font-size: 1.2em;
+    }
+    .results_list {
+        padding: 0 1em;
+    }
+
+    .profiles_result {
+        flex-direction: column;
+    }
+
+    .profiles_result > li {
+        width: 100%;
+    }
 }

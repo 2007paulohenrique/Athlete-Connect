@@ -7,9 +7,11 @@ function ProfileBiggerContainer({ profilePhotoPath, profileName, followersNumber
         <div className={styles.profile_bigger_container} onClick={handleClick}>
             <ProfilePhotoContainer profilePhotoPath={profilePhotoPath} size="big"/>
             
-            <span>{profileName}</span>
+            <div className={styles.profile_info}>
+                <span>{profileName}</span>
 
-            <span>{`${formatNumber(followersNumber)} ${followersNumber === 1 ? "seguidor" : "seguidores"}`}</span>
+                <span>{`${formatNumber(followersNumber)} ${followersNumber === 1 ? "seguidor" : "seguidores"}`}</span>
+            </div>
         </div>
     );
 }

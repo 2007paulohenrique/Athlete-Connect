@@ -11,7 +11,7 @@ import PostsInSection from "../layout/PostsInSection";
 import SearchResultsContainer from "../layout/SearchResultsContainer";
 
 function SearchPage() {
-    const [searchParams] = useSearchParams();
+    const [searchParams, setSearchParams] = useSearchParams();
     const text = searchParams.get('text') || "";
     const type = searchParams.get('type') || "all";
 
@@ -32,19 +32,17 @@ function SearchPage() {
             if (data.error) {
                 navigate("/errorPage", {state: {error: data.error}});
             } else {
-                const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
-
                 setHashtagsResult(data.hashtags);
-                setProfilesResult(data.profiles.filter(profile => profile.id_perfil !== Number(confirmedProfileId)));
+                setProfilesResult(data.profiles);
                 setSportsResult(data.sports);
-                setPostsResult(data.posts.filter(post => post.fk_perfil_id_perfil !== Number(confirmedProfileId)));
+                setPostsResult(data.posts);
             }
         } catch (err) {
             navigate("/errorPage", {state: {error: err.message}});
     
             console.error('Erro ao fazer a requisição:', err);
         }
-    }, [navigate, profileId, text])
+    }, [navigate, text])
 
     useEffect(() => {
         fetchSearchResult();
@@ -59,7 +57,9 @@ function SearchPage() {
     function handleSubmitSearch(e) {
         e.preventDefault(); 
 
-        navigate(`/search?text=${searchText}&type=${type}`);
+        setSearchParams({text: searchText, type: type})
+
+        // navigate(`/search?text=${searchText}&type=${type}`);
     }
 
     return (
@@ -128,7 +128,7 @@ function SearchPage() {
                                         />
                                     </div>
 
-                                    <hr/>
+                                    {hashtagsResult && postsResult.length !== 0 && <hr/>}
                                 </>
                             )}
 
@@ -140,7 +140,7 @@ function SearchPage() {
                                         />
                                     </div>
 
-                                    <hr/>
+                                    {postsResult && profilesResult.length !== 0 && <hr/>}
                                 </>
                             )}
 
@@ -153,7 +153,7 @@ function SearchPage() {
                                         />
                                     </div>
 
-                                    <hr/>
+                                    {profilesResult && sportsResult.length !== 0 && <hr/>}
                                 </>
                             )}
 

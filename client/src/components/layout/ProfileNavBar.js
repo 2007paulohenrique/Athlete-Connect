@@ -57,7 +57,7 @@ function ProfileNavBar() {
                     </li>
                 </div>
                 
-                <li>
+                <li onClick={() => navigate("/")}>
                     <img src={logo} alt="Home"/>
                 </li>
 

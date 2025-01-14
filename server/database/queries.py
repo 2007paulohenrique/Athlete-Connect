@@ -1193,15 +1193,17 @@ def get_search_result(con, text):
 def get_posts_for_search(con, text):
      try:
           with con.cursor(dictionary=True) as cursor:
+               print(text)
                sql = """
                     SELECT DISTINCT p.*
                     FROM postagem p
-                    INNER JOIN postagem_hashtag ph ON p.id_postagem = ph.fk_postagem_id_postagem
-                    INNER JOIN hashtag h ON ph.fk_hashtag_id_hashtag = h.id_hashtag
-                    WHERE LOWER(h.nome) LIKE LOWER(%s)
+                    JOIN perfil pe ON pe.id_perfil = p.fk_perfil_id_perfil
+                    LEFT JOIN postagem_hashtag ph ON p.id_postagem = ph.fk_postagem_id_postagem
+                    LEFT JOIN hashtag h ON ph.fk_hashtag_id_hashtag = h.id_hashtag
+                    WHERE LOWER(h.nome) LIKE LOWER(%s) OR LOWER(pe.nome) = LOWER(%s)
                """
                search_text = f"%{text}%"
-               cursor.execute(sql, (search_text,))
+               cursor.execute(sql, (search_text, text))
                result = cursor.fetchall()
 
                if not result:

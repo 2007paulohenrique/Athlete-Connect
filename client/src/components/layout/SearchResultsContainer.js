@@ -14,7 +14,7 @@ function SearchResultsContainer({ results, resultType, notFoundText }) {
             )}
 
             {results ? 
-                <ul className={`${styles.results_list} ${styles[`${resultType}_result`]}`}>
+                <ul className={`${styles.results_list} ${results.length !== 0 && styles[`${resultType}_result`]}`}>
                     {results.length !== 0 ? results.map((item, index) => (
                         <li key={index}>
                             {resultType === "profiles" ? (

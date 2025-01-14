@@ -33,7 +33,7 @@ body,
 main {
   width: 100%;
   height: max-content;
-  min-height: 100dvh;
+  min-height: calc(100dvh - 8.1em);
 }
 
 main {

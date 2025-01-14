@@ -20,7 +20,7 @@ function AppNavBar({ profilePhotoPath }) {
     return (
         <nav className={styles.app_nav_bar}>
             <ul>
-                <li>
+                <li onClick={() => navigate("/")}>
                     <img src={homeIcon} alt="Home"/>
                 </li>
 
