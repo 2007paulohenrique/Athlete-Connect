@@ -3,7 +3,7 @@
     align-items: center;
     justify-content: center;
     background: var(--ligth-theme-color) url(../../img/background/bgLogin.svg) center;
-    height: 100%;
+    min-height: 100dvh;
     background-size: cover;
     background-attachment: fixed;
 }

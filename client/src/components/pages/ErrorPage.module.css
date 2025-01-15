@@ -7,6 +7,7 @@
     background-color: var(--dark-bg-color);
     text-align: center;
     padding: 1em 5em;
+    min-height: 100dvh;
 }
 
 .error_page > img:first-child {

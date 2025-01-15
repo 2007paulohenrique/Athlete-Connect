@@ -7,6 +7,7 @@
     background-size: cover;
     background-attachment: fixed;
     align-items: center;
+    min-height: 100dvh;
 }
 
 .profile_preferences_page > form{

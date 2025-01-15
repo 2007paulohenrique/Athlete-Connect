@@ -38,6 +38,11 @@ def get_profile(con, profile_id, profile_viewer_id = None):
 
                     if result["posts"] is None:
                          raise Exception("Erro ao recuperar postagens do perfil.")  
+                    
+                    result["tagPosts"] = get_profile_tag_posts(con, profile_id)
+
+                    if result["tagPosts"] is None:
+                         raise Exception("Erro ao recuperar postagens com o perfil marcado.")  
 
                     result["followers"] = get_followers(con, profile_id)
                     
@@ -186,6 +191,43 @@ def get_profile_posts(con, profile_id):
           return posts
      except Exception as e:
           print(f"Erro ao recuperar postagens do perfil: {e}")
+          return None
+
+def get_profile_tag_posts(con, profile_id):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               sql = f"""
+                    SELECT p.*
+                    FROM postagem p
+                    LEFT JOIN marcacao_postagem mp ON mp.fk_postagem_id_postagem = p.id_postagem
+                    WHERE mp.fk_perfil_id_perfil = %s
+               """
+               cursor.execute(sql, (profile_id,))
+               result = cursor.fetchall()
+
+               if not result:
+                    return []
+
+               posts_ids = [post["id_postagem"] for post in result]
+          
+               medias = get_post_medias_for_feed(con, posts_ids) 
+
+               if medias is None:
+                    raise Exception("Erro ao recuperar dados das postagens do perfil.")
+
+               posts = []
+
+               for post in result:
+                    post["medias"] = medias.get(post["id_postagem"], [])
+
+                    if not post["medias"]:
+                         raise Exception("Erro ao recuperar mídias da postagem.")
+                    
+                    posts.append(post)
+
+          return posts
+     except Exception as e:
+          print(f"Erro ao recuperar postagens com o perfil marcado: {e}")
           return None
           
 def insert_profile(con, email, password, name, bio, private):
@@ -687,7 +729,7 @@ def get_post_comments_for_feed(con, post_ids):
           with con.cursor(dictionary=True) as cursor:
                placeholders = ','.join(['%s'] * len(post_ids))
                sql = f"""
-                    SELECT c.texto, c.fk_postagem_id_postagem, c.data_comentario, m.caminho
+                    SELECT c.texto, c.fk_postagem_id_postagem, c.data_comentario, m.caminho, p.id_perfil, p.nome
                     FROM comentario c
                     JOIN perfil p ON p.id_perfil = c.fk_perfil_id_perfil
                     LEFT JOIN midia m ON m.id_midia = p.fk_midia_id_midia
@@ -1019,7 +1061,7 @@ def get_sports(con, text=None):
                          FROM esporte e
                          LEFT JOIN categorias_esporte cse ON cse.fk_esporte_id_esporte = e.id_esporte
                          JOIN categoria_esporte ce ON ce.id_categoria_esporte = cse.fk_categoria_esporte_id_categoria_esporte
-                         WHERE LOWER(e.nome) LIKE LOWER(%s) OR LOWER(ce.nome) LIKE LOWER(%s)
+                         WHERE LOWER(REPLACE(e.nome, ' ', '')) LIKE LOWER(%s) OR LOWER(REPLACE(ce.nome, ' ', '')) LIKE LOWER(%s)
                          ORDER BY e.nome
                     """
                     search_text = f"%{text}%"

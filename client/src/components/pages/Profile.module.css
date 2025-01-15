@@ -5,7 +5,7 @@
     align-items: center;
     background-color: var(--dark-bg-color);
     gap: 1.5em;
-    min-height: 100dvh;
+    min-height: 120dvh;
 }
 
 .profile_page > hr {
@@ -203,6 +203,42 @@
     display: flex;
     flex-wrap: wrap;
     position: relative;
+}
+
+.posts_type {
+    width: 100%;
+    margin-top: 1em;
+}
+
+.posts_type > ul {
+    width: 100%;
+    display: flex;
+    list-style: none;
+    justify-content: space-around;
+}
+
+.posts_type > ul > li {
+    position: relative;
+    cursor: pointer;
+    padding: 0.2em;
+}
+
+.posts_type > ul > li::after {
+    content: "";
+    background-color: var(--ligth-font-color);
+    height: 1px;
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+}
+
+.selected_posts_type {
+    color: var(--ligth-theme-color)
+}
+
+.posts_type > ul > li.selected_posts_type::after {
+    background-color: var(--ligth-theme-color);
 }
 
 @media screen and (max-width: 720px) {

@@ -25,6 +25,7 @@ function Profile() {
     const [profileComplaintReasons, setProfileComplaintReasons] = useState([]);
     const [complaintDescription, setComplaintDescription] = useState("");
     const [message, setMessage] = useState({});
+    const [postsToShow, setPostsToShow] = useState();
 
     const { id } = useParams();
     const navigate = useNavigate();
@@ -66,6 +67,7 @@ function Profile() {
                 });    
 
                 setFollowersNumber(data.followers.length);
+                setPostsToShow(data.posts);
 
                 fetchComplaintReasons();
             }    
@@ -257,7 +259,7 @@ function Profile() {
                     <>
                         <ul className={styles.profile_preferences}>
                             {profile.preferences.map((sport, index) => (
-                                <li key={index}>
+                                <li key={index} onClick={() => navigate(`/search?text=${sport.nome}&type=posts`)}>
                                     <img src={sport.icone} alt={`${sport.nome} Icon`}/>
 
                                     <span>{sport.nome}</span>
@@ -321,10 +323,28 @@ function Profile() {
                     )}
                 </div>
 
+                <div className={styles.posts_type}>
+                    <ul>
+                        <li 
+                            onClick={() => setPostsToShow(profile.posts)} 
+                            className={postsToShow === profile.posts ? styles.selected_posts_type : null}
+                        >
+                                Suas postagens
+                        </li>
+
+                        <li 
+                            onClick={() => setPostsToShow(profile.tagPosts)} 
+                            className={postsToShow === profile.tagPosts ? styles.selected_posts_type : null}
+                        >
+                                Marcações
+                        </li>
+                    </ul>
+                </div>
+
                 <section className={styles.profile_posts}>
                     <PostsInSection 
-                        posts={profile.posts} 
-                        notFoundText={id ? `${profile.nome} ainda não publicou nada.` : "Faça sua primeira publicação!"}
+                        posts={postsToShow} 
+                        notFoundText={postsToShow === profile.posts && (id ? `${profile.nome} ainda não publicou nada.` : "Faça sua primeira publicação!")}
                     />
                 </section>
             </main>

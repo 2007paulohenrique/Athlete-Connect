@@ -6,7 +6,6 @@ import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import ProfileNavBar from "../layout/ProfileNavBar";
 import AppNavBar from "../layout/AppNavBar";
-import { useProfile } from "../../ProfileContext";
 import PostsInSection from "../layout/PostsInSection";
 import SearchResultsContainer from "../layout/SearchResultsContainer";
 
@@ -19,8 +18,7 @@ function SearchPage() {
     const [profilesResult, setProfilesResult] = useState();
     const [hashtagsResult, setHashtagsResult] = useState();
     const [sportsResult, setSportsResult] = useState();
-    const [searchText, setSearchText] = useState(text);
-    const { profileId }  = useProfile();
+    const [searchText, setSearchText] = useState("");
 
     const navigate = useNavigate();
     
@@ -43,6 +41,10 @@ function SearchPage() {
             console.error('Erro ao fazer a requisição:', err);
         }
     }, [navigate, text])
+
+    useEffect(() => {
+        setSearchText(text);
+    }, [text]);
 
     useEffect(() => {
         fetchSearchResult();

@@ -16,7 +16,10 @@ function SearchResultsContainer({ results, resultType, notFoundText }) {
             {results ? 
                 <ul className={`${styles.results_list} ${results.length !== 0 && styles[`${resultType}_result`]}`}>
                     {results.length !== 0 ? results.map((item, index) => (
-                        <li key={index}>
+                        <li 
+                            key={index} 
+                            onClick={(resultType === "sports" || resultType === "hashtags") ? () => navigate(`/search?text=${item.nome.replace(/\s/g, "")}&type=posts`) : undefined}
+                        >
                             {resultType === "profiles" ? (
                                 <ProfileBiggerContainer 
                                     profilePhotoPath={item.caminho} 
