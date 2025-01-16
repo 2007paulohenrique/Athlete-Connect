@@ -148,6 +148,7 @@ def get_profile_posts(con, profile_id):
                     LEFT JOIN comentario co ON co.fk_postagem_id_postagem = p.id_postagem
                     WHERE p.fk_perfil_id_perfil = %s
                     GROUP BY p.id_postagem
+                    ORDER BY p.data_publicacao DESC
                """
                cursor.execute(sql, (profile_id,))
                result = cursor.fetchall()
@@ -201,6 +202,7 @@ def get_profile_tag_posts(con, profile_id):
                     FROM postagem p
                     LEFT JOIN marcacao_postagem mp ON mp.fk_postagem_id_postagem = p.id_postagem
                     WHERE mp.fk_perfil_id_perfil = %s
+                    ORDER BY p.data_publicacao DESC
                """
                cursor.execute(sql, (profile_id,))
                result = cursor.fetchall()
@@ -536,6 +538,7 @@ def get_feed_posts(con, profile_id):
                     LEFT JOIN comentario co ON co.fk_postagem_id_postagem = p.id_postagem
                     WHERE p.fk_perfil_id_perfil IN ({placeholders})
                     GROUP BY p.id_postagem
+                    ORDER BY p.data_publicacao DESC
                """
                cursor.execute(sql, tuple(followeds_ids))
                result = cursor.fetchall()
@@ -1235,14 +1238,31 @@ def get_search_result(con, text):
 def get_posts_for_search(con, text):
      try:
           with con.cursor(dictionary=True) as cursor:
-               print(text)
+               # As postagens são selecionadas de forma que as com maior número de compartilhamentos, comentários e curtidas (pesos diferentes), 
+               # sejam mais valorizadas, porém quanto mais tempo passa, mais a postagem é desvalorizada 
+               # (o aumento da desvalorização fica mais lento com o passar dos dias).
                sql = """
-                    SELECT DISTINCT p.*
+                    SELECT DISTINCT p.*,
+                    COUNT(DISTINCT c.fk_perfil_id_perfil) AS total_curtidas,
+                    COUNT(DISTINCT cp.id_compartilhamento) AS total_compartilhamentos,
+                    COUNT(DISTINCT co.id_comentario) AS total_comentarios
                     FROM postagem p
                     JOIN perfil pe ON pe.id_perfil = p.fk_perfil_id_perfil
                     LEFT JOIN postagem_hashtag ph ON p.id_postagem = ph.fk_postagem_id_postagem
                     LEFT JOIN hashtag h ON ph.fk_hashtag_id_hashtag = h.id_hashtag
+                    LEFT JOIN curte c ON c.fk_postagem_id_postagem = p.id_postagem
+                    LEFT JOIN compartilhamento cp ON cp.fk_postagem_id_postagem = p.id_postagem
+                    LEFT JOIN comentario co ON co.fk_postagem_id_postagem = p.id_postagem
                     WHERE LOWER(h.nome) LIKE LOWER(%s) OR LOWER(pe.nome) = LOWER(%s)
+                    GROUP BY p.id_postagem
+                    ORDER BY 
+                         ((COUNT(DISTINCT cp.id_compartilhamento) * 3) +
+                         (COUNT(DISTINCT c.fk_perfil_id_perfil) * 1) +
+                         (COUNT(DISTINCT co.id_comentario) * 2)) /
+                         CASE 
+                              WHEN DATEDIFF(NOW(), p.data_publicacao) < 6 THEN 1
+                              ELSE LOG10(DATEDIFF(NOW(), p.data_publicacao) + 0.25)
+                         END DESC, data_publicacao DESC
                """
                search_text = f"%{text}%"
                cursor.execute(sql, (search_text, text))

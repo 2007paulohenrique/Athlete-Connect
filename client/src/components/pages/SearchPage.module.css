@@ -55,6 +55,13 @@
     max-height: 28em;
 }
 
+p.results_number {
+    text-align: left;
+    font-size: 2em;
+    color: var(--white-bg-color);
+    padding-left: 1em;
+}
+
 @media screen and (max-width: 720px) {
     .posts {
         width: 100dvw;

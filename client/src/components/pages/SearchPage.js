@@ -60,9 +60,22 @@ function SearchPage() {
         e.preventDefault(); 
 
         setSearchParams({text: searchText, type: type})
-
-        // navigate(`/search?text=${searchText}&type=${type}`);
     }
+
+    const resultsMap = {
+        hashtags: {results: hashtagsResult, notFoundText: "Nenhuma hashtag encontrada."},
+        profiles: {results: profilesResult, notFoundText: "Nenhum perfil encontrado."},
+        sports: {results: sportsResult, notFoundText: "Nenhum esporte encontrado."},
+        posts: {results: postsResult, notFoundText: "Nenhuma postagem encontrada."},
+    };
+    
+    const { results, notFoundText } = resultsMap[type] || {results: [], notFoundText: ""};
+    const resultCount = type === "all" ? 
+        resultsMap.hashtags.results?.length + 
+        resultsMap.profiles.results?.length + 
+        resultsMap.sports.results?.length + 
+        resultsMap.posts.results?.length : 
+        results.length;
 
     return (
         <>
@@ -90,32 +103,9 @@ function SearchPage() {
                 <SearchNavBar selectedType={type}/>
 
                 <section className={styles.result}>
-                    {type === "hashtags" ? (
-                        <SearchResultsContainer 
-                            results={hashtagsResult} 
-                            resultType="hashtags" 
-                            notFoundText="Nenhuma hashtag encontrada."
-                        />
-                    ) :  type === "profiles" ? (
-                        <SearchResultsContainer 
-                            results={profilesResult} 
-                            resultType="profiles"
-                            notFoundText="Nenhum perfil encontrado."
-                        />
-                    ) : type === "sports" ? (
-                        <SearchResultsContainer
-                            results={sportsResult}
-                            resultType="sports"
-                            notFoundText="Nenhum esporte encontrado."
-                        />
-                    ) : type === "posts" ? (
-                        <div className={styles.posts}>
-                            <PostsInSection 
-                                posts={postsResult} 
-                                notFoundText="Nenhuma postagem encontrada."
-                            />
-                        </div>
-                    ) : type === "all" ? (
+                    {resultCount > 0 && <p className={styles.results_number}>{`${resultCount} resultado${resultCount === 1 ? "" : "s"}:`}</p>}
+                    
+                    {type === "all" ? (
                         <>
                             {(hashtagsResult?.length === 0 && postsResult.length === 0 && profilesResult.length === 0 && sportsResult.length === 0) && (
                                 <p>Nada foi encontrado.</p>
@@ -168,6 +158,19 @@ function SearchPage() {
                                 </div>
                             )}
                         </>
+                    ) : type === "posts" ? (
+                        <div className={styles.posts}>
+                            <PostsInSection 
+                                posts={results} 
+                                notFoundText={notFoundText}
+                            />
+                        </div>
+                    ) : type === "hashtags" || type === "sports" || type === "profiles" ? (
+                        <SearchResultsContainer 
+                            results={results} 
+                            resultType={type} 
+                            notFoundText={notFoundText} 
+                        />
                     ) : null}
                 </section>
             </main>

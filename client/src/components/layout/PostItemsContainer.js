@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import styles from "./PostItemsContainer.module.css";
 import ProfileSmallerContainer from "./ProfileSmallerContainer";
+import React from "react";
 
 function PostItemsContainer({ searchText, filteredItems = [], handleClick, isSelectable = false, selectedItems, haveProfile = false, notFoundText, isComment = false, isHashtags = false, isComplaintReasons = false, isPostTags = false, isPostHashtags = false }) {
     const navigate = useNavigate();
@@ -17,14 +18,21 @@ function PostItemsContainer({ searchText, filteredItems = [], handleClick, isSel
 
             {searchText && filteredItems.length > 0 ? filteredItems.map((item, index) => (
                 isComment || isPostHashtags || isPostTags ? (
-                    <>
+                    <React.Fragment key={index}>
                         {isComment && <hr/>}
 
-                        <li key={index} className={isComment && styles.comment} onClick={isPostHashtags ? () => navigate(`/search?text=${item.nome}&type=posts`) : undefined}>
+                        <li 
+                            className={isComment && styles.comment} 
+                            onClick={isPostHashtags ? () => navigate(`/search?text=${item.nome}&type=posts`) : undefined}
+                        >
                             {isPostHashtags && <># {item.nome}</>}
 
                             {(isComment || isPostTags) && 
-                                <ProfileSmallerContainer profilePhotoPath={item.caminho} profileName={item.nome} handleClick={() => navigate(`/profile/${item.id_perfil}`)}/>
+                                <ProfileSmallerContainer 
+                                    profilePhotoPath={item.caminho} 
+                                    profileName={item.nome} 
+                                    handleClick={() => navigate(`/profile/${item.id_perfil}`)}
+                                />
                             }
 
                             {isComment && (
@@ -33,9 +41,8 @@ function PostItemsContainer({ searchText, filteredItems = [], handleClick, isSel
                                     <p className={styles.comment_text}>{item.texto}</p>
                                 </div>
                             )}
-
                         </li>
-                    </>
+                    </React.Fragment>
                 ) : (
                     <li 
                         key={index} 
