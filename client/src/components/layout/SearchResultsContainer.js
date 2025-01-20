@@ -4,7 +4,7 @@ import SportCard from "./SportCard";
 import ProfileBiggerContainer from "./ProfileBiggerContainer";
 import { useNavigate } from "react-router-dom";
 
-function SearchResultsContainer({ results, resultType, notFoundText }) {
+function SearchResultsContainer({ results, resultType, notFoundText, tagsLoading }) {
     const navigate = useNavigate();
 
     return (
@@ -36,12 +36,18 @@ function SearchResultsContainer({ results, resultType, notFoundText }) {
                                     iconPath={item.iconPath} 
                                     sportName={item.nome} 
                                     categories={item.categories} 
-                                    handleClick={() => undefined}
                                     sportDescription={item.descricao}
                                 />
                             ) : null}
                         </li>
-                    )) : <li>{notFoundText}</li>
+                    )) : 
+                        <li>
+                            {resultType === "profiles" && tagsLoading ? 
+                                <img className="loading" src={loading} alt="Loading"/>
+                            :
+                                {notFoundText}
+                            }
+                        </li>
                     }
                 </ul>                            
             : null}

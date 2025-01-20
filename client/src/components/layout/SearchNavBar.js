@@ -11,13 +11,6 @@ function SearchNavBar({ selectedType }) {
         <nav className={styles.search_nav_bar}>
             <ul>
                 <li 
-                    className={selectedType === "all" ? styles.selected_type : undefined} 
-                    onClick={() => navigate(`/search?text=${text}&type=all`)}
-                >
-                    Tudo
-                </li>
-
-                <li 
                     className={selectedType === "posts" ? styles.selected_type : undefined} 
                     onClick={() => navigate(`/search?text=${text}&type=posts`)}
                 >

@@ -34,25 +34,10 @@
     text-align: center;
 }
 
-.result > div {
-    padding: 0 1em;
-    height: max-content;
-    overflow: auto;
-}
-
 .result > .posts {
     display: flex;
     flex-wrap: wrap;
-    max-height: 60em;
     padding: 0;
-}
-
-.hashtags {
-    max-height: 14em;
-}
-
-.sports {
-    max-height: 28em;
 }
 
 p.results_number {
@@ -68,16 +53,7 @@ p.results_number {
         margin: 0 -1em;
     }
 
-    .sports { 
-        max-height: 46em;
-    }
-
-    .profiles {
-        max-height: 20em;
-    }
-
     .result {
-        /* font-size: 0.85em; */
         margin: 4em -0.7em 0;
     }
 }

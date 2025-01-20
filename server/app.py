@@ -347,8 +347,10 @@ def get_feed(profile_id):
         if con is None:
             print('Erro ao abrir conexão com banco de dados')
             return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+        
+        offset = int(request.args.get('offset', 0))
 
-        feed = get_feed_posts(con, profile_id)
+        feed = get_feed_posts(con, profile_id, offset)
 
         if feed is None:
             print('Erro ao recuperar feed fo perfil')
@@ -647,10 +649,68 @@ def get_search(text):
             print('Erro ao recuperar resultados da pesquisa')
             return jsonify({'error': 'Não foi possível recuperar os resultados da pesquisa devido a um erro no nosso servidor.'}), 500
         
+        result["profiles"] = get_tags(con, 0, text, 10)
+        result["posts"] = get_posts_for_search(con, text, 0)
+        
+        if result["profiles"] is None or result["posts"] is None:
+            print('Erro ao recuperar resultados da pesquisa')
+            return jsonify({'error': 'Não foi possível recuperar os resultados da pesquisa devido a um erro no nosso servidor.'}), 500
+
         return jsonify(result), 200
     except Exception as e:
         print('Erro ao recuperar resultados da pesquisa')
         return jsonify({'error': 'Não foi possível recuperar os resultados da pesquisa devido a um erro no nosso servidor.'}), 500
+    finally:
+        if con:
+            close_connection(con)
+
+@app.route('/search/posts/<string:text>', methods=['GET'])
+def get_search_posts(text):
+    try:
+        con = open_connection(*con_params)
+
+        if con is None:
+            print('Erro ao abrir conexão com banco de dados')
+            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+        
+        offset = int(request.args.get('offset', 25))
+
+        result = get_posts_for_search(con, text, offset)
+
+        if result is None:
+            print('Erro ao recuperar outros resultados de posts da pesquisa')
+            return jsonify({'error': 'Não foi possível recuperar os outros resultados de posts da pesquisa devido a um erro no nosso servidor.'}), 500
+
+        return jsonify(result), 200
+    except Exception as e:
+        print('Erro ao recuperar outros resultados de posts da pesquisa')
+        return jsonify({'error': 'Não foi possível recuperar outros resultados de posts da pesquisa devido a um erro no nosso servidor.'}), 500
+    finally:
+        if con:
+            close_connection(con)
+
+@app.route('/search/profiles/<string:text>', methods=['GET'])
+def get_search_profiles(text):
+    try:
+        con = open_connection(*con_params)
+
+        if con is None:
+            print('Erro ao abrir conexão com banco de dados')
+            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+
+        offset = int(request.args.get('offset', 0))
+        limit = request.args.get('limit')
+
+        result = get_tags(con, offset, text, int(limit) if limit is not None else None)
+
+        if result is None:
+            print('Erro ao recuperar outros resultados de perfis da pesquisa')
+            return jsonify({'error': 'Não foi possível recuperar outros resultados de perfis da pesquisa devido a um erro no nosso servidor.'}), 500
+        
+        return jsonify(result), 200
+    except Exception as e:
+        print('Erro ao recuperar outros resultados de perfis da pesquisa')
+        return jsonify({'error': 'Não foi possível recuperar outros resultados de perfis da pesquisa devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
             close_connection(con)

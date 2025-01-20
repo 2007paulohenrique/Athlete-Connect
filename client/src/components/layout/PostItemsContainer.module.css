@@ -24,6 +24,11 @@
     position: relative;
 }
 
+.post_items_container > .loading_li { 
+    height: 100px;
+    max-height: unset;
+}
+
 .post_items_container > .comment {
     display: flex;
     align-items: flex-start;

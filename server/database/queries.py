@@ -34,7 +34,7 @@ def get_profile(con, profile_id, profile_viewer_id = None):
                     if result["preferences"] is None:
                          raise Exception("Erro ao recuperar preferências do perfil.")  
 
-                    result["posts"] = get_profile_posts(con, profile_id)
+                    result["posts"] = get_profile_posts(con, profile_id, 0)
 
                     if result["posts"] is None:
                          raise Exception("Erro ao recuperar postagens do perfil.")  
@@ -134,10 +134,16 @@ def get_user(con, profile_id, profile_viewer_id = None):
           print(f"Erro ao recuperar usuário: {e}")
           return None
      
-def get_profile_posts(con, profile_id):
+def get_profile_posts(con, profile_id, offset=None):
+     # quando nao for necessario obter as postagens do perfil
+     if offset is None:
+          return []
+     
      try:
           with con.cursor(dictionary=True) as cursor:
-               sql = f"""
+               LIMIT = 25
+
+               sql = """
                     SELECT p.*,
                     COUNT(DISTINCT c.fk_perfil_id_perfil) AS total_curtidas,
                     COUNT(DISTINCT cp.id_compartilhamento) AS total_compartilhamentos,
@@ -149,8 +155,9 @@ def get_profile_posts(con, profile_id):
                     WHERE p.fk_perfil_id_perfil = %s
                     GROUP BY p.id_postagem
                     ORDER BY p.data_publicacao DESC
+                    LIMIT %s OFFSET %s
                """
-               cursor.execute(sql, (profile_id,))
+               cursor.execute(sql, (profile_id, LIMIT, offset))
                result = cursor.fetchall()
 
                if not result:
@@ -194,17 +201,24 @@ def get_profile_posts(con, profile_id):
           print(f"Erro ao recuperar postagens do perfil: {e}")
           return None
 
-def get_profile_tag_posts(con, profile_id):
+def get_profile_tag_posts(con, profile_id, offset=None):
+      # quando nao for necessario obter as postagens do perfil
+     if offset is None:
+          return []
+     
      try:
           with con.cursor(dictionary=True) as cursor:
+               LIMIT = 25
+
                sql = f"""
                     SELECT p.*
                     FROM postagem p
                     LEFT JOIN marcacao_postagem mp ON mp.fk_postagem_id_postagem = p.id_postagem
                     WHERE mp.fk_perfil_id_perfil = %s
                     ORDER BY p.data_publicacao DESC
+                    LIMIT %s OFFSET %s
                """
-               cursor.execute(sql, (profile_id,))
+               cursor.execute(sql, (profile_id, LIMIT, offset))
                result = cursor.fetchall()
 
                if not result:
@@ -518,13 +532,15 @@ def get_followers(con, followed_profile_id):
           print(f"Erro ao recuperar perfis seguidores: {e}")
           return None
 
-def get_feed_posts(con, profile_id):
+def get_feed_posts(con, profile_id, offset):
      try:
           with con.cursor(dictionary=True) as cursor:
                followeds_ids = get_followeds(con, profile_id)
 
                if not followeds_ids:
                     return []
+               
+               LIMIT = 6
 
                placeholders = ','.join(['%s'] * len(followeds_ids))
                sql = f"""
@@ -539,8 +555,9 @@ def get_feed_posts(con, profile_id):
                     WHERE p.fk_perfil_id_perfil IN ({placeholders})
                     GROUP BY p.id_postagem
                     ORDER BY p.data_publicacao DESC
+                    LIMIT %s OFFSET %s
                """
-               cursor.execute(sql, tuple(followeds_ids))
+               cursor.execute(sql, tuple(followeds_ids) + (LIMIT, offset))
                result = cursor.fetchall()
 
                posts_ids = [post["id_postagem"] for post in result]
@@ -1169,7 +1186,7 @@ def get_hashtags(con, text=None):
                if text is None:
                     sql = "SELECT * FROM hashtag ORDER BY nome"
                     cursor.execute(sql)
-               else:
+               else:                    
                     sql = """
                          SELECT * 
                          FROM hashtag 
@@ -1186,18 +1203,20 @@ def get_hashtags(con, text=None):
           print(f"Erro ao recuperar hashtags: {e}")
           return None
 
-def get_tags(con, text=None):
+def get_tags(con, offset, text, limit=None):
      try:
           with con.cursor(dictionary=True) as cursor:
-               if text is None:
+               search_text = f"%{text}%"
+
+               if limit is None:
                     sql = """
                          SELECT p.id_perfil, p.nome, m.caminho, COUNT(s.fk_perfil_id_seguidor) AS numero_seguidores
                          FROM perfil p
                          LEFT JOIN midia m ON m.id_midia = p.fk_midia_id_midia
                          LEFT JOIN segue s ON s.fk_perfil_id_seguido = p.id_perfil
-                         GROUP BY p.id_perfil;
+                         WHERE LOWER(p.nome) LIKE LOWER(%s)
+                         GROUP BY p.id_perfil
                     """
-                    cursor.execute(sql)
                else:
                     sql = """
                          SELECT p.id_perfil, p.nome, m.caminho, COUNT(s.fk_perfil_id_seguidor) AS numero_seguidores
@@ -1205,10 +1224,10 @@ def get_tags(con, text=None):
                          LEFT JOIN midia m ON m.id_midia = p.fk_midia_id_midia
                          LEFT JOIN segue s ON s.fk_perfil_id_seguido = p.id_perfil
                          WHERE LOWER(p.nome) LIKE LOWER(%s)
-                         GROUP BY p.id_perfil;
+                         GROUP BY p.id_perfil
+                         LIMIT %s OFFSET %s
                     """
-                    search_text = f"%{text}%"
-                    cursor.execute(sql, (search_text,))
+               cursor.execute(sql, (search_text,) + ((limit, offset) if limit is not None else ()))
 
                result = cursor.fetchall()
 
@@ -1222,12 +1241,9 @@ def get_search_result(con, text):
           result = {}
 
           result["hashtags"] = get_hashtags(con, text)
-          result["profiles"] = get_tags(con, text)
           result["sports"] = get_sports(con, text)
-          result["posts"] = get_posts_for_search(con, text)
 
-          if result["hashtags"] is None or result["profiles"] is None or result["sports"] is None or result["posts"] is None:
-               print("jajajajajajajajaj")
+          if result["hashtags"] is None or result["sports"] is None:
                raise Exception("Erro ao recuperar resultados da pesquisa.")
 
           return result
@@ -1235,9 +1251,10 @@ def get_search_result(con, text):
           print(f"Erro ao recuperar resultados da pesquisa: {e}")
           return None
      
-def get_posts_for_search(con, text):
+def get_posts_for_search(con, text, offset):
      try:
           with con.cursor(dictionary=True) as cursor:
+               LIMIT = 25
                # As postagens são selecionadas de forma que as com maior número de compartilhamentos, comentários e curtidas (pesos diferentes), 
                # sejam mais valorizadas, porém quanto mais tempo passa, mais a postagem é desvalorizada 
                # (o aumento da desvalorização fica mais lento com o passar dos dias).
@@ -1263,9 +1280,10 @@ def get_posts_for_search(con, text):
                               WHEN DATEDIFF(NOW(), p.data_publicacao) < 6 THEN 1
                               ELSE LOG10(DATEDIFF(NOW(), p.data_publicacao) + 0.25)
                          END DESC, data_publicacao DESC
+                    LIMIT %s OFFSET %s
                """
                search_text = f"%{text}%"
-               cursor.execute(sql, (search_text, text))
+               cursor.execute(sql, (search_text, text, LIMIT, offset))
                result = cursor.fetchall()
 
                if not result:

@@ -17,8 +17,12 @@ function Home() {
     const { profileId }  = useProfile();
     const [profile, setProfile] = useState({});
     const [message, setMessage] = useState({});
-    const [tags, setTags] = useState([]);
-    const [complaintReasons, setComplaintReasons] = useState([]);
+    const [tags, setTags] = useState();
+    const [complaintReasons, setComplaintReasons] = useState([]);    
+    const [postsLoading, setPostsLoading] = useState(false);
+    const [tagsLoading, setTagsLoading] = useState(false);
+    const [offset, setOffset] = useState(0);
+    const [searchTextTag, setSearchTextTag] = useState("");
     
     const navigate = useNavigate();
     const location = useLocation();
@@ -30,6 +34,8 @@ function Home() {
         }, [location])
     
     const fetchComplaintReasons = useCallback(async () => {
+        if (complaintReasons.length !== 0) return;
+
         try {
             const resp = await axios.get("http://localhost:5000/complaintReasons");
             const data = resp.data;
@@ -44,28 +50,41 @@ function Home() {
     
             console.error('Erro ao fazer a requisição:', err);
         }
-    }, [navigate]);
+    }, [complaintReasons.length, navigate]);
     
-    const fetchTags = useCallback(async () => {
+    const loadTags = useCallback(async () => {
+        if (!searchTextTag) return;
+
+        setTagsLoading(true);
+
         try {
-            const resp = await axios.get("http://localhost:5000/tags");
+            const resp = await axios.get(`http://localhost:5000/search/profiles/${searchTextTag}`);
             const data = resp.data;
     
             if (data.error) {
                 navigate("/errorPage", {state: {error: data.error}});
             } else {
-                setTags(data);
+                const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
+                const filteredData = data.filter(tag => String(tag.id_perfil) !== String(confirmedProfileId));
+
+                setTags(filteredData);
             }
         } catch (err) {
             navigate("/errorPage", {state: {error: err.message}});
     
             console.error('Erro ao fazer a requisição:', err);
+        } finally {
+            setTagsLoading(false);
         }
-    }, [navigate]);
-    
-    const fetchFeed = useCallback(async (id) => {
+    }, [navigate, profileId, searchTextTag]);
+
+    const loadPosts = useCallback(async (id) => {
+        if (postsLoading || (feed && feed?.length % 6 !== 0)) return;
+
+        setPostsLoading(true);
+
         try {
-            const resp = await axios.get(`http://localhost:5000/profiles/${id}/feed`);
+            const resp = await axios.get(`http://localhost:5000/profiles/${id}/feed?offset=${offset}`);
             const data = resp.data;
     
             if (data.error) {
@@ -79,19 +98,24 @@ function Home() {
                         data_comentario: formatDate(comment.data_comentario)
                     }))
                 }));
-                
-                setFeed(formattedFeed);
-                
-                fetchComplaintReasons();
-                fetchTags();
+
+                if (feed) {
+                    setFeed((prevPosts) => [...prevPosts, ...formattedFeed]);
+                } else {
+                    setFeed(formattedFeed);
+                }
+
+                setOffset((prevOffset) => prevOffset + 6);   
             }
         } catch (err) {
             navigate("/errorPage", {state: {error: err.message}});
             
             console.error('Erro ao fazer a requisição:', err);
+        } finally {
+            setPostsLoading(false);
         }
-    }, [fetchComplaintReasons, fetchTags, navigate]);
-    
+    }, [feed, postsLoading, navigate, offset]);
+
     const fetchProfile = useCallback(async (id) => {
         try {
             const resp = await axios.get(`http://localhost:5000/profiles/${id}`);
@@ -106,14 +130,14 @@ function Home() {
             } else {
                 setProfile(data);
     
-                fetchFeed(id);
+                loadPosts(id);
             }
         } catch (err) {
             navigate("/errorPage", {state: {error: err.message}});
     
             console.error('Erro ao fazer a requisição:', err);
         }
-    }, [fetchFeed, navigate]);   
+    }, [loadPosts, navigate]);   
     
     useEffect(() => {
         const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
@@ -123,7 +147,13 @@ function Home() {
         } else {
             fetchProfile(confirmedProfileId);
         }
-    }, [fetchProfile, navigate, profileId, setProfile]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useEffect(() => {
+        fetchComplaintReasons();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     function setMessageWithReset(newMessage, type) {
         setMessage(null);
@@ -182,6 +212,7 @@ function Home() {
     }
 
     const createSharing = async (id, post, sharings, sharingCaption) => {
+        console.log(sharings)
         try {
             const formData = new FormData();
 
@@ -286,6 +317,30 @@ function Home() {
             console.error("Erro ao fazer a requisição:", err);
         }
     }
+    
+    useEffect(() => {
+        let timeoutId;
+        const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
+
+        const handleScroll = () => {
+            if (timeoutId) clearTimeout(timeoutId);
+
+            timeoutId = setTimeout(() => {
+                if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 450) {
+                    loadPosts(confirmedProfileId);
+                }
+            }, 200);
+        };
+
+        window.addEventListener('scroll', handleScroll);
+
+        return () => window.removeEventListener('scroll', handleScroll);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [offset, postsLoading, loadPosts]);
+
+    useEffect(() => {
+        loadTags();
+    }, [loadTags, searchTextTag]);
 
     return (
         <>
@@ -320,6 +375,10 @@ function Home() {
                             commentSubmit={commentSubmit}
                             comments={post.comments}
                             post={post}
+                            filteredSharings={tags}
+                            searchTextSharing={searchTextTag}
+                            setSearchTextSharing={setSearchTextTag}
+                            tagsLoading={tagsLoading}
                         />
                     ))}
 

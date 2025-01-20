@@ -2,7 +2,7 @@ import styles from "./PostsInSection.module.css";
 import loading from "../../img/animations/loading.svg";
 import { useEffect, useState } from "react";
 
-function PostsInSection({ posts, notFoundText }) {
+function PostsInSection({ posts, notFoundText, postsLoading }) {
     const [thumbnails, setThumbnails] = useState([]);
     
     const generateVideoThumbnail = (videoPath) => {
@@ -63,7 +63,14 @@ function PostsInSection({ posts, notFoundText }) {
                             alt={`Post ${index}`} 
                         />
                     </div>
-                )) : <p className={styles.not_found_text}>{notFoundText}</p>
+                )) : 
+                    <p className={styles.not_found_text}>
+                        {postsLoading ? 
+                            <img className="loading" src={loading} alt="Loading"/>
+                        :
+                            {notFoundText}
+                        }
+                    </p>
             : null}
         </>
     );

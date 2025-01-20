@@ -25,6 +25,8 @@ function NewPost() {
     const [tags, setTags] = useState([]);
     const [hashtags, setHashtags] = useState([]);
     const [message, setMessage] = useState({});
+    const [searchTextTag, setSearchTextTag] = useState("");
+    const [tagsLoading, setTagsLoading] = useState(false);
 
     const navigate = useNavigate();
 
@@ -46,21 +48,30 @@ function NewPost() {
     }, [navigate]);
 
     const fetchTags = useCallback(async () => {
+        if (!searchTextTag) return;
+
+        setTagsLoading(true);
+
         try {
-            const resp = await axios.get("http://localhost:5000/tags");
+            const resp = await axios.get(`http://localhost:5000/search/profiles/${searchTextTag}`);
             const data = resp.data;
     
             if (data.error) {
                 navigate("/errorPage", {state: {error: data.error}});
             } else {
-                setTags(data);
+                const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
+                const filteredData = data.filter(tag => String(tag.id_perfil) !== String(confirmedProfileId));
+
+                setTags(filteredData);
             }
         } catch (err) {
             navigate("/errorPage", {state: {error: err.message}});
     
             console.error('Erro ao fazer a requisição:', err);
+        } finally {
+            setTagsLoading(false);
         }
-    }, [navigate]);
+    }, [navigate, profileId, searchTextTag]);
 
     const fetchProfile = useCallback(async (id) => {
         try {
@@ -77,14 +88,13 @@ function NewPost() {
                 setProfile(data);
 
                 fetchHashtags();
-                fetchTags();
             }
         } catch (err) {
             navigate("/errorPage", {state: {error: err.message}});
     
             console.error('Erro ao fazer a requisição:', err);
         }
-    }, [fetchHashtags, fetchTags, navigate]); 
+    }, [fetchHashtags, navigate]); 
 
     const createPost = async () => {
         try {
@@ -122,6 +132,10 @@ function NewPost() {
             fetchProfile(confirmedProfileId);
         }
     }, [fetchProfile, navigate, profileId]);
+
+    useEffect(() => {
+        fetchTags();
+    }, [fetchTags, searchTextTag]);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -234,6 +248,10 @@ function NewPost() {
                     tags={tags}
                     setHashtagsInPost={setHashtagsInPost}
                     setTagsInPost={setTagsInPost}
+                    searchTextTag={searchTextTag}
+                    setSearchTextTag={setSearchTextTag}
+                    filteredTags={tags}
+                    tagsLoading={tagsLoading}
                 />
 
                 <SubmitButton text="Publicar"/>

@@ -1,10 +1,10 @@
 import styles from "./SportCard.module.css";
 
 function SportCard({ iconPath, sportName, categories = [], sportDescription, handleClick, selected = false }) {
-    const icon = require(`../../img/${iconPath}`);
+    const icon = iconPath ? require(`../../img/${iconPath}`) : null;
 
     return (
-        <div className={`${styles.sport_card} ${selected && styles.selected}`} onClick={handleClick}>
+        <div className={`${styles.sport_card} ${selected && styles.selected}`} onClick={handleClick ? handleClick : undefined}>
             <img src={icon} alt={`${sportName} Icon`}/>
 
             <div className={styles.sport_info}>

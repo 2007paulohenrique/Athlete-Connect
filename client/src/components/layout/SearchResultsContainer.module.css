@@ -6,15 +6,14 @@
     gap: 3em;
 }
 
-.results_list > li {
+.results_list:where(:not(.profiles_result)) > li {
     cursor: pointer;
     width: max-content;
     position: relative;
 }
 
 .profiles_result {
-    flex-wrap: nowrap;
-    justify-content: unset;
+    flex-direction: column;
     gap: 1em;
 }
 

@@ -2,8 +2,9 @@ import { useNavigate } from "react-router-dom";
 import styles from "./PostItemsContainer.module.css";
 import ProfileSmallerContainer from "./ProfileSmallerContainer";
 import React from "react";
+import loading from "../../img/animations/loading.svg";
 
-function PostItemsContainer({ searchText, filteredItems = [], handleClick, isSelectable = false, selectedItems, haveProfile = false, notFoundText, isComment = false, isHashtags = false, isComplaintReasons = false, isPostTags = false, isPostHashtags = false }) {
+function PostItemsContainer({ searchText, filteredItems = [], handleClick, isSelectable = false, selectedItems, haveProfile = false, notFoundText, isComment = false, isHashtags = false, isComplaintReasons = false, isPostTags = false, isPostHashtags = false, tagsLoading }) {
     const navigate = useNavigate();
     
     return (
@@ -22,7 +23,7 @@ function PostItemsContainer({ searchText, filteredItems = [], handleClick, isSel
                         {isComment && <hr/>}
 
                         <li 
-                            className={isComment && styles.comment} 
+                            className={isComment ? styles.comment : undefined} 
                             onClick={isPostHashtags ? () => navigate(`/search?text=${item.nome}&type=posts`) : undefined}
                         >
                             {isPostHashtags && <># {item.nome}</>}
@@ -47,7 +48,7 @@ function PostItemsContainer({ searchText, filteredItems = [], handleClick, isSel
                     <li 
                         key={index} 
                         onClick={() => handleClick(item)}
-                        className={isSelectable && selectedItems.includes(item) ? styles.selectedItem : ""}
+                        className={isSelectable && selectedItems.some(selectedItem => JSON.stringify(item) === JSON.stringify(selectedItem)) ? styles.selectedItem : undefined}
                     >
                         {isComplaintReasons && <>{item.motivo}</>}
 
@@ -57,7 +58,14 @@ function PostItemsContainer({ searchText, filteredItems = [], handleClick, isSel
                     </li>
                 )
             )) : (
-                searchText && notFoundText && <li>{notFoundText}</li>
+                searchText && notFoundText &&
+                <li className={tagsLoading ? styles.loading_li : undefined}>
+                    {tagsLoading ? 
+                        <img className="loading" src={loading} alt="Loading"/>
+                    :
+                        notFoundText
+                    }
+                </li>
             )}
         </ul>
     );

@@ -23,7 +23,7 @@ function ProfileNavBar() {
     function handleOnSubmitSearch(e) {
         e.preventDefault()
 
-        navigate(`/search?text=${searchText}&type=all`);
+        navigate(`/search?text=${searchText}&type=posts`);
     }
 
     function handleClickSearch() {

@@ -12,12 +12,11 @@ import SearchInput from "../layout/SearchInput";
 import SubmitButton from "../form/SubmitButton";
 import MainInput from "../form/MainInput";
 import ProfileSmallerContainer from "./ProfileSmallerContainer";
-import { useProfile } from "../../ProfileContext";
 import formatNumber from "../../utils/NumberFormatter";
 import PostItemsContainer from "./PostItemsContainer";
 import { useNavigate } from "react-router-dom";
 
-function Post({ author, hashtags = [], tags = [], complaintReasons = [], moment, mediasPath = [], blobUrlsMedias = [], caption, isInCreating = false, setHashtagsInPost, postHashtags, setTagsInPost, postTags, sharingSubmit, complaintSubmit, isComplainted, comments, commentSubmit, likeSubmit, isLiked, post }) {
+function Post({ author, hashtags = [], tags = [], complaintReasons = [], moment, mediasPath = [], blobUrlsMedias = [], caption, isInCreating = false, setHashtagsInPost, postHashtags, setTagsInPost, postTags, sharingSubmit, complaintSubmit, isComplainted, comments, commentSubmit, likeSubmit, isLiked, post, searchTextTag, setSearchTextTag, filteredTags, searchTextSharing, setSearchTextSharing, filteredSharings, tagsLoading }) {
     const [medias, setMedias] = useState([]);
     const [showHashtags, setShowHashtags] = useState(false);  
     const [selectedHashtags, setSelectedHashtags] = useState([]);
@@ -25,12 +24,8 @@ function Post({ author, hashtags = [], tags = [], complaintReasons = [], moment,
     const [searchTextHashtag, setSearchTextHashtag] = useState("");
     const [showTags, setShowTags] = useState(false);  
     const [selectedTags, setSelectedTags] = useState([]);
-    const [filteredTags, setFilteredTags] = useState([]);
-    const [searchTextTag, setSearchTextTag] = useState("");
     const [showSharing, setShowSharing] = useState(false); 
     const [selectedSharings, setSelectedSharings] = useState([]);
-    const [filteredSharings, setFilteredSharings] = useState([]);
-    const [searchTextSharing, setSearchTextSharing] = useState("");
     const [sharingCaption, setSharingCaption] = useState("");
     const [showComments, setShowComments] = useState(false);
     const [commentText, setCommentText] = useState("");
@@ -40,7 +35,6 @@ function Post({ author, hashtags = [], tags = [], complaintReasons = [], moment,
     const [selectedComplaintReasons, setSelectedComplaintReasons] = useState([]);
     const [complaintDescription, setComplaintDescription] = useState("");
     const [sharings, setSharings] = useState([]);
-    const {profileId} = useProfile();
 
     const navigate = useNavigate();
 
@@ -77,14 +71,6 @@ function Post({ author, hashtags = [], tags = [], complaintReasons = [], moment,
         if (isInCreating) setFilteredHashtags(hashtags);      
     }, [hashtags, isInCreating]);
 
-    useEffect(() => {
-        const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
-        const filteredData = tags.filter(tag => tag.nome !== author.nome && String(tag.id_perfil) !== String(confirmedProfileId));
-
-        setFilteredTags(filteredData);
-        setFilteredSharings(filteredData);
-    }, [author.nome, isInCreating, profileId, tags]);
-
     const handleVideoLoad = (index, videoElement) => {
         if (videoElement) {
             const duration = videoElement.duration;
@@ -110,25 +96,6 @@ function Post({ author, hashtags = [], tags = [], complaintReasons = [], moment,
             setFilteredHashtags(filtered);
         }
     }, [searchTextHashtag, hashtags, isInCreating]);
-    
-    useEffect(() => {
-        const filtered = tags.filter((tag) =>
-            tag.nome.toLowerCase().includes(searchTextTag.toLowerCase()) &&
-            tag.nome !== author.nome
-        );
-
-        setFilteredTags(filtered);
-    }, [author.nome, searchTextTag, tags]);
-
-    useEffect(() => {
-        const filtered = tags.filter((tag) =>
-            tag.nome.toLowerCase().includes(searchTextSharing.toLowerCase()) &&
-            tag.nome !== author.nome &&
-            tag.id_perfil !== Number(localStorage.getItem("athleteConnectProfileId"))
-        );
-
-        setFilteredSharings(filtered);
-    }, [author.nome, profileId, searchTextSharing, tags]);
 
     const handleSearchHashtagChange = (e) => {
         e.target.value = e.target.value.trim();
@@ -167,17 +134,21 @@ function Post({ author, hashtags = [], tags = [], complaintReasons = [], moment,
     };
 
     const handleClickTag = (tag) => {
+        const isTagIncluded = (prevSelected, tag) => {
+            return prevSelected.some(item => JSON.stringify(item) === JSON.stringify(tag));
+        };
+
         setTagsInPost(prevTags => {
-            if (prevTags.includes(tag)) {
-                return prevTags.filter(item => item !== tag);
+           if (isTagIncluded(prevTags, tag)) {
+                return prevTags.filter(item => JSON.stringify(item) !== JSON.stringify(tag));
             } else {
                 return [...prevTags, tag];
             }
         });
 
         setSelectedTags(prevSelected => {
-            if (prevSelected.includes(tag)) {
-                return prevSelected.filter(item => item !== tag);
+            if (isTagIncluded(prevSelected, tag)) {
+                return prevSelected.filter(item => JSON.stringify(item) !== JSON.stringify(tag));
             } else {
                 return [...prevSelected, tag];
             }
@@ -185,17 +156,21 @@ function Post({ author, hashtags = [], tags = [], complaintReasons = [], moment,
     };
 
     const handleClickSharing = (tag) => {
-        setSharings(prevTags => {
-            if (prevTags.includes(tag)) {
-                return prevTags.filter(item => item !== tag);
+        const isTagIncluded = (prevSelected, tag) => {
+            return prevSelected.some(item => JSON.stringify(item) === JSON.stringify(tag));
+        };
+
+        setSharings(prevSharings => {
+            if (isTagIncluded(prevSharings, tag)) {
+                return prevSharings.filter(item => JSON.stringify(item) !== JSON.stringify(tag));
             } else {
-                return [...prevTags, tag];
+                return [...prevSharings, tag];
             }
         });
 
         setSelectedSharings(prevSelected => {
-            if (prevSelected.includes(tag)) {
-                return prevSelected.filter(item => item !== tag);
+            if (isTagIncluded(prevSelected, tag)) {
+                return prevSelected.filter(item => JSON.stringify(item) !== JSON.stringify(tag));
             } else {
                 return [...prevSelected, tag];
             }
@@ -227,7 +202,9 @@ function Post({ author, hashtags = [], tags = [], complaintReasons = [], moment,
         
         if (!(currentItems === "sharings")) {
             setSelectedSharings([]);
-            setSearchTextSharing("");
+
+            if (setSearchTextSharing) setSearchTextSharing("");
+
             setSharings([]);
             setSharingCaption("");
             setShowSharing(false); 
@@ -457,6 +434,7 @@ function Post({ author, hashtags = [], tags = [], complaintReasons = [], moment,
                                         isSelectable
                                         haveProfile
                                         notFoundText="Perfil inexistente ou indisponível"
+                                        tagsLoading={tagsLoading}
                                     />                                        
                                 </div>
                             )}
@@ -519,6 +497,7 @@ function Post({ author, hashtags = [], tags = [], complaintReasons = [], moment,
                                         selectedItems={selectedTags}
                                         haveProfile
                                         notFoundText="Não existe um perfil com esse nome"
+                                        tagsLoading={tagsLoading}
                                     />
                                 </div>
                             ) : !isInCreating && showTags ? (
