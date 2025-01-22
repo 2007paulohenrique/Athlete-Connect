@@ -11,6 +11,11 @@ import { useProfile } from '../../ProfileContext';
 import Message from "../layout/Message";
 import loading from "../../img/animations/loading.svg";
 import formatDate from "../../utils/DateFormatter";
+import fetchComplaintReasons from "../../utils/post/FetchComplaintReasons";
+import createComplaint from "../../utils/post/HandleComplaint";
+import toggleLike from "../../utils/post/HandleLike";
+import createSharing from "../../utils/post/HandleSharing";
+import createComment from "../../utils/post/HandleComment";
 
 function Home() {
     const [feed, setFeed] = useState();
@@ -31,26 +36,7 @@ function Home() {
         const msg = location?.state
         
         if (msg) setMessageWithReset(msg.message, msg.type)
-        }, [location])
-    
-    const fetchComplaintReasons = useCallback(async () => {
-        if (complaintReasons.length !== 0) return;
-
-        try {
-            const resp = await axios.get("http://localhost:5000/complaintReasons");
-            const data = resp.data;
-    
-            if (data.error) {
-                navigate("/errorPage", {state: {error: data.error}});
-            } else {
-                setComplaintReasons(data);
-            }
-        } catch (err) {
-            navigate("/errorPage", {state: {error: err.message}});
-    
-            console.error('Erro ao fazer a requisição:', err);
-        }
-    }, [complaintReasons.length, navigate]);
+    }, [location])
     
     const loadTags = useCallback(async () => {
         if (!searchTextTag) return;
@@ -151,9 +137,8 @@ function Home() {
     }, []);
 
     useEffect(() => {
-        fetchComplaintReasons();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+        fetchComplaintReasons(setComplaintReasons, navigate);
+    }, [navigate]);
 
     function setMessageWithReset(newMessage, type) {
         setMessage(null);
@@ -168,154 +153,6 @@ function Home() {
             top: 0,
             behavior: 'smooth'
         });
-    }
-
-    function likeAction(post) {
-        const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
-        
-        toggleLike(confirmedProfileId, post);
-    }
-
-    const toggleLike = async (id, post) => {
-        try {
-            const formData = new FormData();
-
-            formData.append("profileId", id);
-
-            const resp = await axios.post(`http://localhost:5000/posts/${post.id_postagem}/like`, formData, {
-                headers: { "Content-Type": "multipart/form-data" }, 
-            })
-            const data = resp.data;
-
-            if (data.error) {
-                navigate("/errorPage", {state: {error: data.error}})
-            } else {
-                setFeed(prevPosts =>
-                    prevPosts.map(p => p.id_postagem === post.id_postagem ? {
-                        ...p, 
-                        isLiked: !p.isLiked, 
-                        total_curtidas:  p.isLiked ? p.total_curtidas - 1 : p.total_curtidas + 1
-                    } : p)
-                );
-            }
-        } catch (err) {
-            navigate("/errorPage", {state: {error: err.message}})
-
-            console.error("Erro ao fazer a requisição:", err);
-        }
-    }
-
-    function sharingSubmit(post, sharingCaption, sharings) {     
-        const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
-        
-       createSharing(confirmedProfileId, post, sharings, sharingCaption);
-    }
-
-    const createSharing = async (id, post, sharings, sharingCaption) => {
-        console.log(sharings)
-        try {
-            const formData = new FormData();
-
-            formData.append("caption", sharingCaption.trim());
-            formData.append("authorId", id);
-            sharings.forEach(sharing => formData.append("targetProfilesIds", sharing.id_perfil));
-
-            const resp = await axios.post(`http://localhost:5000/posts/${post.id_postagem}/sharing`, formData, {
-                headers: { "Content-Type": "multipart/form-data" }, 
-            })
-            const data = resp.data;
-
-            if (data.error) {
-                navigate("/errorPage", {state: {error: data.error}})
-            } else {
-                setFeed(prevPosts =>
-                    prevPosts.map(p => p.id_postagem === post.id_postagem ? { 
-                        ...p, 
-                        total_compartilhamentos: p.total_compartilhamentos + 1
-                    } : p)
-                );
-                
-                setMessageWithReset("Postagem compartilhada com sucesso!", "success");
-            }
-        } catch (err) {
-            navigate("/errorPage", {state: {error: err.message}})
-
-            console.error("Erro ao fazer a requisição:", err);
-        }
-    }
-
-    function complaintSubmit(post, complaintDescription, postComplaintReasons) {                
-        const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
-
-        createComplaint(confirmedProfileId, post, complaintDescription, postComplaintReasons);
-    }
-
-    const createComplaint = async (id, post, postComplaintReasons, complaintDescription) => {
-        try {
-            const formData = new FormData();
-
-            formData.append("description", complaintDescription.trim());
-            formData.append("authorId", id);
-            postComplaintReasons.forEach(reason => formData.append("complaintReasonsIds", reason.id_motivo_denuncia));
-
-            const resp = await axios.post(`http://localhost:5000/posts/${post.id_postagem}/complaint`, formData, {
-                headers: { "Content-Type": "multipart/form-data" }, 
-            })
-            const data = resp.data;
-
-            if (data.error) {
-                navigate("/errorPage", {state: {error: data.error}})
-            } else {
-                setFeed(prevPosts =>
-                    prevPosts.map(p => p.id_postagem === post.id_postagem ? { ...p, isComplainted: true } : p
-                    )
-                );
-    
-                setMessageWithReset("Postagem denunciada! Aguarde para analisarmos a denúncia", "success");
-            }
-        } catch (err) {
-            navigate("/errorPage", {state: {error: err.message}})
-
-            console.error("Erro ao fazer a requisição:", err);
-        }
-    }
-
-    function commentSubmit(post, commentText) {        
-        const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
-        
-        createComment(confirmedProfileId, post, commentText);
-    }
-
-    const createComment = async (id, post, commentText) => {
-        try {
-            const formData = new FormData();
-
-            formData.append("text", commentText.trim());
-            formData.append("authorId", id);
-    
-            const resp = await axios.post(`http://localhost:5000/posts/${post.id_postagem}/comment`, formData, {
-                headers: { "Content-Type": "multipart/form-data" }, 
-            })
-            const data = resp.data;
-
-            if (data.error) {
-                navigate("/errorPage", {state: {error: data.error}})
-            } else {
-                const newComment = data.newComment;
-    
-                setFeed(prevPosts =>
-                    prevPosts.map(p => p.id_postagem === post.id_postagem ? { 
-                        ...p, 
-                        comments: [...p.comments, {...newComment, data_comentario: formatDate(newComment.data_comentario)}],
-                        total_comentarios: p.total_comentarios + 1
-                    } : p)
-                );
-            }
-        } catch (err) {
-            navigate("/errorPage", {state: {error: err.message}})
-
-            console.error("Erro ao fazer a requisição:", err);
-        }
     }
     
     useEffect(() => {
@@ -365,14 +202,18 @@ function Home() {
                             caption={post.legenda}
                             postHashtags={post.hashtags || ""}
                             postTags={post.tags || ""}
-                            likeSubmit={() => likeAction(post)}
+                            likeSubmit={() => toggleLike(profileId, post, navigate, setFeed)}
                             isLiked={post.isLiked}
-                            sharingSubmit={sharingSubmit}
+                            sharingSubmit={(sharings, sharingCaption) => 
+                                createSharing(profileId, post, sharings, sharingCaption, navigate, setMessage, setFeed)
+                            }
                             complaintReasons={complaintReasons}
                             tags={tags}
                             isComplainted={post.isComplainted}
-                            complaintSubmit={complaintSubmit}
-                            commentSubmit={commentSubmit}
+                            complaintSubmit={(postComplaintReasons, complaintDescription) => 
+                                createComplaint(profileId, post, postComplaintReasons, complaintDescription, navigate, setFeed, setMessage)
+                            }
+                            commentSubmit={(commentText) => createComment(profileId, post, commentText, navigate, setFeed)}
                             comments={post.comments}
                             post={post}
                             filteredSharings={tags}

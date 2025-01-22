@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { forwardRef, useCallback, useEffect, useState } from "react";
 import styles from "./Post.module.css";
 import likedIcon from "../../img/icons/socialMedia/likedIcon.png";
 import likeIcon from "../../img/icons/socialMedia/likeIcon.png";
@@ -16,7 +16,7 @@ import formatNumber from "../../utils/NumberFormatter";
 import PostItemsContainer from "./PostItemsContainer";
 import { useNavigate } from "react-router-dom";
 
-function Post({ author, hashtags = [], tags = [], complaintReasons = [], moment, mediasPath = [], blobUrlsMedias = [], caption, isInCreating = false, setHashtagsInPost, postHashtags, setTagsInPost, postTags, sharingSubmit, complaintSubmit, isComplainted, comments, commentSubmit, likeSubmit, isLiked, post, searchTextTag, setSearchTextTag, filteredTags, searchTextSharing, setSearchTextSharing, filteredSharings, tagsLoading }) {
+const Post = forwardRef(({ author, hashtags = [], complaintReasons = [], moment, mediasPath = [], blobUrlsMedias = [], caption, isInCreating = false, setHashtagsInPost, postHashtags, setTagsInPost, postTags, sharingSubmit, complaintSubmit, isComplainted, comments, commentSubmit, likeSubmit, isLiked, post, searchTextTag, setSearchTextTag, filteredTags, searchTextSharing, setSearchTextSharing, filteredSharings, tagsLoading }, ref) => {
     const [medias, setMedias] = useState([]);
     const [showHashtags, setShowHashtags] = useState(false);  
     const [selectedHashtags, setSelectedHashtags] = useState([]);
@@ -292,7 +292,7 @@ function Post({ author, hashtags = [], tags = [], complaintReasons = [], moment,
 
         if (!selectedSharings || selectedSharings.length === 0 || (sharingCaption && sharingCaption.length > 255)) return;
     
-        sharingSubmit(post, sharingCaption, sharings);
+        sharingSubmit(sharings, sharingCaption);
     
         setSelectedSharings([]);
         setSearchTextSharing("");
@@ -306,7 +306,7 @@ function Post({ author, hashtags = [], tags = [], complaintReasons = [], moment,
 
         if ((!complaintDescription && (!selectedComplaintReasons || selectedComplaintReasons.length === 0)) || (complaintDescription && complaintDescription.length > 255)) return;
     
-        complaintSubmit(post, complaintDescription, postComplaintReasons);
+        complaintSubmit(postComplaintReasons, complaintDescription);
     
         setSelectedComplaintReasons([]);
         setPostComplaintReasons([]);
@@ -319,7 +319,7 @@ function Post({ author, hashtags = [], tags = [], complaintReasons = [], moment,
 
         if (!commentText || commentText.length === 0 || (commentText && commentText.length > 255)) return;
     
-        commentSubmit(post, commentText);
+        commentSubmit(commentText);
     
         setCommentText("");
     };
@@ -343,11 +343,11 @@ function Post({ author, hashtags = [], tags = [], complaintReasons = [], moment,
     }, [complaintDescription]);
 
     return (
-        <div className={styles.post}>
+        <div className={styles.post} ref={ref}>
             <div className={styles.first_post_container}>
                 <ProfileSmallerContainer 
-                    profilePhotoPath={author.media ? author.media.caminho : ""} 
-                    profileName={author.nome} 
+                    profilePhotoPath={author?.media?.caminho} 
+                    profileName={author?.nome} 
                     handleClick={!isInCreating ? () => navigate(`/profile/${author.id_perfil}`) : undefined}
                 />
 
@@ -385,7 +385,7 @@ function Post({ author, hashtags = [], tags = [], complaintReasons = [], moment,
             <div className={styles.second_post_container}>    
                 <span className={styles.date}>Publicado em: {moment}</span>
                 
-                <p className={styles.caption}><span>{author.nome}:</span> {caption}</p>
+                <p className={styles.caption}><span>{author?.nome}:</span> {caption}</p>
 
                 <ul className={styles.post_actions}>
                     <div>
@@ -588,6 +588,6 @@ function Post({ author, hashtags = [], tags = [], complaintReasons = [], moment,
             </div>
         </div>
     );
-}
+})
 
 export default Post;

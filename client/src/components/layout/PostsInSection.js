@@ -2,7 +2,7 @@ import styles from "./PostsInSection.module.css";
 import loading from "../../img/animations/loading.svg";
 import { useEffect, useState } from "react";
 
-function PostsInSection({ posts, notFoundText, postsLoading }) {
+function PostsInSection({ posts, notFoundText, postsLoading, handlePostClick }) {
     const [thumbnails, setThumbnails] = useState([]);
     
     const generateVideoThumbnail = (videoPath) => {
@@ -55,7 +55,7 @@ function PostsInSection({ posts, notFoundText, postsLoading }) {
             
             {posts ?
                 posts.length !== 0 ? posts.map((post, index) => (
-                    <div className={styles.post} key={index}>
+                    <div className={styles.post} key={post.id_postagem} onClick={() => handlePostClick(post.id_postagem)}>
                         <span>{post.medias.length > 1 ? `${post.medias.length - 1} +` : ""}</span>
 
                         <img 

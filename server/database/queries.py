@@ -12,6 +12,28 @@ def get_profiles(con):
      except Exception as e:
           print(f"Erro ao recuperar perfis: {e}")
           return None
+
+def get_profile_main_info(con, profile_id):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               sql = "SELECT * FROM perfil WHERE id_perfil = %s"
+               cursor.execute(sql, (profile_id,))
+               result = cursor.fetchone()
+
+               if result:
+                    media_id = result.get("fk_midia_id_midia")
+
+                    if media_id:
+                         result["media"] = get_media(con, media_id)
+
+                         if result["media"] is None:
+                              raise Exception("Erro ao recuperar foto de perfil.")
+               
+          return result
+     except Exception as e:
+          print(f"Erro ao recuperar perfil: {e}")
+          return None
+
           
 def get_profile(con, profile_id, profile_viewer_id = None):
      try:
@@ -39,10 +61,10 @@ def get_profile(con, profile_id, profile_viewer_id = None):
                     if result["posts"] is None:
                          raise Exception("Erro ao recuperar postagens do perfil.")  
                     
-                    result["tagPosts"] = get_profile_tag_posts(con, profile_id)
+                    result["tagPosts"] = get_profile_tag_posts(con, profile_id, 0)
 
                     if result["tagPosts"] is None:
-                         raise Exception("Erro ao recuperar postagens com o perfil marcado.")  
+                         raise Exception("Erro ao recuperar postagens em que o perfil foi marcado.")  
 
                     result["followers"] = get_followers(con, profile_id)
                     
@@ -134,15 +156,13 @@ def get_user(con, profile_id, profile_viewer_id = None):
           print(f"Erro ao recuperar usuário: {e}")
           return None
      
-def get_profile_posts(con, profile_id, offset=None):
+def get_profile_posts(con, profile_id, offset=None, limit=24):
      # quando nao for necessario obter as postagens do perfil
      if offset is None:
           return []
      
      try:
           with con.cursor(dictionary=True) as cursor:
-               LIMIT = 25
-
                sql = """
                     SELECT p.*,
                     COUNT(DISTINCT c.fk_perfil_id_perfil) AS total_curtidas,
@@ -157,7 +177,7 @@ def get_profile_posts(con, profile_id, offset=None):
                     ORDER BY p.data_publicacao DESC
                     LIMIT %s OFFSET %s
                """
-               cursor.execute(sql, (profile_id, LIMIT, offset))
+               cursor.execute(sql, (profile_id, limit, offset))
                result = cursor.fetchall()
 
                if not result:
@@ -166,16 +186,12 @@ def get_profile_posts(con, profile_id, offset=None):
                posts_ids = [post["id_postagem"] for post in result]
           
                medias = get_post_medias_for_feed(con, posts_ids) 
-               # hashtags = get_post_hashtags_for_feed(con, posts_ids) 
-               # tags = get_post_tags_for_feed(con, posts_ids) 
-               # comments = get_post_comments_for_feed(con, posts_ids)       
-               # profile = get_profile(con, profile_id)
+               hashtags = get_post_hashtags_for_feed(con, posts_ids) 
+               tags = get_post_tags_for_feed(con, posts_ids) 
+               comments = get_post_comments_for_feed(con, posts_ids)       
 
-               if medias is None:
+               if medias is None or hashtags is None or tags is None or comments is None:
                     raise Exception("Erro ao recuperar dados das postagens do perfil.")
-
-               # if medias is None or hashtags is None or tags is None or comments is None or profile is None:
-               #      raise Exception("Erro ao recuperar dados das postagens do perfil.")
 
                posts = []
 
@@ -185,14 +201,22 @@ def get_profile_posts(con, profile_id, offset=None):
                     if not post["medias"]:
                          raise Exception("Erro ao recuperar mídias da postagem.")
 
-                    # post["author"] = profile
-                    
-                    # if not post["author"]:
-                    #      raise Exception("Erro ao recuperar autor da postagem.")
+                    post["hashtags"] = hashtags.get(post["id_postagem"], [])
+                    post["tags"] = tags.get(post["id_postagem"], [])
+                    post["comments"] = comments.get(post["id_postagem"], [])
+                    post["isLiked"] = check_like(con, profile_id, post["id_postagem"])
+                    post["author"] = get_profile_main_info(con, profile_id)
 
-                    # post["hashtags"] = hashtags.get(post["id_postagem"], [])
-                    # post["tags"] = tags.get(post["id_postagem"], [])
-                    # post["comments"] = comments.get(post["id_postagem"], [])
+                    if not post["author"]:
+                         raise Exception("Erro ao recuperar autor da postagem.")
+                      
+                    if post["isLiked"] is None:
+                         raise Exception("Erro ao recuperar estado de curtida da postagem.")
+
+                    post["isComplainted"] = check_post_complaint(con, profile_id, post["id_postagem"])
+                    
+                    if post["isComplainted"] is None:
+                         raise Exception("Erro ao recuperar estado de denúncia da postagem. ")
                     
                     posts.append(post)
 
@@ -201,24 +225,29 @@ def get_profile_posts(con, profile_id, offset=None):
           print(f"Erro ao recuperar postagens do perfil: {e}")
           return None
 
-def get_profile_tag_posts(con, profile_id, offset=None):
+def get_profile_tag_posts(con, profile_id, offset=None, limit=24):
       # quando nao for necessario obter as postagens do perfil
      if offset is None:
           return []
      
      try:
           with con.cursor(dictionary=True) as cursor:
-               LIMIT = 25
-
-               sql = f"""
-                    SELECT p.*
+               sql = """
+                    SELECT p.*,
+                    COUNT(DISTINCT c.fk_perfil_id_perfil) AS total_curtidas,
+                    COUNT(DISTINCT cp.id_compartilhamento) AS total_compartilhamentos,
+                    COUNT(DISTINCT co.id_comentario) AS total_comentarios
                     FROM postagem p
+                    LEFT JOIN curte c ON c.fk_postagem_id_postagem = p.id_postagem
+                    LEFT JOIN compartilhamento cp ON cp.fk_postagem_id_postagem = p.id_postagem
+                    LEFT JOIN comentario co ON co.fk_postagem_id_postagem = p.id_postagem
                     LEFT JOIN marcacao_postagem mp ON mp.fk_postagem_id_postagem = p.id_postagem
                     WHERE mp.fk_perfil_id_perfil = %s
+                    GROUP BY p.id_postagem
                     ORDER BY p.data_publicacao DESC
                     LIMIT %s OFFSET %s
                """
-               cursor.execute(sql, (profile_id, LIMIT, offset))
+               cursor.execute(sql, (profile_id, limit, offset))
                result = cursor.fetchall()
 
                if not result:
@@ -227,9 +256,14 @@ def get_profile_tag_posts(con, profile_id, offset=None):
                posts_ids = [post["id_postagem"] for post in result]
           
                medias = get_post_medias_for_feed(con, posts_ids) 
+               hashtags = get_post_hashtags_for_feed(con, posts_ids) 
+               tags = get_post_tags_for_feed(con, posts_ids) 
+               comments = get_post_comments_for_feed(con, posts_ids)     
+               authors_ids = [post["fk_perfil_id_perfil"] for post in result]
+               authors = get_profiles_for_feed(con, authors_ids)  
 
-               if medias is None:
-                    raise Exception("Erro ao recuperar dados das postagens do perfil.")
+               if medias is None or hashtags is None or tags is None or comments is None or authors is None:
+                    raise Exception("Erro ao recuperar dados das postagens em que o perfil foi marcado.")
 
                posts = []
 
@@ -238,12 +272,30 @@ def get_profile_tag_posts(con, profile_id, offset=None):
 
                     if not post["medias"]:
                          raise Exception("Erro ao recuperar mídias da postagem.")
+
+                    post["author"] = authors.get(post["fk_perfil_id_perfil"], {})
+                    
+                    if not post["author"]:
+                         raise Exception("Erro ao recuperar autor da postagem.")
+
+                    post["hashtags"] = hashtags.get(post["id_postagem"], [])
+                    post["tags"] = tags.get(post["id_postagem"], [])
+                    post["comments"] = comments.get(post["id_postagem"], [])
+                    post["isLiked"] = check_like(con, profile_id, post["id_postagem"])
+                    
+                    if post["isLiked"] is None:
+                         raise Exception("Erro ao recuperar estado de curtida da postagem.")
+
+                    post["isComplainted"] = check_post_complaint(con, profile_id, post["id_postagem"])
+                    
+                    if post["isComplainted"] is None:
+                         raise Exception("Erro ao recuperar estado de denúncia da postagem. ")
                     
                     posts.append(post)
 
           return posts
      except Exception as e:
-          print(f"Erro ao recuperar postagens com o perfil marcado: {e}")
+          print(f"Erro ao recuperar postagens em que o perfil foi marcado: {e}")
           return None
           
 def insert_profile(con, email, password, name, bio, private):
@@ -951,7 +1003,7 @@ def insert_comment(con, text, post_id, profile_id):
                cursor.execute(sql_insert, (text, date, post_id, profile_id))
                comment_id = cursor.lastrowid
                sql_get = """
-                    SELECT c.*, m.caminho
+                    SELECT c.*, m.caminho, p.nome
                     FROM comentario c
                     JOIN perfil p ON p.id_perfil = c.fk_perfil_id_perfil
                     LEFT JOIN midia m ON m.id_midia = p.fk_midia_id_midia
@@ -1254,7 +1306,7 @@ def get_search_result(con, text):
 def get_posts_for_search(con, text, offset):
      try:
           with con.cursor(dictionary=True) as cursor:
-               LIMIT = 25
+               LIMIT = 24
                # As postagens são selecionadas de forma que as com maior número de compartilhamentos, comentários e curtidas (pesos diferentes), 
                # sejam mais valorizadas, porém quanto mais tempo passa, mais a postagem é desvalorizada 
                # (o aumento da desvalorização fica mais lento com o passar dos dias).

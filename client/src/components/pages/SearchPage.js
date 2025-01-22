@@ -26,7 +26,7 @@ function SearchPage() {
     const navigate = useNavigate();
 
     const loadPosts = useCallback(async () => {
-        if (postsLoading || (result?.posts && result?.posts?.length % 25 !== 0)) return;
+        if (postsLoading || (result?.posts && result?.posts?.length % 24 !== 0)) return;
 
         setPostsLoading(true);
 
@@ -91,7 +91,7 @@ function SearchPage() {
                     posts: {results: data.posts, notFoundText: "Nenhuma postagem encontrada."},
                 });
 
-                setPostsOffset(prevOffset => prevOffset + 25);
+                setPostsOffset(prevOffset => prevOffset + 24);
                 setProfilesOffset(prevOffset => prevOffset + 10);
             }
         } catch (err) {

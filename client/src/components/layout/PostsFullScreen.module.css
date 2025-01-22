@@ -1,0 +1,28 @@
+.posts_full_screen {
+    display: flex;
+    flex-direction: column;
+    max-width: 100dvw;
+    height: max-content;
+    overflow: auto;
+    position: relative;
+    min-height: 100dvh;
+    background-color: var(--dark-font-color);
+    justify-content: center;
+}
+
+.exit_fullscreen {
+    width: 100%;
+    padding: 0.8em 0;
+    text-align: center;
+    position: fixed;
+    top: -2em;
+    left: 0;
+    background-color: var(--dark-font-color);
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    z-index: 2
+}
+
+.exit_fullscreen:hover {
+    transform: translateY(2em);
+}

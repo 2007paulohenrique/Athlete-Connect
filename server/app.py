@@ -673,7 +673,7 @@ def get_search_posts(text):
             print('Erro ao abrir conexão com banco de dados')
             return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
         
-        offset = int(request.args.get('offset', 25))
+        offset = int(request.args.get('offset', 24))
 
         result = get_posts_for_search(con, text, offset)
 
@@ -711,6 +711,58 @@ def get_search_profiles(text):
     except Exception as e:
         print('Erro ao recuperar outros resultados de perfis da pesquisa')
         return jsonify({'error': 'Não foi possível recuperar outros resultados de perfis da pesquisa devido a um erro no nosso servidor.'}), 500
+    finally:
+        if con:
+            close_connection(con)
+
+@app.route('/profiles/<int:profile_id>/posts', methods=['GET'])
+def get_profile_posts_r(profile_id):
+    try:
+        con = open_connection(*con_params)
+
+        if con is None:
+            print('Erro ao abrir conexão com banco de dados')
+            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+        
+        offset = int(request.args.get('offset', 24))
+        limit = request.args.get('limit')
+
+        result = get_profile_posts(con, profile_id, offset, int(limit) if limit is not None else 24)
+
+        if result is None:
+            print('Erro ao recuperar outras postagens do perfil')
+            return jsonify({'error': 'Não foi possível recuperar outras postagens do perfil devido a um erro no nosso servidor.'}), 500
+
+        return jsonify(result), 200
+    except Exception as e:
+        print('Erro ao recuperar outras postagens do perfil')
+        return jsonify({'error': 'Não foi possível recuperar outras postagens do perfil devido a um erro no nosso servidor.'}), 500
+    finally:
+        if con:
+            close_connection(con)
+
+@app.route('/profiles/<int:profile_id>/tagPosts', methods=['GET'])
+def get_profile_tag_posts_r(profile_id):
+    try:
+        con = open_connection(*con_params)
+
+        if con is None:
+            print('Erro ao abrir conexão com banco de dados')
+            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+        
+        offset = int(request.args.get('offset', 24))
+        limit = request.args.get('limit')
+
+        result = get_profile_tag_posts(con, profile_id, offset, int(limit) if limit is not None else 24)
+
+        if result is None:
+            print('Erro ao recuperar outras postagens em que o perfil foi marcado')
+            return jsonify({'error': 'Não foi possível recuperar outras postagens em que o perfil foi marcado devido a um erro no nosso servidor.'}), 500
+
+        return jsonify(result), 200
+    except Exception as e:
+        print('Erro ao recuperar outras postagens em que o perfil foi marcado')
+        return jsonify({'error': 'Não foi possível recuperar outras postagens em que o perfil foi marcado devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
             close_connection(con)

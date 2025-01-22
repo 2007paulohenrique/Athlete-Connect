@@ -1,9 +1,9 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./Profile.module.css";
 import ProfilePhotoContainer from "../layout/ProfilePhotoContainer";
 import complaintIcon from "../../img/icons/socialMedia/complaintIcon.png";
 import complaintedIcon from "../../img/icons/socialMedia/complaintedIcon.png";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useProfile } from "../../ProfileContext";
 import formatNumber from "../../utils/NumberFormatter";
 import axios from "axios";
@@ -14,6 +14,9 @@ import Message from "../layout/Message";
 import AppNavBar from "../layout/AppNavBar";
 import ProfileNavBar from "../layout/ProfileNavBar";
 import PostsInSection from "../layout/PostsInSection";
+import formatDate from "../../utils/DateFormatter";
+import PostsFullScreen from "../layout/PostsFullScreen";
+import fetchComplaintReasons from "../../utils/post/FetchComplaintReasons";
 
 function Profile() {
     const [followersNumber, setFollowersNumber] = useState(0);
@@ -26,26 +29,99 @@ function Profile() {
     const [complaintDescription, setComplaintDescription] = useState("");
     const [message, setMessage] = useState({});
     const [postsToShow, setPostsToShow] = useState();
+    const [postsToShowType, setPostsToShowType] = useState("posts");
+    const [postsOffset, setPostsOffset] = useState(24);
+    const [tagPostsOffset, setTagPostsOffset] = useState(24);
+    const [tagPostsLoading, setTagPostsLoading] = useState(false);
+    const [postsLoading, setPostsLoading] = useState(false);
+    const [postsFullScreen, setPostsFullScreen] = useState(false);
+    const [selectedPostId, setSelectedPostId] = useState(null);
+    const [postsEnd, setPostsEnd] = useState();
+    const [tagPostsEnd, setTagPostsEnd] = useState();
 
     const { id } = useParams();
+    const location = useLocation();
     const navigate = useNavigate();
-    
-    const fetchComplaintReasons = useCallback(async () => {
+
+    const loadPosts = useCallback(async (id) => {
+        if (postsLoading || postsEnd) return;
+
+        setPostsLoading(true);
+
         try {
-            const resp = await axios.get("http://localhost:5000/complaintReasons");
+            const resp = await axios.get(`http://localhost:5000/profiles/${id}/posts?offset=${postsOffset}&limit=${postsFullScreen ? 6 : 24}`);
             const data = resp.data;
     
             if (data.error) {
                 navigate("/errorPage", {state: {error: data.error}});
             } else {
-                setComplaintReasons(data);
+                if (data.length === 0) {
+                    setPostsEnd(true);
+                    return;
+                }
+
+                const formattedPosts = data.map(post => ({
+                    ...post,
+                    data_publicacao: formatDate(post.data_publicacao),
+                    comments: post.comments.map(comment => ({
+                        ...comment,
+                        data_comentario: formatDate(comment.data_comentario)
+                    }))
+                }));
+
+                setPostsToShow((prevPosts) => [...prevPosts, ...formattedPosts]);
+
+                setPostsOffset((prevOffset) => postsFullScreen ? prevOffset + 6 : prevOffset + 24);   
             }
         } catch (err) {
             navigate("/errorPage", {state: {error: err.message}});
-    
+            
             console.error('Erro ao fazer a requisição:', err);
+        } finally {
+            setPostsLoading(false);
         }
-    }, [navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [postsLoading, postsToShow, postsOffset, navigate]);
+
+    const loadTagPosts = useCallback(async (id) => {
+        if (tagPostsLoading || tagPostsEnd) return;
+
+        setTagPostsLoading(true);
+
+        try {
+            const resp = await axios.get(`http://localhost:5000/profiles/${id}/tagPosts?offset=${tagPostsOffset}&limit=${postsFullScreen ? 6 : 24}`);
+            const data = resp.data;
+    
+            if (data.error) {
+                navigate("/errorPage", {state: {error: data.error}});
+            } else {
+                if (data.length === 0) {
+                    setTagPostsEnd(true);
+                    return;
+                }
+
+                const formattedPosts = data.map(post => ({
+                    ...post,
+                    data_publicacao: formatDate(post.data_publicacao),
+                    comments: post.comments.map(comment => ({
+                        ...comment,
+                        data_comentario: formatDate(comment.data_comentario)
+                    }))
+                }));
+
+                setPostsToShow((prevPosts) => [...prevPosts, ...formattedPosts]);
+
+                setTagPostsOffset((prevOffset) => postsFullScreen ? prevOffset + 6 : prevOffset + 24);   
+            }
+        } catch (err) {
+            navigate("/errorPage", {state: {error: err.message}});
+            
+            console.error('Erro ao fazer a requisição:', err);
+        } finally {
+            setTagPostsLoading(false);
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [tagPostsLoading, postsToShow, tagPostsOffset, navigate]);
 
     const fetchUser = useCallback(async (viwerId) => {
         try {
@@ -63,20 +139,41 @@ function Profile() {
                     ...data, 
                     preferences: data.preferences.map(sport => (
                         {...sport, icone: require(`../../img/${sport.icone}`)}
-                    ))    
+                    )),
+                    posts: data.posts.map(post => (
+                        {
+                            ...post, 
+                            data_publicacao: formatDate(post.data_publicacao),
+                            comments: post.comments.map(comment => ({
+                                ...comment,
+                                data_comentario: formatDate(comment.data_comentario)
+                            })),
+                        }
+                    )),
+                    tagPosts: data.tagPosts.map(post => (
+                        {
+                            ...post, 
+                            data_publicacao: formatDate(post.data_publicacao),
+                            comments: post.comments.map(comment => ({
+                                ...comment,
+                                data_comentario: formatDate(comment.data_comentario)
+                            }))
+                        }
+                    ))        
                 });    
 
                 setFollowersNumber(data.followers.length);
                 setPostsToShow(data.posts);
+                setPostsToShowType("posts");
 
-                fetchComplaintReasons();
+                fetchComplaintReasons(setComplaintReasons, navigate);
             }    
         } catch (err) {
             navigate("/errorPage", {state: {error: err.message}})
     
             console.error('Erro ao fazer a requisição:', err);
         }    
-    }, [fetchComplaintReasons, id, navigate])    
+    }, [id, navigate])    
 
     useEffect(() => {
         const viwerId = profileId || localStorage.getItem("athleteConnectProfileId");
@@ -203,155 +300,226 @@ function Profile() {
             !complaintDescription;
     }, [complaintDescription]);
 
+    const timeoutIdRef = useRef(null);
+    
+    const handleScroll = useCallback((loadFunction) => {
+        if (timeoutIdRef.current) return;
+
+        timeoutIdRef.current = setTimeout(() => {
+            if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - (postsFullScreen ? 450 : 100)) {
+                loadFunction();
+            }
+
+            timeoutIdRef.current = null;
+        }, 1000);
+    }, [postsFullScreen]);
+
+    useEffect(() => {
+        if (postsToShowType === "posts") {
+            const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
+
+            const handleScrollPosts = () => handleScroll(() => loadPosts(confirmedProfileId));
+
+            window.addEventListener("scroll", handleScrollPosts);
+            
+            return () => window.removeEventListener("scroll", handleScrollPosts);
+        }
+    }, [loadPosts, handleScroll, postsToShowType, profileId]);
+
+    useEffect(() => {
+        if (postsToShowType === "tagPosts") {   
+            const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
+
+            const handleScrollTagPosts = () => handleScroll(() => loadTagPosts(confirmedProfileId));
+
+            window.addEventListener("scroll", handleScrollTagPosts);
+            
+            return () => window.removeEventListener("scroll", handleScrollTagPosts);
+        }
+    }, [handleScroll, postsToShowType, loadTagPosts, profileId]);
+
+    function handlePostClick(postId) {
+        setSelectedPostId(postId)
+        setPostsFullScreen(true);
+    }
+
+    function exitFullscreen() {
+        setPostsFullScreen(false);
+        setSelectedPostId(null)
+    }
+
+    useEffect(() => {
+        setPostsFullScreen(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [location.pathname])
+
     return (
         <>
-            <ProfileNavBar/>
+            {!postsFullScreen ? 
+                <>
+                    <ProfileNavBar/>
 
-            <main className={styles.profile_page}>
-                {message && <Message message={message.message} type={message.type}/>}
+                    <main className={styles.profile_page}>
+                        {message && <Message message={message.message} type={message.type}/>}
 
-                <div className={styles.profile_main_info}>
-                    <ProfilePhotoContainer profilePhotoPath={profile.media?.caminho} size="large"/>
-                    
-                    <span>{profile.nome}</span>
+                        <div className={styles.profile_main_info}>
+                            <ProfilePhotoContainer profilePhotoPath={profile.media?.caminho} size="large"/>
+                            
+                            <span>{profile.nome}</span>
 
-                    <p>{profile.biografia}</p>
-                </div>
+                            <p>{profile.biografia}</p>
+                        </div>
 
-                {(profile.qualifications && profile.qualifications.length !== 0) && (   
-                    <>
-                        <ul className={styles.profile_qualifications}>
-                            {profile.qualifications.map((qualification, index) => (
-                                <li key={index}>
-                                    <span>{`${qualification.grau} em ${qualification.curso}`}</span>
+                        {(profile.qualifications && profile.qualifications.length !== 0) && (   
+                            <>
+                                <ul className={styles.profile_qualifications}>
+                                    {profile.qualifications.map((qualification, index) => (
+                                        <li key={index}>
+                                            <span>{`${qualification.grau} em ${qualification.curso}`}</span>
 
-                                    <span>{`${qualification.instituicao} - ${qualification.estado} - ${qualification.cidade}`}</span>
-                                </li>
-                            ))}
-                        </ul>
-                    </>
-                )}
-
-                <hr/>
-
-                <div className={styles.profile_stats}>
-                    <div>
-                        <span>{formatNumber(profile.posts ? profile.posts.length : 0)}</span>
-                        <span>Postagens</span>
-                    </div>
-
-                    <div>
-                        <span>{formatNumber(followersNumber)}</span>
-
-                        <span>{followersNumber === 1 ? "seguidor" : "seguidores"}</span>
-                    </div>
-
-                    <div>
-                        <span>{formatNumber(profile.likes)}</span>
-
-                        <span>Curtidas</span>
-                    </div>
-                </div>
-
-                <hr/>
-
-                {(profile.preferences && profile.preferences.length !== 0) && (
-                    <>
-                        <ul className={styles.profile_preferences}>
-                            {profile.preferences.map((sport, index) => (
-                                <li key={index} onClick={() => navigate(`/search?text=${sport.nome}&type=posts`)}>
-                                    <img src={sport.icone} alt={`${sport.nome} Icon`}/>
-
-                                    <span>{sport.nome}</span>
-                                </li>
-                            ))}
-                        </ul>   
+                                            <span>{`${qualification.instituicao} - ${qualification.estado} - ${qualification.cidade}`}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </>
+                        )}
 
                         <hr/>
-                    </>
-                )}
 
-                <div className={styles.profile_actions}>
-                    {id ? (
-                        <>
-                            <button className={`${styles.follow_button} ${profile.isFollowed && styles.follow_button_selected}`} onClick={followProfile}>
-                                {profile.isFollowed ? "Seguindo" : "Seguir"}
-                            </button>
+                        <div className={styles.profile_stats}>
+                            <div>
+                                <span>{formatNumber(profile.posts ? profile.posts.length : 0)}</span>
+                                <span>Postagens</span>
+                            </div>
 
-                            <button className={`${styles.complaint_button} ${profile.isComplainted && styles.complaint_button_selected}`}>
-                                <img src={profile.isComplainted ? complaintIcon : complaintedIcon} alt="Complaint" onClick={!profile.isComplainted ? viewComplaint : undefined}/>
+                            <div>
+                                <span>{formatNumber(followersNumber)}</span>
 
-                                {showComplaintReasons && (
-                                    <div className={styles.profile_complaint}>
-                                        <span onClick={viewComplaint}>Voltar</span>
+                                <span>{followersNumber === 1 ? "seguidor" : "seguidores"}</span>
+                            </div>
 
-                                        <form onSubmit={complaintSubmit}>
-                                            <SubmitButton text="Denunciar"/>
-                                            
-                                            <MainInput 
-                                                type="text" 
-                                                name="complaintDescription" 
-                                                placeholder="Descreva o motivo da sua denúncia" 
-                                                maxLength={255}
-                                                alertMessage="A descrição não pode ter mais que 255 caracteres"
-                                                handleChange={handleOnChangeComplaintDescription}    
-                                                showAlert={!validateComplaintDescription()}
-                                                value={complaintDescription}
-                                            />
-                                        </form>
+                            <div>
+                                <span>{formatNumber(profile.likes)}</span>
 
-                                        <PostItemsContainer
-                                            searchText={true}
-                                            filteredItems={complaintReasons}
-                                            handleClick={handleClickComplaintReason}
-                                            isSelectable
-                                            selectedItems={selectedComplaintReasons}
-                                            isComplaintReasons
-                                        />
-                                    </div>
-                                )}
-                            </button>
-                        </>
-                    ) : (
-                        <>
-                            <button className={styles.follow_button}>Editar perfil</button>
+                                <span>Curtidas</span>
+                            </div>
+                        </div>
 
-                            <button className={styles.follow_button}>Editar preferências</button>
+                        <hr/>
 
-                            <button className={styles.follow_button}>Adicionar formação</button>
-                        </>
-                    )}
-                </div>
+                        {(profile.preferences && profile.preferences.length !== 0) && (
+                            <>
+                                <ul className={styles.profile_preferences}>
+                                    {profile.preferences.map((sport, index) => (
+                                        <li key={index} onClick={() => navigate(`/search?text=${sport.nome}&type=posts`)}>
+                                            <img src={sport.icone} alt={`${sport.nome} Icon`}/>
 
-                <div className={styles.posts_type}>
-                    <ul>
-                        <li 
-                            onClick={() => setPostsToShow(profile.posts)} 
-                            className={postsToShow === profile.posts ? styles.selected_posts_type : null}
-                        >
-                                Suas postagens
-                        </li>
+                                            <span>{sport.nome}</span>
+                                        </li>
+                                    ))}
+                                </ul>   
 
-                        <li 
-                            onClick={() => setPostsToShow(profile.tagPosts)} 
-                            className={postsToShow === profile.tagPosts ? styles.selected_posts_type : null}
-                        >
-                                Marcações
-                        </li>
-                    </ul>
-                </div>
+                                <hr/>
+                            </>
+                        )}
 
-                <section className={styles.profile_posts}>
-                    <PostsInSection 
-                        posts={postsToShow} 
-                        notFoundText={postsToShow === profile.posts && (id ? `${profile.nome} ainda não publicou nada.` : "Faça sua primeira publicação!")}
-                    />
-                </section>
-            </main>
-            
-            <AppNavBar profilePhotoPath={profile?.media ? profile.media.caminho : ""}/>
+                        <div className={styles.profile_actions}>
+                            {id ? (
+                                <>
+                                    <button className={`${styles.follow_button} ${profile.isFollowed && styles.follow_button_selected}`} onClick={followProfile}>
+                                        {profile.isFollowed ? "Seguindo" : "Seguir"}
+                                    </button>
+
+                                    <button className={`${styles.complaint_button} ${profile.isComplainted && styles.complaint_button_selected}`}>
+                                        <img src={profile.isComplainted ? complaintIcon : complaintedIcon} alt="Complaint" onClick={!profile.isComplainted ? viewComplaint : undefined}/>
+
+                                        {showComplaintReasons && (
+                                            <div className={styles.profile_complaint}>
+                                                <span onClick={viewComplaint}>Voltar</span>
+
+                                                <form onSubmit={complaintSubmit}>
+                                                    <SubmitButton text="Denunciar"/>
+                                                    
+                                                    <MainInput 
+                                                        type="text" 
+                                                        name="complaintDescription" 
+                                                        placeholder="Descreva o motivo da sua denúncia" 
+                                                        maxLength={255}
+                                                        alertMessage="A descrição não pode ter mais que 255 caracteres"
+                                                        handleChange={handleOnChangeComplaintDescription}    
+                                                        showAlert={!validateComplaintDescription()}
+                                                        value={complaintDescription}
+                                                    />
+                                                </form>
+
+                                                <PostItemsContainer
+                                                    searchText={true}
+                                                    filteredItems={complaintReasons}
+                                                    handleClick={handleClickComplaintReason}
+                                                    isSelectable
+                                                    selectedItems={selectedComplaintReasons}
+                                                    isComplaintReasons
+                                                />
+                                            </div>
+                                        )}
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <button className={styles.follow_button}>Editar perfil</button>
+
+                                    <button className={styles.follow_button}>Editar preferências</button>
+
+                                    <button className={styles.follow_button}>Adicionar formação</button>
+                                </>
+                            )}
+                        </div>
+
+                        <div className={styles.posts_type}>
+                            <ul>
+                                <li 
+                                    onClick={() => {
+                                        setPostsToShow(profile.posts);
+                                        setPostsToShowType("posts");
+                                    }} 
+                                    className={postsToShowType === "posts" ? styles.selected_posts_type : null}
+                                >
+                                        Suas postagens
+                                </li>
+
+                                <li 
+                                    onClick={() => {
+                                        setPostsToShow(profile.tagPosts);
+                                        setPostsToShowType("tagPosts");
+                                    }} 
+                                    className={postsToShowType === "tagPosts" ? styles.selected_posts_type : null}
+                                >
+                                        Marcações
+                                </li>
+                            </ul>
+                        </div>
+
+                        <section className={styles.profile_posts}>
+                            <PostsInSection 
+                                posts={postsToShow} 
+                                notFoundText={postsToShowType === "posts" && (id ? `${profile.nome} ainda não publicou nada.` : "Faça sua primeira publicação!")}
+                                handlePostClick={(postId) => handlePostClick(postId)}
+                            />
+                        </section>
+                    </main>
+                    
+                    <AppNavBar profilePhotoPath={profile?.media ? profile.media.caminho : ""}/>
+                </>
+            : 
+                <PostsFullScreen
+                    posts={postsToShow} 
+                    setPosts={setPostsToShow} 
+                    postsLoading={postsToShowType === "posts" ? postsLoading : tagPostsLoading}
+                    initialPostToShow={selectedPostId}
+                    handleExitFullscreen={exitFullscreen}
+                />
+            }
         </>
-
     );
 }
 
