@@ -4,10 +4,11 @@ import newPostIcon from "../../img/icons/socialMedia/newPostIcon.png";
 import favPlacesIcon from "../../img/icons/socialMedia/favPlacesIcon.png";
 import eventIcon from "../../img/icons/socialMedia/eventIcon.png";
 import userIcon from "../../img/icons/socialMedia/userIcon.png";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 function AppNavBar({ profilePhotoPath }) {
     const navigate = useNavigate();
+    const location = useLocation();
     
     const profilePhoto = (() => {
         try {
@@ -20,11 +21,11 @@ function AppNavBar({ profilePhotoPath }) {
     return (
         <nav className={styles.app_nav_bar}>
             <ul>
-                <li onClick={() => navigate("/")}>
+                <li className={location.pathname === "/" ? styles.selected : undefined} onClick={() => navigate("/")}>
                     <img src={homeIcon} alt="Home"/>
                 </li>
 
-                <li>
+                <li className={location.pathname === "/events" ? styles.selected : undefined}>
                     <img src={eventIcon} alt="Events"/>
                 </li>
 
@@ -32,11 +33,14 @@ function AppNavBar({ profilePhotoPath }) {
                     <img src={newPostIcon} alt="New"/>
                 </li>
                 
-                <li>
+                <li className={location.pathname === "/favoritePlaces" ? styles.selected : undefined}>
                     <img src={favPlacesIcon} alt="Favorite Places"/>
                 </li>
                 
-                <li className={profilePhoto && styles.profile_photo} onClick={() => navigate("/myProfile")}>
+                <li 
+                    className={`${profilePhoto && styles.profile_photo} ${location.pathname === "/myProfile" ? styles.selected : undefined}`} 
+                    onClick={() => navigate("/myProfile")}
+                >
                     <img src={profilePhoto} alt="Profile"/>
                 </li>
             </ul>

@@ -149,7 +149,6 @@ function Profile() {
 
                 const posts = formatPosts(data.posts);
                 const tagPosts = formatPosts(data.tagPosts);
-                console.log(posts)
 
                 setProfile({
                     ...data, 

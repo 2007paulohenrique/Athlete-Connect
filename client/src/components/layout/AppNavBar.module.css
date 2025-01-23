@@ -33,7 +33,8 @@
     transition: all 0.2s ease-in-out;
 }
 
-.app_nav_bar > ul > li:hover {
+.app_nav_bar > ul > li:hover,
+.selected {
     background-color: var(--ligth-bg-color);
 }
 
@@ -53,7 +54,8 @@
     overflow: hidden;
 }
 
-.app_nav_bar > ul > li.profile_photo:hover {
+.app_nav_bar > ul > li.profile_photo:hover,
+li:where(.profile_photo).selected {
     filter: brightness(0.4);
 }
 
