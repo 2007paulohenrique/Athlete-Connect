@@ -35,7 +35,7 @@ def get_profile_main_info(con, profile_id):
           return None
 
           
-def get_profile(con, profile_id, profile_viewer_id = None):
+def get_profile(con, profile_id, profile_viewer_id=None):
      try:
           with con.cursor(dictionary=True) as cursor:
                sql = "SELECT * FROM perfil WHERE id_perfil = %s"
@@ -226,7 +226,7 @@ def get_profile_posts(con, profile_id, offset=None, limit=24):
           return None
 
 def get_profile_tag_posts(con, profile_id, offset=None, limit=24):
-      # quando nao for necessario obter as postagens do perfil
+     # quando nao for necessario obter as postagens do perfil
      if offset is None:
           return []
      
@@ -1303,10 +1303,9 @@ def get_search_result(con, text):
           print(f"Erro ao recuperar resultados da pesquisa: {e}")
           return None
      
-def get_posts_for_search(con, text, offset):
+def get_posts_for_search(con, text, offset, profile_viwer_id, limit=24):
      try:
           with con.cursor(dictionary=True) as cursor:
-               LIMIT = 24
                # As postagens são selecionadas de forma que as com maior número de compartilhamentos, comentários e curtidas (pesos diferentes), 
                # sejam mais valorizadas, porém quanto mais tempo passa, mais a postagem é desvalorizada 
                # (o aumento da desvalorização fica mais lento com o passar dos dias).
@@ -1335,7 +1334,7 @@ def get_posts_for_search(con, text, offset):
                     LIMIT %s OFFSET %s
                """
                search_text = f"%{text}%"
-               cursor.execute(sql, (search_text, text, LIMIT, offset))
+               cursor.execute(sql, (search_text, text, limit, offset))
                result = cursor.fetchall()
 
                if not result:
@@ -1345,15 +1344,13 @@ def get_posts_for_search(con, text, offset):
           
                medias = get_post_medias_for_feed(con, posts_ids) 
                hashtags = get_post_hashtags_for_feed(con, posts_ids) 
-               # tags = get_post_tags_for_feed(con, posts_ids) 
-               # comments = get_post_comments_for_feed(con, posts_ids)       
-               # profile = get_profile(con, profile_id)
+               tags = get_post_tags_for_feed(con, posts_ids) 
+               comments = get_post_comments_for_feed(con, posts_ids)    
+               authors_ids = [post["fk_perfil_id_perfil"] for post in result]
+               authors = get_profiles_for_feed(con, authors_ids)     
 
-               if medias is None or hashtags is None:
-                    raise Exception("Erro ao recuperar dados das postagens.")
-
-               # if medias is None or hashtags is None or tags is None or comments is None or profile is None:
-               #      raise Exception("Erro ao recuperar dados das postagens do perfil.")
+               if medias is None or hashtags is None or tags is None or comments is None or authors is None:
+                    raise Exception("Erro ao recuperar dados das postagens da pesquisa.")
 
                posts = []
 
@@ -1363,14 +1360,22 @@ def get_posts_for_search(con, text, offset):
                     if not post["medias"]:
                          raise Exception("Erro ao recuperar mídias da postagem.")
 
-                    # post["author"] = profile
+                    post["author"] = authors.get(post["fk_perfil_id_perfil"], {})
                     
-                    # if not post["author"]:
-                    #      raise Exception("Erro ao recuperar autor da postagem.")
-
+                    if not post["author"]:
+                         raise Exception("Erro ao recuperar autor da postagem.")
+                    
                     post["hashtags"] = hashtags.get(post["id_postagem"], [])
-                    # post["tags"] = tags.get(post["id_postagem"], [])
-                    # post["comments"] = comments.get(post["id_postagem"], [])
+                    post["tags"] = tags.get(post["id_postagem"], [])
+                    post["comments"] = comments.get(post["id_postagem"], [])
+                    post["isLiked"] = check_like(con, profile_viwer_id, post["id_postagem"])
+                    if post["isLiked"] is None:
+                         raise Exception("Erro ao recuperar estado de curtida da postagem.")
+
+                    post["isComplainted"] = check_post_complaint(con, profile_viwer_id, post["id_postagem"])
+                    
+                    if post["isComplainted"] is None:
+                         raise Exception("Erro ao recuperar estado de denúncia da postagem. ")
                     
                     posts.append(post)
 

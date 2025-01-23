@@ -21,7 +21,7 @@ import fetchComplaintReasons from "../../utils/post/FetchComplaintReasons";
 function Profile() {
     const [followersNumber, setFollowersNumber] = useState(0);
     const [profile, setProfile] = useState({});
-    const { profileId } = useProfile();
+    const {profileId} = useProfile();
     const [complaintReasons, setComplaintReasons] = useState([]);
     const [showComplaintReasons, setShowComplaintReasons] = useState(false);  
     const [selectedComplaintReasons, setSelectedComplaintReasons] = useState([]);
@@ -42,6 +42,7 @@ function Profile() {
     const { id } = useParams();
     const location = useLocation();
     const navigate = useNavigate();
+    const postsLimit = useRef(24);
 
     const loadPosts = useCallback(async (id) => {
         if (postsLoading || postsEnd) return;
@@ -49,7 +50,7 @@ function Profile() {
         setPostsLoading(true);
 
         try {
-            const resp = await axios.get(`http://localhost:5000/profiles/${id}/posts?offset=${postsOffset}&limit=${postsFullScreen ? 6 : 24}`);
+            const resp = await axios.get(`http://localhost:5000/profiles/${id}/posts?offset=${postsOffset}&limit=${postsLimit.current}`);
             const data = resp.data;
     
             if (data.error) {
@@ -69,9 +70,9 @@ function Profile() {
                     }))
                 }));
 
-                setPostsToShow((prevPosts) => [...prevPosts, ...formattedPosts]);
+                setPostsToShow(prevPosts => [...prevPosts, ...formattedPosts]);
 
-                setPostsOffset((prevOffset) => postsFullScreen ? prevOffset + 6 : prevOffset + 24);   
+                setPostsOffset(prevOffset => postsFullScreen ? prevOffset + 6 : prevOffset + 24);   
             }
         } catch (err) {
             navigate("/errorPage", {state: {error: err.message}});
@@ -89,7 +90,7 @@ function Profile() {
         setTagPostsLoading(true);
 
         try {
-            const resp = await axios.get(`http://localhost:5000/profiles/${id}/tagPosts?offset=${tagPostsOffset}&limit=${postsFullScreen ? 6 : 24}`);
+            const resp = await axios.get(`http://localhost:5000/profiles/${id}/tagPosts?offset=${tagPostsOffset}&limit=${postsLimit.current}`);
             const data = resp.data;
     
             if (data.error) {
@@ -135,35 +136,32 @@ function Profile() {
             if (data.error) {
                 navigate("/errorPage", {state: {error: data.error}})                
             } else {
+                const formatPosts = (posts) => {
+                    return posts.map(post => ({
+                        ...post, 
+                        data_publicacao: formatDate(post.data_publicacao),
+                        comments: post.comments.map(comment => ({
+                            ...comment,
+                            data_comentario: formatDate(comment.data_comentario)
+                        }))}
+                    ));
+                }
+
+                const posts = formatPosts(data.posts);
+                const tagPosts = formatPosts(data.tagPosts);
+                console.log(posts)
+
                 setProfile({
                     ...data, 
                     preferences: data.preferences.map(sport => (
                         {...sport, icone: require(`../../img/${sport.icone}`)}
                     )),
-                    posts: data.posts.map(post => (
-                        {
-                            ...post, 
-                            data_publicacao: formatDate(post.data_publicacao),
-                            comments: post.comments.map(comment => ({
-                                ...comment,
-                                data_comentario: formatDate(comment.data_comentario)
-                            })),
-                        }
-                    )),
-                    tagPosts: data.tagPosts.map(post => (
-                        {
-                            ...post, 
-                            data_publicacao: formatDate(post.data_publicacao),
-                            comments: post.comments.map(comment => ({
-                                ...comment,
-                                data_comentario: formatDate(comment.data_comentario)
-                            }))
-                        }
-                    ))        
+                    posts: posts,
+                    tagPosts: tagPosts     
                 });    
 
                 setFollowersNumber(data.followers.length);
-                setPostsToShow(data.posts);
+                setPostsToShow(posts);
                 setPostsToShowType("posts");
 
                 fetchComplaintReasons(setComplaintReasons, navigate);
@@ -341,11 +339,13 @@ function Profile() {
     function handlePostClick(postId) {
         setSelectedPostId(postId)
         setPostsFullScreen(true);
+        postsLimit.current = 6;
     }
 
     function exitFullscreen() {
         setPostsFullScreen(false);
         setSelectedPostId(null)
+        postsLimit.current = 24;
     }
 
     useEffect(() => {
@@ -504,6 +504,7 @@ function Profile() {
                                 posts={postsToShow} 
                                 notFoundText={postsToShowType === "posts" && (id ? `${profile.nome} ainda não publicou nada.` : "Faça sua primeira publicação!")}
                                 handlePostClick={(postId) => handlePostClick(postId)}
+                                postsLoading={postsToShowType === "posts" ? postsLoading : tagPostsLoading}
                             />
                         </section>
                     </main>

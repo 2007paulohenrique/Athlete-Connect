@@ -649,8 +649,10 @@ def get_search(text):
             print('Erro ao recuperar resultados da pesquisa')
             return jsonify({'error': 'Não foi possível recuperar os resultados da pesquisa devido a um erro no nosso servidor.'}), 500
         
+        profile_id = int(request.args.get('profileId'))
+        
         result["profiles"] = get_tags(con, 0, text, 10)
-        result["posts"] = get_posts_for_search(con, text, 0)
+        result["posts"] = get_posts_for_search(con, text, 0, profile_id, 24)
         
         if result["profiles"] is None or result["posts"] is None:
             print('Erro ao recuperar resultados da pesquisa')
@@ -674,8 +676,10 @@ def get_search_posts(text):
             return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
         
         offset = int(request.args.get('offset', 24))
+        limit = request.args.get('limit')
+        profile_id = int(request.args.get('profileId'))
 
-        result = get_posts_for_search(con, text, offset)
+        result = get_posts_for_search(con, text, offset, profile_id, int(limit) if limit is not None else 24)
 
         if result is None:
             print('Erro ao recuperar outros resultados de posts da pesquisa')

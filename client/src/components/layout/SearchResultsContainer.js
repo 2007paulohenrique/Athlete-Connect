@@ -45,7 +45,7 @@ function SearchResultsContainer({ results, resultType, notFoundText, tagsLoading
                             {resultType === "profiles" && tagsLoading ? 
                                 <img className="loading" src={loading} alt="Loading"/>
                             :
-                                {notFoundText}
+                                notFoundText
                             }
                         </li>
                     }

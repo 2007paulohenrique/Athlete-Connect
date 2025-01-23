@@ -1,4 +1,4 @@
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import SearchNavBar from "../layout/SearchNavBar";
 import SearchInput from "../layout/SearchInput";
 import styles from "./SearchPage.module.css";
@@ -9,6 +9,9 @@ import AppNavBar from "../layout/AppNavBar";
 import PostsInSection from "../layout/PostsInSection";
 import SearchResultsContainer from "../layout/SearchResultsContainer";
 import formatNumber from "../../utils/NumberFormatter";
+import PostsFullScreen from "../layout/PostsFullScreen";
+import formatDate from "../../utils/DateFormatter";
+import { useProfile } from "../../ProfileContext";
 
 function SearchPage() {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -16,30 +19,52 @@ function SearchPage() {
     const type = searchParams.get('type') || "all";
 
     const [result, setResult] = useState({});
+    const [postsResult, setPostsResult] = useState();
+    const {profileId} = useProfile(); 
     const [resultToShow, setResultToShow] = useState({results: [], notFoundText: ""});
     const [searchText, setSearchText] = useState("");
     const [profilesOffset, setProfilesOffset] = useState(0);
     const [postsOffset, setPostsOffset] = useState(0);
     const [postsLoading, setPostsLoading] = useState(false);
     const [profilesLoading, setProfilesLoading] = useState(false);
+    const [postsEnd, setPostsEnd] = useState();
+    const [postsFullScreen, setPostsFullScreen] = useState(false);
+    const [selectedPostId, setSelectedPostId] = useState(null);
 
+    const postsLimit = useRef(24);
     const navigate = useNavigate();
+    const location = useLocation();
 
     const loadPosts = useCallback(async () => {
-        if (postsLoading || (result?.posts && result?.posts?.length % 24 !== 0)) return;
+        if (postsLoading || postsEnd) return;
 
         setPostsLoading(true);
 
         try {
-            const resp = await axios.get(`http://localhost:5000/search/posts/${text}?offset=${postsOffset}`);
+            const viwerId = profileId || localStorage.getItem("athleteConnectProfileId");
+
+            const resp = await axios.get(`http://localhost:5000/search/posts/${text}?offset=${postsOffset}&limit=${postsLimit.current}&profileId=${viwerId}`);
             const data = resp.data;
     
             if (data.error) {
                 navigate("/errorPage", {state: {error: data.error}});
             } else {
-                setResult({...result, posts: {...result.posts, results: [...(result.posts.results || []), ...data]}});
+                if (data.length === 0) {
+                    setPostsEnd(true);
+                    return;
+                }
 
-                setPostsOffset((prevOffset) => prevOffset + 25);   
+                const formattedPosts = data.map(post => ({
+                    ...post,
+                    data_publicacao: formatDate(post.data_publicacao),
+                    comments: post.comments.map(comment => ({
+                        ...comment,
+                        data_comentario: formatDate(comment.data_comentario)
+                    }))
+                }));
+
+                setPostsResult(prevPosts => [...prevPosts, ...formattedPosts]);
+                setPostsOffset((prevOffset) => postsFullScreen ? prevOffset + 6 : prevOffset + 24);   
             }   
         } catch (err) {
             navigate("/errorPage", {state: {error: err.message}});
@@ -48,7 +73,8 @@ function SearchPage() {
         } finally {
             setPostsLoading(false);
         }
-    }, [navigate, postsLoading, postsOffset, result, text]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [navigate, postsLoading, postsOffset]);
 
     const loadProfiles = useCallback(async () => {
         if (profilesLoading || (result?.profiles && result?.profiles?.length % 10 !== 0)) return;
@@ -77,7 +103,9 @@ function SearchPage() {
     
     const fetchSearchResult = useCallback(async () => {
         try {
-            const resp = await axios.get(`http://localhost:5000/search/${text}`);
+            const viwerId = profileId || localStorage.getItem("athleteConnectProfileId");
+
+            const resp = await axios.get(`http://localhost:5000/search/${text}?profileId=${viwerId}`);
             const data = resp.data;
             
             if (data.error) {
@@ -88,8 +116,19 @@ function SearchPage() {
                     hashtags: {results: data.hashtags, notFoundText: "Nenhuma hashtag encontrada."},
                     profiles: {results: data.profiles, notFoundText: "Nenhum perfil encontrado."},
                     sports: {results: data.sports, notFoundText: "Nenhum esporte encontrado."},
-                    posts: {results: data.posts, notFoundText: "Nenhuma postagem encontrada."},
+                    posts: {notFoundText: "Nenhuma postagem encontrada."},
                 });
+
+                const formattedPosts = data.posts.map(post => ({
+                    ...post,
+                    data_publicacao: formatDate(post.data_publicacao),
+                    comments: post.comments.map(comment => ({
+                        ...comment,
+                        data_comentario: formatDate(comment.data_comentario)
+                    }))
+                }));
+
+                setPostsResult(formattedPosts);
 
                 setPostsOffset(prevOffset => prevOffset + 24);
                 setProfilesOffset(prevOffset => prevOffset + 10);
@@ -160,56 +199,86 @@ function SearchPage() {
         }
     }, [type, loadProfiles, handleScroll]);
 
+    function handlePostClick(postId) {
+        setSelectedPostId(postId)
+        setPostsFullScreen(true);
+        postsLimit.current = 6;
+    }
+
+    function exitFullscreen() {
+        setPostsFullScreen(false);
+        setSelectedPostId(null)
+        postsLimit.current = 24;
+    }
+
+    useEffect(() => {
+        setPostsFullScreen(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [location.pathname])
+
     return (
         <>
-            <ProfileNavBar/>
-            
-            <main className={styles.search_page}>
-                <form onSubmit={handleSubmitSearch}>
-                    <SearchInput 
-                        name="search" 
-                        handleChange={handleOnChangeSearch} 
-                        maxLength={50} 
-                        placeholder="Insira o texto da pesquisa" 
-                        haveSubmit={true}
-                        value={searchText}
-                    />
-                </form>
+            {!postsFullScreen ?
+                <>
+                    <ProfileNavBar/>
 
-                <span className={styles.search_text}>
-                    Você pesquisou por:
-                    <span> {text}</span>
-                </span>
-
-                <hr/>
-
-                <SearchNavBar selectedType={type}/>
-
-                <section className={styles.result}>
-                    {resultToShow?.results?.length &&
-                        <p className={styles.results_number}>{`${formatNumber(resultToShow?.results?.length)} resultado${resultToShow?.results?.length === 1 ? "" : "s"}:`}</p>
-                    }
-                
-                    {type === "posts" ? (
-                        <div className={styles.posts}>
-                            <PostsInSection 
-                                posts={result.posts?.results} 
-                                notFoundText={result.posts?.notFoundText}
-                                postsLoading={postsLoading}
+                    <main className={styles.search_page}>
+                        <form onSubmit={handleSubmitSearch}>
+                            <SearchInput 
+                                name="search" 
+                                handleChange={handleOnChangeSearch} 
+                                maxLength={50} 
+                                placeholder="Insira o texto da pesquisa" 
+                                haveSubmit={true}
+                                value={searchText}
                             />
-                        </div>
-                    ) : type === "hashtags" || type === "sports" || type === "profiles" ? (
-                        <SearchResultsContainer 
-                            results={resultToShow?.results} 
-                            resultType={type} 
-                            notFoundText={resultToShow?.notFoundText} 
-                            tagsLoading={profilesLoading}
-                        />
-                    ) : null}
-                </section>
-            </main>
+                        </form>
 
-            <AppNavBar/>
+                        <span className={styles.search_text}>
+                            Você pesquisou por:
+                            <span> {text}</span>
+                        </span>
+
+                        <hr/>
+
+                        <SearchNavBar selectedType={type}/>
+
+                        <section className={styles.result}>
+                            {(resultToShow?.results?.length || postsResult?.length) &&
+                                <p className={styles.results_number}>{`${formatNumber(resultToShow?.results?.length || postsResult?.length)} resultado${resultToShow?.results?.length === 1 ? "" : "s"}:`}</p>
+                            }
+                        
+                            {type === "posts" ? (
+                                <div className={styles.posts}>
+                                    <PostsInSection 
+                                        posts={postsResult} 
+                                        notFoundText={result.posts?.notFoundText}
+                                        postsLoading={postsLoading}
+                                        handlePostClick={(postId) => handlePostClick(postId)}
+                                    />
+                                </div>
+                            ) : type === "hashtags" || type === "sports" || type === "profiles" ? (
+                                <SearchResultsContainer 
+                                    results={resultToShow?.results} 
+                                    resultType={type} 
+                                    notFoundText={resultToShow?.notFoundText} 
+                                    tagsLoading={profilesLoading}
+                                />
+                            ) : null}
+                        </section>
+                    </main>
+
+                    <AppNavBar/>
+                </>
+            :
+                <PostsFullScreen 
+                    posts={postsResult} 
+                    setPosts={setPostsResult} 
+                    postsLoading={postsLoading} 
+                    initialPostToShow={selectedPostId} 
+                    handleExitFullscreen={exitFullscreen}
+                />
+            }
         </>
     );
 }
