@@ -41,19 +41,13 @@
     outline: none;
 }
 
-.checkbox_field > input {
-    outline: none;
-    margin-top: 0.4em;
-}
-
-
 .text_field > span > img {
     display: inline-block;
     height: 1.4em;
     width: 1.4em;
 }
 
-.text_field > .alert {
+.alert {
     height: 3em;
     min-height: min-content;
     font-size: 0.7em;
@@ -62,4 +56,28 @@
     color: var(--alert-color);
     letter-spacing: 0.4px;
     visibility: hidden;
+}
+
+.checkbox_field > span > label {
+
+}
+
+.checkbox_field > span > label > span {
+    
+}
+
+.checkbox_field > span > label > span::before {
+    
+}
+
+.checkbox_field > span > label > input:checked + span {
+    
+}
+
+.checkbox_field > span > label > input:checked + span::before {
+    
+}
+
+.checkbox_field > span > label > input {
+    
 }

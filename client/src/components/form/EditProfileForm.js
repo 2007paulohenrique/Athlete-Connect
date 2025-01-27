@@ -3,14 +3,11 @@ import SubmitButton from "./SubmitButton";
 import userIcon from "../../img/icons/socialMedia/userIcon.png";
 import bioIcon from "../../img/icons/socialMedia/bioIcon.png";
 import styles from "./EditProfileForm.module.css"
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 import Textarea from "./Textarea";
 import PhotoInput from "./PhotoInput";
 
 function EditProfileForm({ handleSubmit, profile, setProfile, setSubmitError }) {
-    const [privateProfile, setPrivateProfile] = useState(false);
-    const [acceptTerms, setAcceptTerms] = useState(false);
-
     function handleOnChange(e) {
         if (e.target.name === "confirmedNameSignUp") e.target.value = e.target.value.replace(/\s+/g, "");
 
@@ -18,21 +15,7 @@ function EditProfileForm({ handleSubmit, profile, setProfile, setSubmitError }) 
             e.target.value = e.target.value.trimStart().replace(/\n+/g, "").replace(/\s+/g, " ")
         }
 
-        setProfile({ ...profile, [e.target.name]: e.target.value });
-    }
-
-    function handleOnChangePrivate() {
-        const newPrivateProfile = !privateProfile;
-
-        setPrivateProfile(newPrivateProfile); 
-        setProfile({ ...profile, private: newPrivateProfile });
-    }
-
-    function handleOnChangeAcceptTerms() {
-        const newAcceptTerms = !acceptTerms;
-
-        setAcceptTerms(newAcceptTerms);
-        setProfile({...profile, acceptTerms: newAcceptTerms })
+        setProfile({...profile, [e.target.name]: e.target.type === "checkbox" ? e.target.checked : e.target.value});
     }
 
     const validateName = useCallback(() => {
@@ -53,8 +36,8 @@ function EditProfileForm({ handleSubmit, profile, setProfile, setSubmitError }) 
             return;
         }
 
-        setSubmitError(!(validateName() && validateBio() && acceptTerms));
-    }, [acceptTerms, profile, setSubmitError, validateBio, validateName]);
+        setSubmitError(!(validateName() && validateBio() && profile.acceptTerms));
+    }, [profile, setSubmitError, validateBio, validateName]);
 
     function handleFileChange(e) {
         const files = Array.from(e.target.files);
@@ -70,7 +53,7 @@ function EditProfileForm({ handleSubmit, profile, setProfile, setSubmitError }) 
 
     return (
         <form onSubmit={handleSubmit} className={`${styles.edit_profile_form}`}>
-            <PhotoInput name="profilePhoto" photoPath={profile.blobUrl} handleChange={handleFileChange}/>
+            <PhotoInput name="profilePhoto" photoPath={profile.blobUrl} handleChange={handleFileChange} size="medium"/>
 
             <h2>Editar Perfil</h2>
 
@@ -108,9 +91,10 @@ function EditProfileForm({ handleSubmit, profile, setProfile, setSubmitError }) 
                     <MainInput 
                         type="checkbox" 
                         name="private"  
-                        labelText="Clique na caixa abaixo para tornar seu perfil privado" 
-                        handleChange={handleOnChangePrivate} 
-                        value={privateProfile}
+                        labelText="Clique abaixo para tornar seu perfil privado, com isso, somente seus seguidores terão acesso às suas publicações e flashes" 
+                        handleChange={handleOnChange} 
+                        value={profile.private}
+                        checked={profile.private}
                     />
 
                     <MainInput 
@@ -118,11 +102,12 @@ function EditProfileForm({ handleSubmit, profile, setProfile, setSubmitError }) 
                         name="acceptTerms"  
                         labelText={
                             <>
-                                Clique na caixa abaixo para aceitar os <a href="termosECondicoes" target="_blank" rel="noopener noreferrer">termos e condições</a> do Athlete Connect e criar uma conta
+                                Clique abaixo para aceitar os <a href="termosECondicoes" target="_blank" rel="noopener noreferrer">termos e condições</a> do Athlete Connect e sua conta
                             </>
                         } 
-                        handleChange={handleOnChangeAcceptTerms} 
-                        value={acceptTerms}
+                        handleChange={handleOnChange} 
+                        value={profile.acceptTerms}
+                        checked={profile.acceptTerms}
                     />
                 </div>
             </div>

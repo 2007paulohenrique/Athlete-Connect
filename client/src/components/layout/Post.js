@@ -16,7 +16,7 @@ import formatNumber from "../../utils/NumberFormatter";
 import PostItemsContainer from "./PostItemsContainer";
 import { useNavigate } from "react-router-dom";
 
-const Post = forwardRef(({ author, hashtags = [], complaintReasons = [], moment, mediasPath = [], blobUrlsMedias = [], caption, isInCreating = false, setHashtagsInPost, postHashtags, setTagsInPost, postTags, sharingSubmit, complaintSubmit, isComplainted, comments, commentSubmit, likeSubmit, isLiked, post, searchTextTag, setSearchTextTag, filteredTags, searchTextSharing, setSearchTextSharing, filteredSharings, tagsLoading }, ref) => {
+const Post = forwardRef(({ setMessage, canComment = true, author, hashtags = [], complaintReasons = [], moment, mediasPath = [], blobUrlsMedias = [], caption, isInCreating = false, setHashtagsInPost, postHashtags, setTagsInPost, postTags, sharingSubmit, complaintSubmit, isComplainted, comments, commentSubmit, likeSubmit, isLiked, post, searchTextTag, setSearchTextTag, filteredTags, searchTextSharing, setSearchTextSharing, filteredSharings, tagsLoading }, ref) => {
     const [medias, setMedias] = useState([]);
     const [showHashtags, setShowHashtags] = useState(false);  
     const [selectedHashtags, setSelectedHashtags] = useState([]);
@@ -255,10 +255,14 @@ const Post = forwardRef(({ author, hashtags = [], complaintReasons = [], moment,
     }
 
     function viewComments() {
-        showOffAll("comments");
-
-        setShowComments(!showComments);
-        setCommentText("");
+        if (canComment) {
+            showOffAll("comments");
+    
+            setShowComments(!showComments);
+            setCommentText("");
+        } else {
+            setMessage(`Você não tem permissão para comentar nas postagens de ${author.nome}.`, "error")
+        }
     }
 
     const slideToLeft = () => {

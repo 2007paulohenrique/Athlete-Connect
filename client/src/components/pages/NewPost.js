@@ -60,7 +60,7 @@ function NewPost() {
                 navigate("/errorPage", {state: {error: data.error}});
             } else {
                 const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
-                const filteredData = data.filter(tag => String(tag.id_perfil) !== String(confirmedProfileId));
+                const filteredData = data.filter(tag => String(tag.id_perfil) !== String(confirmedProfileId) && tag.permissao_marcacao);
 
                 setTags(filteredData);
             }
@@ -79,7 +79,7 @@ function NewPost() {
             const data = resp.data;
             
             if (data.error) {
-                if (resp.status === 404) {
+                if (resp.status === 404 || resp.status === 204) {
                     navigate("/login", {state: {message: data.error, type: "error"}});
                 } else {
                     navigate("/errorPage", {state: {error: data.error}})

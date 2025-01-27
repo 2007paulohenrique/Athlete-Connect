@@ -107,7 +107,7 @@ def get_profiles_route():
 
 # O usuário é recuperado através do id do perfil
 @app.route('/profiles/users/<int:profile_id>', methods=['GET'])
-def get_users_route(profile_id):
+def get_user_route(profile_id):
     try:
         con = open_connection(*con_params)
 
@@ -122,6 +122,10 @@ def get_users_route(profile_id):
         if user is None:
             print('Erro ao recuperar usuário')
             return jsonify({'error': 'Usuário indisponível ou inexistente.'}), 404
+        
+        if user["ativo"] == False:
+            print('Perfil desativado')
+            return jsonify({'error': 'O perfil foi desativado. Faça login e o ative para voltar a usá-lo.'}), 204
         
         return jsonify(user), 200
     except Exception as e:
@@ -199,6 +203,113 @@ def post_profile():
         if con:
             close_connection(con)
 
+@app.route('/profiles/<int:profile_id>', methods=['PUT'])
+def put_profile_route(profile_id):
+    try:
+        con = open_connection(*con_params)
+
+        if con is None:
+            print('Erro ao abrir conexão com banco de dados')
+            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+        
+        name = request.form.get('name')
+        bio = request.form.get('bio')
+        private = request.form.get('private')
+        private = private.lower() == 'true' if private else False
+        photo = request.files.get('photo')
+
+        if put_profile(con, profile_id, name, bio, private) is None:
+            print('Erro ao modificar perfil')
+            return jsonify({'error': 'Não foi possível modificar seu perfil devido a um erro no nosso servidor.'}), 500
+        
+        if photo:
+            filename = photo.filename
+            filename = os.path.basename(filename)
+
+            _, file_extension = os.path.splitext(filename)  
+            file_extension = file_extension.lower()
+
+            user_folder = os.path.join(UPLOAD_FOLDER, f'{profile_id}')
+
+            filepath = os.path.join(user_folder, 'profilePhoto', filename)
+            photo.save(filepath)
+
+            saved_file = {
+                'path': f'users/{profile_id}/profilePhoto/{filename}',
+                'type': 'image' if photo.mimetype.startswith('image/') else 'video',
+                'format': file_extension,
+            }
+
+            media_id = insert_media(con, saved_file['path'], saved_file['type'], saved_file['format'])   
+
+            if media_id is None or not insert_profile_photo(con, profile_id, media_id):
+                print('Erro ao modificar foto de perfil')
+                return jsonify({'error': 'Não foi possível modificar sua foto de perfil devido a um erro no nosso servidor.'}), 500     
+
+        return jsonify({'profileId': profile_id}), 201
+    except Exception as e:
+        print(f'Erro ao modificar perfil: {e}')
+        return jsonify({'error': 'Não foi possível modificar seu perfil devido a um erro no nosso servidor.'}), 500
+    finally:
+        if con:
+            close_connection(con)
+
+@app.route('/profiles/<int:profile_id>/config/<string:field_name>', methods=['PUT'])
+def put_config_route(profile_id, field_name):
+    try:
+        con = open_connection(*con_params)
+
+        if con is None:
+            print('Erro ao abrir conexão com banco de dados')
+            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+        
+        field_value = request.form.get(field_name)
+
+        if field_value.lower() in ['true', 'false']:
+            confirmed_field_value = field_value.lower() == 'true'
+        else:
+            confirmed_field_value = field_value
+
+        if not put_config(con, field_name, confirmed_field_value, profile_id):
+            print('Erro ao modificar configuração')
+            return jsonify({'error': 'Não foi possível modificar sua configuração devido a um erro no nosso servidor.'}), 500
+        
+        return jsonify({'profileId': profile_id}), 201
+    except Exception as e:
+        print(f'Erro ao modificar configuração: {e}')
+        return jsonify({'error': 'Não foi possível modificar sua configuração devido a um erro no nosso servidor.'}), 500
+    finally:
+        if con:
+            close_connection(con)
+
+@app.route('/profiles/<int:profile_id>/active/<active>', methods=['PUT'])
+def active_profile_route(profile_id, active):
+    try:
+        if active.lower() == 'true':
+            active_bool = True
+        elif active.lower() == 'false':
+            active_bool = False
+        else:
+            return jsonify({'error': 'Parâmetro "active" deve ser "true" ou "false".'}), 400
+
+        con = open_connection(*con_params)
+
+        if con is None:
+            print('Erro ao abrir conexão com banco de dados')
+            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+
+        if put_profile(con, profile_id=profile_id, active=active_bool) is None:
+            print('Erro ao modificar perfil')
+            return jsonify({'error': 'Não foi possível modificar seu perfil devido a um erro no nosso servidor.'}), 500
+        
+        return jsonify({'profileId': profile_id}), 201
+    except Exception as e:
+        print(f'Erro ao modificar perfil: {e}')
+        return jsonify({'error': 'Não foi possível modificar seu perfil devido a um erro no nosso servidor.'}), 500
+    finally:
+        if con:
+            close_connection(con)
+
 @app.route('/login', methods=['POST'])
 def login():
     try:
@@ -220,7 +331,7 @@ def login():
         for profile in profiles:
             if profile['nome'] == nameOrEmailLogin or profile['email'] == nameOrEmailLogin:
                 if bcrypt.check_password_hash(profile['senha'], passwordLogin):
-                    return jsonify({'profileId': profile['id_perfil']}), 200
+                    return jsonify({'profileId': profile['id_perfil'], "isActived": profile["ativo"]}), 200
                 else:
                     return jsonify({'error': 'login'}), 401
                 
@@ -276,6 +387,10 @@ def get_profile_route(profile_id):
         if profile is None:
             print('Erro ao recuperar perfil')
             return jsonify({'error': 'Não foi possível encontrar nenhum perfil com o id fornecido. Tente fazer o login.'}), 404
+        
+        if profile["ativo"] == False:
+            print('Perfil desativado')
+            return jsonify({'error': 'O perfil foi desativado. Faça login e o ative para voltar a usá-lo.'}), 204
 
         return jsonify(profile), 200
     except Exception as e:

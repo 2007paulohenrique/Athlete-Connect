@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import LoginForm from "../form/LoginForm";
 import styles from "./Login.module.css";
 import Message from "../layout/Message";
 import axios from "axios"
 import { useLocation, useNavigate } from "react-router-dom";
 import { useProfile } from "../../ProfileContext";
+import ConfirmationBox from "../layout/ConfirmationBox";
 
 function Login() {
     const [isLogin, setIsLogin] = useState(false);
@@ -12,7 +13,8 @@ function Login() {
     const [loginSubmitError, setLoginSubmitError] = useState(false);
     const [profile, setProfile] = useState({});
     const [message, setMessage] = useState({});
-    const { setProfileId } = useProfile(); 
+    const {profileId, setProfileId} = useProfile();
+    const [showConfirmation, setShowConfirmation] = useState(false); 
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -63,6 +65,33 @@ function Login() {
         }
     }
 
+    const activeAccountCallback = useCallback(async (id) => {
+        try {
+            const resp = await axios.get(`http://localhost:5000/profiles/${id}/active/${true}`);
+            const data = resp.data;
+            
+            if (data.error) {
+                navigate("/errorPage", {state: {error: data.error}})
+            } else {
+                setLoginSubmitError(false);
+                setProfileId(data.profileId);
+                localStorage.setItem('athleteConnectProfileId', data.profileId);
+
+                navigate("/", {state: {message: "Bem-vindo de volta!", type: "success"}});
+            }
+        } catch (err) {
+            navigate("/errorPage", {state: {error: err.message}});
+    
+            console.error('Erro ao fazer a requisição:', err);
+        }
+    }, [navigate, setProfileId]);  
+
+    function activeAccount() {
+        const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
+
+        activeAccountCallback(confirmedProfileId);
+    }
+
     const checkLogin = async () => {
         try {
             const formData = new FormData();
@@ -82,11 +111,15 @@ function Login() {
                     navigate("/errorPage", {state: {error: data.error}});
                 }
             } else {
-                setLoginSubmitError(false);
-                setProfileId(data.profileId);
-                localStorage.setItem('athleteConnectProfileId', data.profileId);
-                
-                navigate("/", {state: {message: "Bem-vindo de volta!", type: "success"}});
+                if (data.isActived === false) {
+                    setShowConfirmation(true);
+                } else {
+                    setLoginSubmitError(false);
+                    setProfileId(data.profileId);
+                    localStorage.setItem('athleteConnectProfileId', data.profileId);
+                    
+                    navigate("/", {state: {message: "Bem-vindo de volta!", type: "success"}});
+                }
             }
         } catch (err) {
             navigate("/errorPage", {state: {error: err.message}})
@@ -120,6 +153,13 @@ function Login() {
     return (
         <main className={styles.login_page}>
             {message && <Message message={message.message} type={message.type}/>}
+            {showConfirmation && 
+                <ConfirmationBox 
+                    text='Seu perfil foi desativado. Caso clique em "confirmar" seu perfil vai ser ativado e você poderá usá-lo novamente.' 
+                    handleConfirmation={activeAccount}
+                    setShowConfirmation={setShowConfirmation}
+                />
+            }
             
             <div className={styles.login_container}>
                 <div className={styles.forms_container}>

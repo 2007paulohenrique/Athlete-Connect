@@ -61,7 +61,15 @@ function PostsFullScreen({ posts, setPosts, postsLoading, initialPostToShow, han
         if (initialPostToShow) {
             postsRef.current[initialPostToShow]?.scrollIntoView({behavior: "smooth"});
         }
-    }, [initialPostToShow])
+    }, [initialPostToShow]);
+
+    function setMessageWithReset(newMessage, type) {
+        setMessage(null);
+
+        setTimeout(() => {
+            setMessage({message: newMessage, type: type});
+        }, 1);
+    }
 
     return (
         <section className={styles.posts_full_screen}>
@@ -99,6 +107,8 @@ function PostsFullScreen({ posts, setPosts, postsLoading, initialPostToShow, han
                     searchTextSharing={searchTextTag}
                     setSearchTextSharing={setSearchTextTag}
                     tagsLoading={tagsLoading}
+                    canComment={post.canComment}
+                    setMessage={setMessageWithReset}
                 />
             ))}
 

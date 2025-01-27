@@ -1,0 +1,35 @@
+.confirmation_box {
+    width: 22em;
+    height: max-content;
+    display: flex;
+    flex-direction: column;
+    gap: 2em;
+    padding: 1.2em 1.8em;
+    justify-content: center;
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: goDown 1s ease-in-out 1;
+}
+
+.confirmation_box > p {
+    width: 100%;
+    height: max-content;
+    text-align: center;
+}
+
+.confirmation_box > span {
+    position: absolute;
+    color: var(--white-bg-color);
+    left: 0.5em;
+    top: 0.5em;
+}
+
+@keyframes goDown {
+    0% {
+        top: -100%;
+    } 
+    100% {
+        top: 0;
+    }
+}

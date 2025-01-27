@@ -56,15 +56,20 @@ def get_profile(con, profile_id, profile_viewer_id=None):
                     if result["preferences"] is None:
                          raise Exception("Erro ao recuperar preferências do perfil.")  
 
-                    result["posts"] = get_profile_posts(con, profile_id, 0)
+                    result["posts"] = get_profile_posts(con, profile_id, profile_viewer_id, 0)
 
                     if result["posts"] is None:
                          raise Exception("Erro ao recuperar postagens do perfil.")  
                     
-                    result["tagPosts"] = get_profile_tag_posts(con, profile_id, 0)
+                    result["tagPosts"] = get_profile_tag_posts(con, profile_id, profile_viewer_id, 0)
 
                     if result["tagPosts"] is None:
                          raise Exception("Erro ao recuperar postagens em que o perfil foi marcado.")  
+
+                    result["config"] = get_profile_config(con, profile_id)
+
+                    if result["config"] is None:
+                         raise Exception("Erro ao recuperar configurações do perfil.")  
 
                     result["followers"] = get_followers(con, profile_id)
                     
@@ -156,7 +161,7 @@ def get_user(con, profile_id, profile_viewer_id = None):
           print(f"Erro ao recuperar usuário: {e}")
           return None
      
-def get_profile_posts(con, profile_id, offset=None, limit=24):
+def get_profile_posts(con, profile_id, profile_viewer_id = None, offset=None, limit=24):
      # quando nao for necessario obter as postagens do perfil
      if offset is None:
           return []
@@ -164,7 +169,7 @@ def get_profile_posts(con, profile_id, offset=None, limit=24):
      try:
           with con.cursor(dictionary=True) as cursor:
                sql = """
-                    SELECT p.*,
+                    SELECT p.*, con.permissao_comentario,
                     COUNT(DISTINCT c.fk_perfil_id_perfil) AS total_curtidas,
                     COUNT(DISTINCT cp.id_compartilhamento) AS total_compartilhamentos,
                     COUNT(DISTINCT co.id_comentario) AS total_comentarios
@@ -172,6 +177,8 @@ def get_profile_posts(con, profile_id, offset=None, limit=24):
                     LEFT JOIN curte c ON c.fk_postagem_id_postagem = p.id_postagem
                     LEFT JOIN compartilhamento cp ON cp.fk_postagem_id_postagem = p.id_postagem
                     LEFT JOIN comentario co ON co.fk_postagem_id_postagem = p.id_postagem
+                    JOIN perfil pe ON pe.id_perfil = p.fk_perfil_id_perfil
+                    JOIN config con ON con.fk_perfil_id_perfil = pe.id_perfil
                     WHERE p.fk_perfil_id_perfil = %s
                     GROUP BY p.id_postagem
                     ORDER BY p.data_publicacao DESC
@@ -217,6 +224,17 @@ def get_profile_posts(con, profile_id, offset=None, limit=24):
                     
                     if post["isComplainted"] is None:
                          raise Exception("Erro ao recuperar estado de denúncia da postagem. ")
+
+                    comment_permission = post["permissao_comentario"].lower()
+                    
+                    if profile_id == profile_viewer_id:
+                         post["canComment"] = True
+                    elif comment_permission == "ninguém":
+                         post["canComment"] = False
+                    elif (comment_permission == "seguidos" and not check_follow(con, post["fk_perfil_id_perfil"], profile_viewer_id)) or (comment_permission == "seguidores" and not check_follow(con, profile_viewer_id, post["fk_perfil_id_perfil"])):
+                         post["canComment"] = False
+                    else:
+                         post["canComment"] = True
                     
                     posts.append(post)
 
@@ -225,7 +243,7 @@ def get_profile_posts(con, profile_id, offset=None, limit=24):
           print(f"Erro ao recuperar postagens do perfil: {e}")
           return None
 
-def get_profile_tag_posts(con, profile_id, offset=None, limit=24):
+def get_profile_tag_posts(con, profile_id, profile_viewer_id=None, offset=None, limit=24):
      # quando nao for necessario obter as postagens do perfil
      if offset is None:
           return []
@@ -233,7 +251,7 @@ def get_profile_tag_posts(con, profile_id, offset=None, limit=24):
      try:
           with con.cursor(dictionary=True) as cursor:
                sql = """
-                    SELECT p.*,
+                    SELECT p.*, con.permissao_comentario,
                     COUNT(DISTINCT c.fk_perfil_id_perfil) AS total_curtidas,
                     COUNT(DISTINCT cp.id_compartilhamento) AS total_compartilhamentos,
                     COUNT(DISTINCT co.id_comentario) AS total_comentarios
@@ -242,6 +260,8 @@ def get_profile_tag_posts(con, profile_id, offset=None, limit=24):
                     LEFT JOIN compartilhamento cp ON cp.fk_postagem_id_postagem = p.id_postagem
                     LEFT JOIN comentario co ON co.fk_postagem_id_postagem = p.id_postagem
                     LEFT JOIN marcacao_postagem mp ON mp.fk_postagem_id_postagem = p.id_postagem
+                    JOIN perfil pe ON pe.id_perfil = p.fk_perfil_id_perfil
+                    JOIN config con ON con.fk_perfil_id_perfil = pe.id_perfil
                     WHERE mp.fk_perfil_id_perfil = %s
                     GROUP BY p.id_postagem
                     ORDER BY p.data_publicacao DESC
@@ -290,6 +310,17 @@ def get_profile_tag_posts(con, profile_id, offset=None, limit=24):
                     
                     if post["isComplainted"] is None:
                          raise Exception("Erro ao recuperar estado de denúncia da postagem. ")
+
+                    comment_permission = post["permissao_comentario"].lower()
+
+                    if profile_id == profile_viewer_id:
+                         post["canComment"] = True
+                    elif comment_permission == "ninguém":
+                         post["canComment"] = False
+                    elif (comment_permission == "seguidos" and not check_follow(con, post["fk_perfil_id_perfil"], profile_viewer_id)) or (comment_permission == "seguidores" and not check_follow(con, profile_viewer_id, post["fk_perfil_id_perfil"])):
+                         post["canComment"] = False
+                    else:
+                         post["canComment"] = True
                     
                     posts.append(post)
 
@@ -317,6 +348,56 @@ def insert_profile(con, email, password, name, bio, private):
           con.rollback()
           print(f"Erro ao inserir perfil: {e}")
           return None
+
+def put_profile(con, profile_id, name=None, bio=None, private=None, active=None):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               if active is not None:
+                    sql = """
+                         UPDATE perfil 
+                         SET ativo = %s
+                         WHERE id_perfil = %s
+                    """
+                    cursor.execute(sql, (1 if active else 0, profile_id))
+               else:
+                    if name is None or bio is None or private is None:
+                         print(f"Erro ao modificar perfil. Nem todos os parâmetros foram passados.")
+                         return None
+                    else:
+                         sql = """
+                              UPDATE perfil 
+                              SET nome = %s, privado = %s, biografia = %s 
+                              WHERE id_perfil = %s
+                         """
+                         cursor.execute(sql, (name, 1 if private else 0, bio, profile_id))
+
+          con.commit() 
+          return profile_id
+     except Exception as e:
+          con.rollback()
+          print(f"Erro ao modificar perfil: {e}")
+          return None
+     
+def put_config(con, field_name, field_value, profile_id):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               sql = f"""
+                    UPDATE configuracao 
+                    SET {field_name} = %s
+                    WHERE fk_perfil_id_perfil = %s
+               """
+
+               if isinstance(field_value, bool):
+                    field_value = 1 if field_value else 0
+
+               cursor.execute(sql, (field_value, profile_id))
+
+          con.commit() 
+          return True
+     except Exception as e:
+          con.rollback()
+          print(f"Erro ao modificar perfil: {e}")
+          return False
 
 def insert_profile_preferences(con, profile_id, sports_ids):
      if not sports_ids:
@@ -380,6 +461,22 @@ def get_profile_preferences(con, profile_id):
           return result
      except Exception as e:
           print(f"Erro ao recuperar preferências do perfil: {e}")
+          return None
+
+def get_profile_config(con, profile_id):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               sql = """
+                    SELECT *
+                    FROM configuracao
+                    WHERE fk_perfil_id_perfil = %s
+               """
+               cursor.execute(sql, (profile_id,))
+               result = cursor.fetchall()
+
+          return result
+     except Exception as e:
+          print(f"Erro ao recuperar configurações do perfil: {e}")
           return None
      
 def insert_user(con, profile_id):
@@ -596,15 +693,17 @@ def get_feed_posts(con, profile_id, offset):
 
                placeholders = ','.join(['%s'] * len(followeds_ids))
                sql = f"""
-                    SELECT p.*,
-                         COUNT(DISTINCT c.fk_perfil_id_perfil) AS total_curtidas,
-                         COUNT(DISTINCT cp.id_compartilhamento) AS total_compartilhamentos,
-                         COUNT(DISTINCT co.id_comentario) AS total_comentarios
+                    SELECT p.*, con.permissao_comentario,
+                    COUNT(DISTINCT c.fk_perfil_id_perfil) AS total_curtidas,
+                    COUNT(DISTINCT cp.id_compartilhamento) AS total_compartilhamentos,
+                    COUNT(DISTINCT co.id_comentario) AS total_comentarios
                     FROM postagem p
                     LEFT JOIN curte c ON c.fk_postagem_id_postagem = p.id_postagem
                     LEFT JOIN compartilhamento cp ON cp.fk_postagem_id_postagem = p.id_postagem
                     LEFT JOIN comentario co ON co.fk_postagem_id_postagem = p.id_postagem
-                    WHERE p.fk_perfil_id_perfil IN ({placeholders})
+                    JOIN perfil pe ON pe.id_perfil = p.fk_perfil_id_perfil
+                    JOIN config con ON con.fk_perfil_id_perfil = pe.id_perfil
+                    WHERE p.fk_perfil_id_perfil IN ({placeholders}) AND pe.ativo = 1
                     GROUP BY p.id_postagem
                     ORDER BY p.data_publicacao DESC
                     LIMIT %s OFFSET %s
@@ -653,6 +752,15 @@ def get_feed_posts(con, profile_id, offset):
                     
                     if post["isComplainted"] is None:
                          raise Exception("Erro ao recuperar estado de denúncia da postagem. ")
+                    
+                    comment_permission = post["permissao_comentario"].lower()
+
+                    if comment_permission == "ninguém":
+                         post["canComment"] = False
+                    elif (comment_permission == "seguidos" and not check_follow(con, post["fk_perfil_id_perfil"], profile_id)):
+                         post["canComment"] = False
+                    else:
+                         post["canComment"] = True
 
                     feed.append(post)
 
@@ -1262,11 +1370,12 @@ def get_tags(con, offset, text, limit=None):
 
                if limit is None:
                     sql = """
-                         SELECT p.id_perfil, p.nome, m.caminho, COUNT(s.fk_perfil_id_seguidor) AS numero_seguidores
+                         SELECT p.id_perfil, p.nome, m.caminho, c.permissao_marcacao, c.permissao_compartilhamento, COUNT(s.fk_perfil_id_seguidor) AS numero_seguidores
                          FROM perfil p
                          LEFT JOIN midia m ON m.id_midia = p.fk_midia_id_midia
                          LEFT JOIN segue s ON s.fk_perfil_id_seguido = p.id_perfil
-                         WHERE LOWER(p.nome) LIKE LOWER(%s)
+                         JOIN configuracao c ON c.fk_perfil_id_perfil = p.id_perfil
+                         WHERE LOWER(p.nome) LIKE LOWER(%s) AND p.ativo = 1
                          GROUP BY p.id_perfil
                     """
                else:
@@ -1275,7 +1384,7 @@ def get_tags(con, offset, text, limit=None):
                          FROM perfil p
                          LEFT JOIN midia m ON m.id_midia = p.fk_midia_id_midia
                          LEFT JOIN segue s ON s.fk_perfil_id_seguido = p.id_perfil
-                         WHERE LOWER(p.nome) LIKE LOWER(%s)
+                         WHERE LOWER(p.nome) LIKE LOWER(%s) AND p.ativo = 1
                          GROUP BY p.id_perfil
                          LIMIT %s OFFSET %s
                     """
@@ -1303,19 +1412,20 @@ def get_search_result(con, text):
           print(f"Erro ao recuperar resultados da pesquisa: {e}")
           return None
      
-def get_posts_for_search(con, text, offset, profile_viwer_id, limit=24):
+def get_posts_for_search(con, text, offset, profile_viewer_id, limit=24):
      try:
           with con.cursor(dictionary=True) as cursor:
                # As postagens são selecionadas de forma que as com maior número de compartilhamentos, comentários e curtidas (pesos diferentes), 
                # sejam mais valorizadas, porém quanto mais tempo passa, mais a postagem é desvalorizada 
                # (o aumento da desvalorização fica mais lento com o passar dos dias).
                sql = """
-                    SELECT DISTINCT p.*,
+                    SELECT DISTINCT p.*, con.permissao_comentario,
                     COUNT(DISTINCT c.fk_perfil_id_perfil) AS total_curtidas,
                     COUNT(DISTINCT cp.id_compartilhamento) AS total_compartilhamentos,
                     COUNT(DISTINCT co.id_comentario) AS total_comentarios
                     FROM postagem p
                     JOIN perfil pe ON pe.id_perfil = p.fk_perfil_id_perfil
+                    JOIN configuracao con ON con.fk_perfil_id_perfil = pe.id_perfil
                     LEFT JOIN postagem_hashtag ph ON p.id_postagem = ph.fk_postagem_id_postagem
                     LEFT JOIN hashtag h ON ph.fk_hashtag_id_hashtag = h.id_hashtag
                     LEFT JOIN curte c ON c.fk_postagem_id_postagem = p.id_postagem
@@ -1355,27 +1465,39 @@ def get_posts_for_search(con, text, offset, profile_viwer_id, limit=24):
                posts = []
 
                for post in result:
-                    post["medias"] = medias.get(post["id_postagem"], [])
-
-                    if not post["medias"]:
-                         raise Exception("Erro ao recuperar mídias da postagem.")
-
                     post["author"] = authors.get(post["fk_perfil_id_perfil"], {})
                     
                     if not post["author"]:
                          raise Exception("Erro ao recuperar autor da postagem.")
                     
+                    if post["author"]["privado"] and not check_follow(con, profile_viewer_id, post["fk_perfil_id_perfil"]):
+                         continue
+
+                    post["medias"] = medias.get(post["id_postagem"], [])
+
+                    if not post["medias"]:
+                         raise Exception("Erro ao recuperar mídias da postagem.")
+                    
                     post["hashtags"] = hashtags.get(post["id_postagem"], [])
                     post["tags"] = tags.get(post["id_postagem"], [])
                     post["comments"] = comments.get(post["id_postagem"], [])
-                    post["isLiked"] = check_like(con, profile_viwer_id, post["id_postagem"])
+                    post["isLiked"] = check_like(con, profile_viewer_id, post["id_postagem"])
                     if post["isLiked"] is None:
                          raise Exception("Erro ao recuperar estado de curtida da postagem.")
 
-                    post["isComplainted"] = check_post_complaint(con, profile_viwer_id, post["id_postagem"])
+                    post["isComplainted"] = check_post_complaint(con, profile_viewer_id, post["id_postagem"])
                     
                     if post["isComplainted"] is None:
                          raise Exception("Erro ao recuperar estado de denúncia da postagem. ")
+
+                    comment_permission = post["permissao_comentario"].lower()
+                    
+                    if comment_permission == "ninguém":
+                         post["canComment"] = False
+                    elif (comment_permission == "seguidos" and not check_follow(con, post["fk_perfil_id_perfil"], profile_viewer_id)) or (comment_permission == "seguidores" and not check_follow(con, profile_viewer_id, post["fk_perfil_id_perfil"])):
+                         post["canComment"] = False
+                    else:
+                         post["canComment"] = True
                     
                     posts.append(post)
 

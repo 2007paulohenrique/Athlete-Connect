@@ -21,6 +21,7 @@ import fetchComplaintReasons from "../../utils/post/FetchComplaintReasons";
 function Profile() {
     const [followersNumber, setFollowersNumber] = useState(0);
     const [profile, setProfile] = useState({});
+    const [viwer, setViewer] = useState({});
     const {profileId} = useProfile();
     const [complaintReasons, setComplaintReasons] = useState([]);
     const [showComplaintReasons, setShowComplaintReasons] = useState(false);  
@@ -134,7 +135,11 @@ function Profile() {
             const data = resp.data;
 
             if (data.error) {
-                navigate("/errorPage", {state: {error: data.error}})                
+                if (resp.status === 204) {
+                    navigate(-1, {state: {message: "Perfil desativado.", type: "error"}})
+                } else {
+                    navigate("/errorPage", {state: {error: data.error}})                
+                }
             } else {
                 const formatPosts = (posts) => {
                     return posts.map(post => ({
@@ -178,7 +183,39 @@ function Profile() {
         if (id === viwerId) navigate("/myProfile");
 
         fetchUser(viwerId);
-    }, [fetchUser, id, navigate, profileId])    
+    }, [fetchUser, id, navigate, profileId]) 
+    
+    const fetchProfile = useCallback(async (id) => {
+            try {
+                const resp = await axios.get(`http://localhost:5000/profiles/${id}`);
+                const data = resp.data;
+                
+                if (data.error) {
+                    if (resp.status === 404 || resp.status === 204) {
+                        navigate("/login", {state: {message: data.error, type: "error"}});
+                    } else {
+                        navigate("/errorPage", {state: {error: data.error}})
+                    }
+                } else {
+                    setViewer(data);        
+                }
+            } catch (err) {
+                navigate("/errorPage", {state: {error: err.message}});
+        
+                console.error('Erro ao fazer a requisição:', err);
+            }
+        }, [navigate]);   
+        
+        useEffect(() => {
+            const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
+    
+            if (!confirmedProfileId) {
+                navigate("/login");
+            } else {
+                fetchProfile(confirmedProfileId);
+            }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        }, []);
 
     function setMessageWithReset(newMessage, type) {
         setMessage(null);
@@ -186,6 +223,12 @@ function Profile() {
         setTimeout(() => {
             setMessage({message: newMessage, type: type});
         }, 1);
+    }
+
+    function sendFollowRequest() {
+        setMessageWithReset(`Solicitação para ${profile.name} enviada.`);
+        
+        // requisição para mandar uma notificação ao perfil para permitir o follow
     }
 
     function followProfile() {
@@ -425,7 +468,10 @@ function Profile() {
                         <div className={styles.profile_actions}>
                             {id ? (
                                 <>
-                                    <button className={`${styles.follow_button} ${profile.isFollowed && styles.follow_button_selected}`} onClick={followProfile}>
+                                    <button 
+                                        className={`${styles.follow_button} ${profile.isFollowed && styles.follow_button_selected}`} 
+                                        onClick={profile.private && !profile.isFollowed ? sendFollowRequest : followProfile}
+                                    >
                                         {profile.isFollowed ? "Seguindo" : "Seguir"}
                                     </button>
 
@@ -499,16 +545,20 @@ function Profile() {
                         </div>
 
                         <section className={styles.profile_posts}>
-                            <PostsInSection 
-                                posts={postsToShow} 
-                                notFoundText={postsToShowType === "posts" && (id ? `${profile.nome} ainda não publicou nada.` : "Faça sua primeira publicação!")}
-                                handlePostClick={(postId) => handlePostClick(postId)}
-                                postsLoading={postsToShowType === "posts" ? postsLoading : tagPostsLoading}
-                            />
+                            {id && profile.private && !profile.isFollowed ? 
+                                <p>O perfil de {profile.name} é privado. Envie uma solicitação para seguí-lo e ver suas postagens.</p>
+                            : 
+                                <PostsInSection 
+                                    posts={postsToShow} 
+                                    notFoundText={postsToShowType === "posts" && (id ? `${profile.nome} ainda não publicou nada.` : "Faça sua primeira publicação!")}
+                                    handlePostClick={(postId) => handlePostClick(postId)}
+                                    postsLoading={postsToShowType === "posts" ? postsLoading : tagPostsLoading}
+                                />
+                            }
                         </section>
                     </main>
                     
-                    <AppNavBar profilePhotoPath={profile?.media ? profile.media.caminho : ""}/>
+                    <AppNavBar profilePhotoPath={viwer?.media ? viwer.media.caminho : ""}/>
                 </>
             : 
                 <PostsFullScreen

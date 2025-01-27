@@ -12,6 +12,7 @@ import formatNumber from "../../utils/NumberFormatter";
 import PostsFullScreen from "../layout/PostsFullScreen";
 import formatDate from "../../utils/DateFormatter";
 import { useProfile } from "../../ProfileContext";
+import Message from "../layout/Message";
 
 function SearchPage() {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -30,10 +31,25 @@ function SearchPage() {
     const [postsEnd, setPostsEnd] = useState();
     const [postsFullScreen, setPostsFullScreen] = useState(false);
     const [selectedPostId, setSelectedPostId] = useState(null);
+    const [message, setMessage] = useState({});
 
     const postsLimit = useRef(24);
     const navigate = useNavigate();
     const location = useLocation();
+
+    useEffect(() => {
+        const msg = location?.state
+
+        if (msg) setMessageWithReset(msg.message, msg.type)
+    }, [location]);
+
+    function setMessageWithReset(newMessage, type) {
+        setMessage(null);
+
+        setTimeout(() => {
+            setMessage({message: newMessage, type: type});
+        }, 1);
+    };
 
     const loadPosts = useCallback(async () => {
         if (postsLoading || postsEnd) return;
@@ -223,6 +239,8 @@ function SearchPage() {
                     <ProfileNavBar/>
 
                     <main className={styles.search_page}>
+                        {message && <Message message={message.message} type={message.type}/>}
+
                         <form onSubmit={handleSubmitSearch}>
                             <SearchInput 
                                 name="search" 

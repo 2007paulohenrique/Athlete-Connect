@@ -205,6 +205,11 @@
     position: relative;
 }
 
+.profile_posts > p {
+    margin: 0 auto;
+    width: max-content;
+}
+
 .posts_type {
     width: 100%;
     margin-top: 1em;
