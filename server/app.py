@@ -860,6 +860,84 @@ def get_profile_posts_r(profile_id):
         if con:
             close_connection(con)
 
+@app.route('/profiles/<int:profile_id>/posts/liked', methods=['GET'])
+def get_profile_liked_posts_r(profile_id):
+    try:
+        con = open_connection(*con_params)
+
+        if con is None:
+            print('Erro ao abrir conexão com banco de dados')
+            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+        
+        offset = int(request.args.get('offset', 0))
+        limit = request.args.get('limit')
+
+        result = get_profile_liked_posts(con, profile_id, offset, int(limit) if limit is not None else 24)
+
+        if result is None:
+            print('Erro ao recuperar outras postagens curtidas do perfil')
+            return jsonify({'error': 'Não foi possível recuperar outras postagens curtidas do perfil devido a um erro no nosso servidor.'}), 500
+
+        return jsonify(result), 200
+    except Exception as e:
+        print('Erro ao recuperar outras postagens curtidas do perfil')
+        return jsonify({'error': 'Não foi possível recuperar outras postagens curtidas do perfil devido a um erro no nosso servidor.'}), 500
+    finally:
+        if con:
+            close_connection(con)
+
+@app.route('/profiles/<int:profile_id>/posts/commented', methods=['GET'])
+def get_profile_commented_posts_r(profile_id):
+    try:
+        con = open_connection(*con_params)
+
+        if con is None:
+            print('Erro ao abrir conexão com banco de dados')
+            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+        
+        offset = int(request.args.get('offset', 0))
+        limit = request.args.get('limit')
+
+        result = get_profile_commented_posts(con, profile_id, offset, int(limit) if limit is not None else 24)
+
+        if result is None:
+            print('Erro ao recuperar outras postagens comentadas do perfil')
+            return jsonify({'error': 'Não foi possível recuperar outras postagens comentadas do perfil devido a um erro no nosso servidor.'}), 500
+
+        return jsonify(result), 200
+    except Exception as e:
+        print('Erro ao recuperar outras postagens comentadas do perfil')
+        return jsonify({'error': 'Não foi possível recuperar outras postagens comentadas do perfil devido a um erro no nosso servidor.'}), 500
+    finally:
+        if con:
+            close_connection(con)
+
+@app.route('/profiles/<int:profile_id>/posts/shared', methods=['GET'])
+def get_profile_shared_posts_r(profile_id):
+    try:
+        con = open_connection(*con_params)
+
+        if con is None:
+            print('Erro ao abrir conexão com banco de dados')
+            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+        
+        offset = int(request.args.get('offset', 0))
+        limit = request.args.get('limit')
+
+        result = get_profile_shared_posts(con, profile_id, offset, int(limit) if limit is not None else 24)
+
+        if result is None:
+            print('Erro ao recuperar outras postagens compartilhadas do perfil')
+            return jsonify({'error': 'Não foi possível recuperar outras postagens compartilhadas do perfil devido a um erro no nosso servidor.'}), 500
+
+        return jsonify(result), 200
+    except Exception as e:
+        print('Erro ao recuperar outras postagens compartilhadas do perfil')
+        return jsonify({'error': 'Não foi possível recuperar outras postagens compartilhadas do perfil devido a um erro no nosso servidor.'}), 500
+    finally:
+        if con:
+            close_connection(con)
+
 @app.route('/profiles/<int:profile_id>/tagPosts', methods=['GET'])
 def get_profile_tag_posts_r(profile_id):
     try:

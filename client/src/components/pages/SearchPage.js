@@ -65,7 +65,7 @@ function SearchPage() {
             if (data.error) {
                 navigate("/errorPage", {state: {error: data.error}});
             } else {
-                if (data.length === 0) {
+                if (data.length < postsLimit.current) {
                     setPostsEnd(true);
                     return;
                 }

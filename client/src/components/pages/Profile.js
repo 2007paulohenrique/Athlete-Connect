@@ -17,6 +17,7 @@ import PostsInSection from "../layout/PostsInSection";
 import formatDate from "../../utils/DateFormatter";
 import PostsFullScreen from "../layout/PostsFullScreen";
 import fetchComplaintReasons from "../../utils/post/FetchComplaintReasons";
+import SearchResultsContainer from "../layout/SearchResultsContainer";
 
 function Profile() {
     const [followersNumber, setFollowersNumber] = useState(0);
@@ -29,7 +30,6 @@ function Profile() {
     const [profileComplaintReasons, setProfileComplaintReasons] = useState([]);
     const [complaintDescription, setComplaintDescription] = useState("");
     const [message, setMessage] = useState({});
-    const [postsToShow, setPostsToShow] = useState();
     const [postsToShowType, setPostsToShowType] = useState("posts");
     const [postsOffset, setPostsOffset] = useState(24);
     const [tagPostsOffset, setTagPostsOffset] = useState(24);
@@ -39,11 +39,80 @@ function Profile() {
     const [selectedPostId, setSelectedPostId] = useState(null);
     const [postsEnd, setPostsEnd] = useState();
     const [tagPostsEnd, setTagPostsEnd] = useState();
+    const [tagsType, setTagsType] = useState("followers");
+    const [followersOffset, setFollowersOffset] = useState(0);
+    const [followedsOffset, setFollowedsOffset] = useState(0);
+    const [followersLoading, setFollowersLoading] = useState(false);
+    const [followedsLoading, setFollowedsLoading] = useState(false);
+    const [followersEnd, setFollowersEnd] = useState();
+    const [followedsEnd, setFollowedsEnd] = useState();
+    const [tagsFullScreen, setTagsFullScreen] = useState(false);
+    const [tags, setTags] = useState({})
 
     const { id } = useParams();
     const location = useLocation();
     const navigate = useNavigate();
     const postsLimit = useRef(24);
+
+    const loadFollowers = useCallback(async (id) => {
+        if (followersLoading || followersEnd) return;
+
+        setFollowersLoading(true);
+
+        try {
+            const resp = await axios.get(`http://localhost:5000/profiles/${id}/followers?offset=${followersOffset}&limit=${10}`);
+            const data = resp.data;
+    
+            if (data.error) {
+                navigate("/errorPage", {state: {error: data.error}});
+            } else {
+                if (data.length < 10) {
+                    setFollowersEnd(true);
+                    return;
+                }
+
+                setTags(prev => ({...prev, followers: [...(prev.followers || []), ...data]}));
+                setFollowersOffset(prevOffset => prevOffset + 10);   
+            }
+        } catch (err) {
+            navigate("/errorPage", {state: {error: err.message}});
+            
+            console.error('Erro ao fazer a requisição:', err);
+        } finally {
+            setFollowersLoading(false);
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [followersLoading, tags.followers, followersOffset, navigate]);
+
+    const loadFolloweds = useCallback(async (id) => {
+        if (followedsLoading || followedsEnd) return;
+
+        setFollowedsLoading(true);
+
+        try {
+            const resp = await axios.get(`http://localhost:5000/profiles/${id}/followeds?offset=${followedsOffset}&limit=${10}`);
+            const data = resp.data;
+    
+            if (data.error) {
+                navigate("/errorPage", {state: {error: data.error}});
+            } else {
+                if (data.length < 10) {
+                    setFollowedsEnd(true);
+                    return;
+                }
+
+                setTags(prev => ({...prev, followeds: [...(prev.followeds || []), ...data]}));
+                setFollowedsOffset(prevOffset => prevOffset + 10);   
+            }
+        } catch (err) {
+            navigate("/errorPage", {state: {error: err.message}});
+            
+            console.error('Erro ao fazer a requisição:', err);
+        } finally {
+            setFollowedsLoading(false);
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [followedsLoading, tags.followeds, followedsOffset, navigate]);
 
     const loadPosts = useCallback(async (id) => {
         if (postsLoading || postsEnd) return;
@@ -57,7 +126,7 @@ function Profile() {
             if (data.error) {
                 navigate("/errorPage", {state: {error: data.error}});
             } else {
-                if (data.length === 0) {
+                if (data.length < postsLimit.current) {
                     setPostsEnd(true);
                     return;
                 }
@@ -71,7 +140,10 @@ function Profile() {
                     }))
                 }));
 
-                setPostsToShow(prevPosts => [...prevPosts, ...formattedPosts]);
+                setProfile({
+                    ...profile, 
+                    posts: [...profile.posts, ...formattedPosts],
+                }); 
 
                 setPostsOffset(prevOffset => postsFullScreen ? prevOffset + 6 : prevOffset + 24);   
             }
@@ -83,7 +155,7 @@ function Profile() {
             setPostsLoading(false);
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [postsLoading, postsToShow, postsOffset, navigate]);
+    }, [postsLoading, profile.posts, postsOffset, navigate]);
 
     const loadTagPosts = useCallback(async (id) => {
         if (tagPostsLoading || tagPostsEnd) return;
@@ -97,7 +169,7 @@ function Profile() {
             if (data.error) {
                 navigate("/errorPage", {state: {error: data.error}});
             } else {
-                if (data.length === 0) {
+                if (data.length < postsLimit.current) {
                     setTagPostsEnd(true);
                     return;
                 }
@@ -111,7 +183,10 @@ function Profile() {
                     }))
                 }));
 
-                setPostsToShow((prevPosts) => [...prevPosts, ...formattedPosts]);
+                setProfile({
+                    ...profile,
+                    tagPosts: [...profile.tagPosts, ...formattedPosts]     
+                }); 
 
                 setTagPostsOffset((prevOffset) => postsFullScreen ? prevOffset + 6 : prevOffset + 24);   
             }
@@ -123,7 +198,7 @@ function Profile() {
             setTagPostsLoading(false);
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [tagPostsLoading, postsToShow, tagPostsOffset, navigate]);
+    }, [tagPostsLoading, profile.tagPosts, tagPostsOffset, navigate]);
 
     const fetchUser = useCallback(async (viwerId) => {
         try {
@@ -165,7 +240,6 @@ function Profile() {
                 });    
 
                 setFollowersNumber(data.followers.length);
-                setPostsToShow(posts);
                 setPostsToShowType("posts");
 
                 fetchComplaintReasons(setComplaintReasons, navigate);
@@ -378,13 +452,37 @@ function Profile() {
         }
     }, [handleScroll, postsToShowType, loadTagPosts, profileId]);
 
+    useEffect(() => {
+        if (tagsType === "followers") {
+            const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
+
+            const handleScrollFollowers = () => handleScroll(() => loadFollowers(confirmedProfileId));
+
+            window.addEventListener("scroll", handleScrollFollowers);
+            
+            return () => window.removeEventListener("scroll", handleScrollFollowers);
+        }
+    }, [handleScroll, profileId, tagsType, loadFollowers]);
+
+    useEffect(() => {
+        if (tagsType === "followeds") {   
+            const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
+
+            const handleScrollFolloweds = () => handleScroll(() => loadFolloweds(confirmedProfileId));
+
+            window.addEventListener("scroll", handleScrollFolloweds);
+            
+            return () => window.removeEventListener("scroll", handleScrollFolloweds);
+        }
+    }, [handleScroll, profileId, tagsType, loadFolloweds]);
+
     function handlePostClick(postId) {
         setSelectedPostId(postId)
         setPostsFullScreen(true);
         postsLimit.current = 6;
     }
 
-    function exitFullscreen() {
+    function exitPostsFullscreen() {
         setPostsFullScreen(false);
         setSelectedPostId(null)
         postsLimit.current = 24;
@@ -395,179 +493,234 @@ function Profile() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [location.pathname])
 
+    const setPosts = (updater, type) => {
+        if (type === "posts") {
+            setProfile((prevProfile) => ({
+                ...prevProfile,
+                posts: updater(prevProfile.posts),
+            }));
+        } else if (type === "tagPosts") {
+            setProfile((prevProfile) => ({
+                ...prevProfile,
+                tagPosts: updater(prevProfile.tagPosts),
+            }));
+        }
+    };
+
     return (
         <>
-            {!postsFullScreen ? 
+            {!tagsFullScreen ? (
                 <>
-                    <ProfileNavBar/>
+                    {!postsFullScreen ? 
+                        <>
+                            <ProfileNavBar/>
 
-                    <main className={styles.profile_page}>
-                        {message && <Message message={message.message} type={message.type}/>}
+                            <main className={styles.profile_page}>
+                                {message && <Message message={message.message} type={message.type}/>}
 
-                        <div className={styles.profile_main_info}>
-                            <ProfilePhotoContainer profilePhotoPath={profile.media?.caminho} size="large"/>
-                            
-                            <span>{profile.nome}</span>
+                                <div className={styles.profile_main_info}>
+                                    <ProfilePhotoContainer profilePhotoPath={profile.media?.caminho} size="large"/>
+                                    
+                                    <span>{profile.nome}</span>
 
-                            <p>{profile.biografia}</p>
-                        </div>
+                                    <p>{profile.biografia}</p>
+                                </div>
 
-                        {(profile.qualifications && profile.qualifications.length !== 0) && (   
-                            <>
-                                <ul className={styles.profile_qualifications}>
-                                    {profile.qualifications.map((qualification, index) => (
-                                        <li key={index}>
-                                            <span>{`${qualification.grau} em ${qualification.curso}`}</span>
+                                {(profile.qualifications && profile.qualifications.length !== 0) && (   
+                                    <>
+                                        <ul className={styles.profile_qualifications}>
+                                            {profile.qualifications.map((qualification, index) => (
+                                                <li key={index}>
+                                                    <span>{`${qualification.grau} em ${qualification.curso}`}</span>
 
-                                            <span>{`${qualification.instituicao} - ${qualification.estado} - ${qualification.cidade}`}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </>
-                        )}
-
-                        <hr/>
-
-                        <div className={styles.profile_stats}>
-                            <div>
-                                <span>{formatNumber(profile.posts ? profile.posts.length : 0)}</span>
-                                <span>Postagens</span>
-                            </div>
-
-                            <div>
-                                <span>{formatNumber(followersNumber)}</span>
-
-                                <span>{followersNumber === 1 ? "seguidor" : "seguidores"}</span>
-                            </div>
-
-                            <div>
-                                <span>{formatNumber(profile.likes)}</span>
-
-                                <span>Curtidas</span>
-                            </div>
-                        </div>
-
-                        <hr/>
-
-                        {(profile.preferences && profile.preferences.length !== 0) && (
-                            <>
-                                <ul className={styles.profile_preferences}>
-                                    {profile.preferences.map((sport, index) => (
-                                        <li key={index} onClick={() => navigate(`/search?text=${sport.nome}&type=posts`)}>
-                                            <img src={sport.icone} alt={`${sport.nome} Icon`}/>
-
-                                            <span>{sport.nome}</span>
-                                        </li>
-                                    ))}
-                                </ul>   
+                                                    <span>{`${qualification.instituicao} - ${qualification.estado} - ${qualification.cidade}`}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </>
+                                )}
 
                                 <hr/>
-                            </>
-                        )}
 
-                        <div className={styles.profile_actions}>
-                            {id ? (
-                                <>
-                                    <button 
-                                        className={`${styles.follow_button} ${profile.isFollowed && styles.follow_button_selected}`} 
-                                        onClick={profile.private && !profile.isFollowed ? sendFollowRequest : followProfile}
-                                    >
-                                        {profile.isFollowed ? "Seguindo" : "Seguir"}
-                                    </button>
+                                <div className={styles.profile_stats}>
+                                    <div>
+                                        <span>{formatNumber(profile.posts ? profile.posts.length : 0)}</span>
+                                        <span>Postagens</span>
+                                    </div>
 
-                                    <button className={`${styles.complaint_button} ${profile.isComplainted && styles.complaint_button_selected}`}>
-                                        <img src={profile.isComplainted ? complaintIcon : complaintedIcon} alt="Complaint" onClick={!profile.isComplainted ? viewComplaint : undefined}/>
+                                    <div onClick={() => setTagsFullScreen(true)}>
+                                        <span>{formatNumber(followersNumber)}</span>
 
-                                        {showComplaintReasons && (
-                                            <div className={styles.profile_complaint}>
-                                                <span onClick={viewComplaint}>Voltar</span>
+                                        <span>{followersNumber === 1 ? "seguidor" : "seguidores"}</span>
+                                    </div>
 
-                                                <form onSubmit={complaintSubmit}>
-                                                    <SubmitButton text="Denunciar"/>
-                                                    
-                                                    <MainInput 
-                                                        type="text" 
-                                                        name="complaintDescription" 
-                                                        placeholder="Descreva o motivo da sua denúncia" 
-                                                        maxLength={255}
-                                                        alertMessage="A descrição não pode ter mais que 255 caracteres"
-                                                        handleChange={handleOnChangeComplaintDescription}    
-                                                        showAlert={!validateComplaintDescription()}
-                                                        value={complaintDescription}
-                                                    />
-                                                </form>
+                                    <div>
+                                        <span>{formatNumber(profile.likes)}</span>
 
-                                                <PostItemsContainer
-                                                    searchText={true}
-                                                    filteredItems={complaintReasons}
-                                                    handleClick={handleClickComplaintReason}
-                                                    isSelectable
-                                                    selectedItems={selectedComplaintReasons}
-                                                    isComplaintReasons
-                                                />
-                                            </div>
-                                        )}
-                                    </button>
-                                </>
-                            ) : (
-                                <>
-                                    <button className={styles.follow_button}>Editar perfil</button>
+                                        <span>Curtidas</span>
+                                    </div>
+                                </div>
 
-                                    <button className={styles.follow_button}>Editar preferências</button>
+                                <hr/>
 
-                                    <button className={styles.follow_button}>Adicionar formação</button>
-                                </>
-                            )}
-                        </div>
+                                {(profile.preferences && profile.preferences.length !== 0) && (
+                                    <>
+                                        <ul className={styles.profile_preferences}>
+                                            {profile.preferences.map((sport, index) => (
+                                                <li key={index} onClick={() => navigate(`/search?text=${sport.nome}&type=posts`)}>
+                                                    <img src={sport.icone} alt={`${sport.nome} Icon`}/>
 
-                        <div className={styles.posts_type}>
-                            <ul>
-                                <li 
-                                    onClick={() => {
-                                        setPostsToShow(profile.posts);
-                                        setPostsToShowType("posts");
-                                    }} 
-                                    className={postsToShowType === "posts" ? styles.selected_posts_type : null}
-                                >
-                                        Suas postagens
-                                </li>
+                                                    <span>{sport.nome}</span>
+                                                </li>
+                                            ))}
+                                        </ul>   
 
-                                <li 
-                                    onClick={() => {
-                                        setPostsToShow(profile.tagPosts);
-                                        setPostsToShowType("tagPosts");
-                                    }} 
-                                    className={postsToShowType === "tagPosts" ? styles.selected_posts_type : null}
-                                >
-                                        Marcações
-                                </li>
-                            </ul>
-                        </div>
+                                        <hr/>
+                                    </>
+                                )}
 
-                        <section className={styles.profile_posts}>
-                            {id && profile.private && !profile.isFollowed ? 
-                                <p>O perfil de {profile.name} é privado. Envie uma solicitação para seguí-lo e ver suas postagens.</p>
-                            : 
-                                <PostsInSection 
-                                    posts={postsToShow} 
-                                    notFoundText={postsToShowType === "posts" && (id ? `${profile.nome} ainda não publicou nada.` : "Faça sua primeira publicação!")}
-                                    handlePostClick={(postId) => handlePostClick(postId)}
-                                    postsLoading={postsToShowType === "posts" ? postsLoading : tagPostsLoading}
-                                />
-                            }
-                        </section>
-                    </main>
-                    
-                    <AppNavBar profilePhotoPath={viwer?.media ? viwer.media.caminho : ""}/>
+                                <div className={styles.profile_actions}>
+                                    {id ? (
+                                        <>
+                                            <button 
+                                                className={`${styles.follow_button} ${profile.isFollowed && styles.follow_button_selected}`} 
+                                                onClick={profile.private && !profile.isFollowed ? sendFollowRequest : followProfile}
+                                            >
+                                                {profile.isFollowed ? "Seguindo" : "Seguir"}
+                                            </button>
+
+                                            <button className={`${styles.complaint_button} ${profile.isComplainted && styles.complaint_button_selected}`}>
+                                                <img src={profile.isComplainted ? complaintIcon : complaintedIcon} alt="Complaint" onClick={!profile.isComplainted ? viewComplaint : undefined}/>
+
+                                                {showComplaintReasons && (
+                                                    <div className={styles.profile_complaint}>
+                                                        <span onClick={viewComplaint}>Voltar</span>
+
+                                                        <form onSubmit={complaintSubmit}>
+                                                            <SubmitButton text="Denunciar"/>
+                                                            
+                                                            <MainInput 
+                                                                type="text" 
+                                                                name="complaintDescription" 
+                                                                placeholder="Descreva o motivo da sua denúncia" 
+                                                                maxLength={255}
+                                                                alertMessage="A descrição não pode ter mais que 255 caracteres"
+                                                                handleChange={handleOnChangeComplaintDescription}    
+                                                                showAlert={!validateComplaintDescription()}
+                                                                value={complaintDescription}
+                                                            />
+                                                        </form>
+
+                                                        <PostItemsContainer
+                                                            searchText={true}
+                                                            filteredItems={complaintReasons}
+                                                            handleClick={handleClickComplaintReason}
+                                                            isSelectable
+                                                            selectedItems={selectedComplaintReasons}
+                                                            isComplaintReasons
+                                                        />
+                                                    </div>
+                                                )}
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <button className={styles.follow_button}>Editar perfil</button>
+
+                                            <button className={styles.follow_button}>Editar preferências</button>
+
+                                            <button className={styles.follow_button}>Adicionar formação</button>
+                                        </>
+                                    )}
+                                </div>
+
+                                <div className={styles.posts_type}>
+                                    <ul>
+                                        <li 
+                                            onClick={() => {
+                                                setPostsToShowType("posts");
+                                            }} 
+                                            className={postsToShowType === "posts" ? styles.selected_posts_type : null}
+                                        >
+                                                Suas postagens
+                                        </li>
+
+                                        <li 
+                                            onClick={() => {
+                                                setPostsToShowType("tagPosts");
+                                            }} 
+                                            className={postsToShowType === "tagPosts" ? styles.selected_posts_type : null}
+                                        >
+                                                Marcações
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <section className={styles.profile_posts}>
+                                    {id && profile.private && !profile.isFollowed ? 
+                                        <p>O perfil de {profile.name} é privado. Envie uma solicitação para seguí-lo e ver suas postagens.</p>
+                                    : 
+                                        <PostsInSection 
+                                            posts={profile[postsToShowType]} 
+                                            notFoundText={postsToShowType === "posts" && (id ? `${profile.nome} ainda não publicou nada.` : "Faça sua primeira publicação!")}
+                                            handlePostClick={(postId) => handlePostClick(postId)}
+                                            postsLoading={postsToShowType === "posts" ? postsLoading : tagPostsLoading}
+                                        />
+                                    }
+                                </section>
+                            </main>
+                            
+                            <AppNavBar profilePhotoPath={viwer?.media ? viwer.media.caminho : ""}/>
+                        </>
+                    : 
+                        <PostsFullScreen
+                            posts={profile[postsToShowType]} 
+                            setPosts={(updater) => setPosts(updater, postsToShowType)} 
+                            postsLoading={postsToShowType === "posts" ? postsLoading : tagPostsLoading}
+                            initialPostToShow={selectedPostId}
+                            handleExitPostsFullscreen={exitPostsFullscreen}   
+                        />
+                    }
                 </>
-            : 
-                <PostsFullScreen
-                    posts={postsToShow} 
-                    setPosts={setPostsToShow} 
-                    postsLoading={postsToShowType === "posts" ? postsLoading : tagPostsLoading}
-                    initialPostToShow={selectedPostId}
-                    handleExitFullscreen={exitFullscreen}
-                />
+            ) : 
+                <main className={styles.profile_followers_followeds}>
+                    <div className={styles.exit_fullscreen} onClick={() => setTagsFullScreen(false)}>
+                        Voltar
+                    </div>
+                    
+                     <div className={styles.posts_type}>
+                        <ul>
+                            <li 
+                                onClick={() => {
+                                    setTagsType("followers");
+                                }} 
+                                className={tagsType === "followers" ? styles.selected_posts_type : null}
+                            >
+                                    Seguidores
+                            </li>
+
+                            <li 
+                                onClick={() => {
+                                    setTagsType("followeds");
+                                }} 
+                                className={tagsType === "followeds" ? styles.selected_posts_type : null}
+                            >
+                                    Seguindo
+                            </li>
+                        </ul>
+                    </div>
+
+                    {!id || (tagsType === "followers" && profile.config.visibilidade_seguidores) || (tagsType === "followeds" && profile.config.visibilidade_seguindo) ? 
+                        <SearchResultsContainer
+                            results={tagsType === "followers" ? tags.followers : tags.followeds}   
+                            resultType="profiles"
+                            notFoundText={tagsType === "followers" ? `${profile.nome} não possui nenhum seguidor.` : `${profile.nome} não segue ninguém`}
+                            tagsLoading={tagsType === "followers" ? followersLoading : followedsLoading}
+                        />
+                    :
+                        <p>{`${profile.nome} Não permite que outros perfis vejam ${tagsType === "followers" ? "seus seguidores" : "os perfis que segue"}.`}</p>
+                    }
+                </main>
             }
         </>
     );

@@ -66,6 +66,7 @@ CREATE TABLE IF NOT EXISTS categoria_esporte (
 CREATE TABLE IF NOT EXISTS compartilhamento (
     id_compartilhamento int PRIMARY KEY AUTO_INCREMENT,
     legenda varchar(255),
+    data_compartilhamento datetime NOT NULL,
     fk_postagem_id_postagem int NOT NULL,
     fk_perfil_id_perfil int NOT NULL,
     FOREIGN KEY (fk_postagem_id_postagem) REFERENCES postagem(id_postagem),
@@ -257,6 +258,7 @@ CREATE TABLE IF NOT EXISTS evento (
 );
 
 CREATE TABLE IF NOT EXISTS curte (
+    data_curtida datetime NOT NULL,
     fk_perfil_id_perfil int NOT NULL,
     fk_postagem_id_postagem int NOT NULL,
     FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil),

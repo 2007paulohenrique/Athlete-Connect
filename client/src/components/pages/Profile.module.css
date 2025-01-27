@@ -246,9 +246,39 @@
     background-color: var(--ligth-theme-color);
 }
 
+.exit_fullscreen {
+    width: 100%;
+    padding: 0.8em 0;
+    text-align: center;
+    position: fixed;
+    top: -2em;
+    left: 0;
+    background-color: var(--dark-font-color);
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    z-index: 2
+}
+
+.exit_fullscreen:hover {
+    transform: translateY(2em);
+}
+
+.profile_followers_followeds {
+    display: flex;
+    flex-direction: column;
+    padding: 2em;
+    align-items: center;
+    background-color: var(--dark-bg-color);
+    gap: 1.5em;
+}
+
 @media screen and (max-width: 720px) {
     .profile_page {
         padding: 1em 1em 0;
+    }
+
+    .profile_followers_followeds {
+        padding: 1em;
     }
 
     .profile_posts {

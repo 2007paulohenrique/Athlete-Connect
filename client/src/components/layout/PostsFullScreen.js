@@ -108,6 +108,9 @@ function PostsFullScreen({ posts, setPosts, postsLoading, initialPostToShow, han
                     setSearchTextSharing={setSearchTextTag}
                     tagsLoading={tagsLoading}
                     canComment={post.canComment}
+                    likesVisibility={post.visibilidade_curtidas}
+                    sharingsVisibility={post.visibilidade_compartilhamentos}
+                    commentsVisibility={post.visibilidade_comentarios}
                     setMessage={setMessageWithReset}
                 />
             ))}

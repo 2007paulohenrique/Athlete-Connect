@@ -3,6 +3,7 @@ import loading from "../../img/animations/loading.svg"
 import SportCard from "./SportCard";
 import ProfileBiggerContainer from "./ProfileBiggerContainer";
 import { useNavigate } from "react-router-dom";
+import formatNumber from "../../utils/NumberFormatter";
 
 function SearchResultsContainer({ results, resultType, notFoundText, tagsLoading }) {
     const navigate = useNavigate();
@@ -24,7 +25,7 @@ function SearchResultsContainer({ results, resultType, notFoundText, tagsLoading
                                 <ProfileBiggerContainer 
                                     profilePhotoPath={item.caminho} 
                                     profileName={item.nome} 
-                                    followersNumber={item.numero_seguidores}
+                                    followersNumber={formatNumber(item.numero_seguidores)}
                                     handleClick={() => navigate(`/profile/${item.id_perfil}`)}
                                 />
                             ) : resultType === "hashtags" ? (

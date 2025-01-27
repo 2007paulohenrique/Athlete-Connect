@@ -16,7 +16,7 @@ import formatNumber from "../../utils/NumberFormatter";
 import PostItemsContainer from "./PostItemsContainer";
 import { useNavigate } from "react-router-dom";
 
-const Post = forwardRef(({ setMessage, canComment = true, author, hashtags = [], complaintReasons = [], moment, mediasPath = [], blobUrlsMedias = [], caption, isInCreating = false, setHashtagsInPost, postHashtags, setTagsInPost, postTags, sharingSubmit, complaintSubmit, isComplainted, comments, commentSubmit, likeSubmit, isLiked, post, searchTextTag, setSearchTextTag, filteredTags, searchTextSharing, setSearchTextSharing, filteredSharings, tagsLoading }, ref) => {
+const Post = forwardRef(({ likesVisibility = true, sharingsVisibility = true, commentsVisibility = true, setMessage, canComment = true, author, hashtags = [], complaintReasons = [], moment, mediasPath = [], blobUrlsMedias = [], caption, isInCreating = false, setHashtagsInPost, postHashtags, setTagsInPost, postTags, sharingSubmit, complaintSubmit, isComplainted, comments, commentSubmit, likeSubmit, isLiked, post, searchTextTag, setSearchTextTag, filteredTags, searchTextSharing, setSearchTextSharing, filteredSharings, tagsLoading }, ref) => {
     const [medias, setMedias] = useState([]);
     const [showHashtags, setShowHashtags] = useState(false);  
     const [selectedHashtags, setSelectedHashtags] = useState([]);
@@ -347,7 +347,7 @@ const Post = forwardRef(({ setMessage, canComment = true, author, hashtags = [],
     }, [complaintDescription]);
 
     return (
-        <div className={styles.post} ref={ref}>
+        <div className={`${styles.post} ${isComplainted ? styles.complainted_post : undefined}`} ref={ref}>
             <div className={styles.first_post_container}>
                 <ProfileSmallerContainer 
                     profilePhotoPath={author?.media?.caminho} 
@@ -395,12 +395,12 @@ const Post = forwardRef(({ setMessage, canComment = true, author, hashtags = [],
                     <div>
                         <li>
                             <img src={isLiked ? likedIcon : likeIcon} alt="Like" onClick={!isInCreating ? likeSubmit : undefined}/>
-                            <span>{!isInCreating ? formatNumber(post.total_curtidas) : 0}</span>
+                            <span>{likesVisibility ? (!isInCreating ? formatNumber(post.total_curtidas) : 0) : ""}</span>
                         </li>
 
                         <li>
                             <img src={shareIcon} alt="Share" onClick={!isInCreating ? viewSharing : undefined}/>
-                            <span>{!isInCreating ? formatNumber(post.total_compartilhamentos) : 0}</span>
+                            <span>{sharingsVisibility ? (!isInCreating ? formatNumber(post.total_compartilhamentos) : 0) : ""}</span>
 
                             {!isInCreating && showSharing && (
                                 <div className={styles.actions_items}>
@@ -446,7 +446,7 @@ const Post = forwardRef(({ setMessage, canComment = true, author, hashtags = [],
 
                         <li>
                             <img src={commentIcon} alt="Comment" onClick={!isInCreating ? viewComments : undefined}/>
-                            <span>{!isInCreating ? formatNumber(post.total_comentarios) : 0}</span>
+                            <span>{commentsVisibility ? (!isInCreating ? formatNumber(post.total_comentarios) : 0) : ""}</span>
 
                             {!isInCreating && showComments && (
                                 <div className={styles.actions_items}>
