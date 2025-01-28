@@ -420,7 +420,7 @@ def post_follow(profile_id):
 
         return jsonify({'isFollowed': is_followed}), req_status
     except Exception as e:
-        print('Erro ao conferir estado de seguidor do perfil')
+        print(f'Erro ao conferir estado de seguidor do perfil: {e}')
         return jsonify({'error': 'Não foi possível conferir o estado de seguidor do perfil devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -448,7 +448,7 @@ def profile_complaint(profile_id):
         
         return ({'success': 'success'}), 201
     except Exception as e:
-        print('Erro ao denunciar perfil')
+        print(f'Erro ao denunciar perfil: {e}')
         return jsonify({'error': 'Não foi possível denunciar o perfil devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -473,7 +473,7 @@ def get_feed(profile_id):
 
         return jsonify(feed), 200
     except Exception as e:
-        print('Erro ao recuperar feed fo perfil')
+        print(f'Erro ao recuperar feed fo perfil: {e}')
         return jsonify({'error': 'Não foi possível recuperar o feed do perfil devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -531,7 +531,7 @@ def post_post(profile_id):
         
         return jsonify({'postId': post_id}), 201
     except Exception as e:
-        print('Erro ao inserir postagem')
+        print(f'Erro ao inserir postagem: {e}')
         return jsonify({'error': 'Não foi possível publicar sua postagem devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -557,7 +557,7 @@ def post_like(post_id):
 
         return jsonify({'isLiked': is_liked}), req_status
     except Exception as e:
-        print('Erro ao conferir estado de curtida da postagem')
+        print(f'Erro ao conferir estado de curtida da postagem: {e}')
         return jsonify({'error': 'Não foi possível conferir o estado de curtida da postagem devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -585,7 +585,7 @@ def post_sharing(post_id):
         
         return ({'success': 'success'}), 201
     except Exception as e:
-        print('Erro ao compartilhar postagem')
+        print(f'Erro ao compartilhar postagem: {e}')
         return jsonify({'error': 'Não foi possível compartilhar a postagem devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -613,7 +613,7 @@ def post_complaint(post_id):
         
         return ({'success': 'success'}), 201
     except Exception as e:
-        print('Erro ao denunciar postagem')
+        print(f'Erro ao denunciar postagem: {e}')
         return jsonify({'error': 'Não foi possível denunciar a postagem devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -639,7 +639,7 @@ def post_comment(post_id):
         
         return jsonify({'newComment': new_comment}), 201
     except Exception as e:
-        print('Erro ao comentar na postagem')
+        print(f'Erro ao comentar na postagem: {e}')
         return jsonify({'error': 'Não foi possível comentar na postagem devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -662,7 +662,7 @@ def get_flashs_route(profile_id):
         
         return jsonify(flashs), 200
     except Exception as e:
-        print('Erro ao recuperar flashs')
+        print(f'Erro ao recuperar flashs: {e}')
         return jsonify({'error': 'Não foi possível recuperar os flashs devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -720,7 +720,7 @@ def post_flash(profile_id):
         
         return jsonify({'flashId': flash_id}), 201
     except Exception as e:
-        print('Erro ao inserir flash')
+        print(f'Erro ao inserir flash: {e}')
         return jsonify({'error': 'Não foi possível criar seu flash devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -743,7 +743,7 @@ def get_sports_route():
         
         return jsonify(sports), 200
     except Exception as e:
-        print('Erro ao recuperar os esportes')
+        print(f'Erro ao recuperar os esportes: {e}')
         return jsonify({'error': 'Não foi possível recuperar os esportes devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -757,14 +757,20 @@ def get_search(text):
         if con is None:
             print('Erro ao abrir conexão com banco de dados')
             return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+        
+        profile_id = int(request.args.get('profileId'))
 
-        result = get_search_result(con, text)
+        confirmed_text = insert_search(con, text, profile_id)
+
+        if confirmed_text is None:
+            print('Erro ao inserir pesquisa')
+            return jsonify({'error': 'Não foi possível inserir a pesquisa em nosso banco de dados devido a um erro no nosso servidor.'}), 500
+        
+        result = get_search_result(con, confirmed_text)
 
         if result is None:
             print('Erro ao recuperar resultados da pesquisa')
             return jsonify({'error': 'Não foi possível recuperar os resultados da pesquisa devido a um erro no nosso servidor.'}), 500
-        
-        profile_id = int(request.args.get('profileId'))
         
         result["profiles"] = get_tags(con, 0, text, 10)
         result["posts"] = get_posts_for_search(con, text, 0, profile_id, 24)
@@ -775,8 +781,31 @@ def get_search(text):
 
         return jsonify(result), 200
     except Exception as e:
-        print('Erro ao recuperar resultados da pesquisa')
+        print(f'Erro ao recuperar resultados da pesquisa: {e}')
         return jsonify({'error': 'Não foi possível recuperar os resultados da pesquisa devido a um erro no nosso servidor.'}), 500
+    finally:
+        if con:
+            close_connection(con)
+
+@app.route('/profiles/<int:profile_id>/search/sugestions', methods=['GET'])
+def get_search_sugestions_r(profile_id):
+    try:
+        con = open_connection(*con_params)
+
+        if con is None:
+            print('Erro ao abrir conexão com banco de dados')
+            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+        
+        result = get_search_sugestions(con, profile_id)
+
+        if result is None:
+            print('Erro ao recuperar sugestões de pesquisa do usuário')
+            return jsonify({'error': 'Não foi possível recuperar as sugestões de pesquisa do usuário devido a um erro no nosso servidor.'}), 500
+        
+        return jsonify(result), 200
+    except Exception as e:
+        print(f'Erro ao recuperar sugestões de pesquisa do usuário: {e}')
+        return jsonify({'error': 'Não foi possível recuperar as sugestões de pesquisa do usuário devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
             close_connection(con)
@@ -802,7 +831,7 @@ def get_search_posts(text):
 
         return jsonify(result), 200
     except Exception as e:
-        print('Erro ao recuperar outros resultados de posts da pesquisa')
+        print(f'Erro ao recuperar outros resultados de posts da pesquisa: {e}')
         return jsonify({'error': 'Não foi possível recuperar outros resultados de posts da pesquisa devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -828,7 +857,7 @@ def get_search_profiles(text):
         
         return jsonify(result), 200
     except Exception as e:
-        print('Erro ao recuperar outros resultados de perfis da pesquisa')
+        print(f'Erro ao recuperar outros resultados de perfis da pesquisa: {e}')
         return jsonify({'error': 'Não foi possível recuperar outros resultados de perfis da pesquisa devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -854,7 +883,7 @@ def get_profile_posts_r(profile_id):
 
         return jsonify(result), 200
     except Exception as e:
-        print('Erro ao recuperar outras postagens do perfil')
+        print(f'Erro ao recuperar outras postagens do perfil: {e}')
         return jsonify({'error': 'Não foi possível recuperar outras postagens do perfil devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -880,7 +909,7 @@ def get_profile_liked_posts_r(profile_id):
 
         return jsonify(result), 200
     except Exception as e:
-        print('Erro ao recuperar outras postagens curtidas do perfil')
+        print(f'Erro ao recuperar outras postagens curtidas do perfil: {e}')
         return jsonify({'error': 'Não foi possível recuperar outras postagens curtidas do perfil devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -906,7 +935,7 @@ def get_profile_commented_posts_r(profile_id):
 
         return jsonify(result), 200
     except Exception as e:
-        print('Erro ao recuperar outras postagens comentadas do perfil')
+        print(f'Erro ao recuperar outras postagens comentadas do perfil: {e}')
         return jsonify({'error': 'Não foi possível recuperar outras postagens comentadas do perfil devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -932,7 +961,7 @@ def get_profile_shared_posts_r(profile_id):
 
         return jsonify(result), 200
     except Exception as e:
-        print('Erro ao recuperar outras postagens compartilhadas do perfil')
+        print(f'Erro ao recuperar outras postagens compartilhadas do perfil: {e}')
         return jsonify({'error': 'Não foi possível recuperar outras postagens compartilhadas do perfil devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -958,7 +987,7 @@ def get_profile_tag_posts_r(profile_id):
 
         return jsonify(result), 200
     except Exception as e:
-        print('Erro ao recuperar outras postagens em que o perfil foi marcado')
+        print(f'Erro ao recuperar outras postagens em que o perfil foi marcado: {e}')
         return jsonify({'error': 'Não foi possível recuperar outras postagens em que o perfil foi marcado devido a um erro no nosso servidor.'}), 500
     finally:
         if con:

@@ -1075,6 +1075,49 @@ def check_profile_complaint(con, author_id, profile_id):
           print(f"Erro ao conferir denúncia do perfil: {e}")
           return None
 
+def insert_search(con, text, profile_id):
+     try:
+          with con.cursor() as cursor:
+               date = datetime.now()
+               sql = "INSERT INTO pesquisa (texto, data_pesquisa, fk_perfil_id_perfil) VALUES (%s, %s)"
+               cursor.execute(sql, (text, date, profile_id))
+
+          return text
+     except Exception as e:
+          con.rollback()
+          print(f"Erro ao inserir pesquisa: {e}")
+          return 
+     
+def get_search_sugestions(con, profile_id):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               sql_all_favorites = """
+                    SELECT *, COUNT(*) AS numero_pesquisas 
+                    FROM pesquisa 
+                    ORDER BY numero_pesquisas DESC, texto ASC
+                    GROUP BY texto
+                    LIMIT 3   
+               """
+               cursor.execute(sql_all_favorites)
+               all_favorites = cursor.fetchall()
+
+               sql_profile_favorites = """
+                    SELECT * 
+                    FROM pesquisa
+                    WHERE fk_perfil_id_perfil = %s
+                    ORDER BY data_pesquisa DESC 
+                    LIMIT 5
+               """
+               cursor.execute(sql_profile_favorites, (profile_id,))
+               profile_favorites = cursor.fetchall()
+
+               result = all_favorites + profile_favorites
+               
+          return result
+     except Exception as e:
+          print(f"Erro ao recuperar sugestões de pesquisa do usuário")
+          return None
+
 def insert_sharing(con, caption, post_id, profile_id, shared_profiles_ids):
      if not shared_profiles_ids:
           return False

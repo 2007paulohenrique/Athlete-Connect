@@ -122,6 +122,7 @@ CREATE TABLE IF NOT EXISTS usuario (
 CREATE TABLE IF NOT EXISTS pesquisa (
     id_pesquisa int PRIMARY KEY AUTO_INCREMENT,
     texto varchar(50) NOT NULL,
+    data_pesquisa datetime NOT NULL,
     fk_perfil_id_perfil int NOT NULL,
     FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil)
 );

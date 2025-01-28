@@ -1,7 +1,7 @@
 import styles from "./SearchInput.module.css";
 import searchIcon from "../../img/icons/socialMedia/searchIcon.png"
 
-function SearchInput({ name, handleChange, maxLength, placeholder, haveSubmit = false, value }) {
+function SearchInput({ name, handleChange, maxLength, placeholder, haveSubmit = false, value, sugestions = [] }) {
     return (
         <div className={styles.search_input}>
             {haveSubmit ? (
@@ -14,7 +14,15 @@ function SearchInput({ name, handleChange, maxLength, placeholder, haveSubmit = 
                 </label>
             )}
 
-            <input type="text" name={name} id={name} onChange={handleChange} maxLength={maxLength} placeholder={placeholder} value={value || ""}/>
+            <input list={sugestions.length !== 0 ? `${name}Sugestions` : ""} type="text" name={name} id={name} onChange={handleChange} maxLength={maxLength} placeholder={placeholder} value={value || ""}/>
+            
+            {sugestions.length !== 0 && 
+                <datalist id={`${name}Sugestions`}>
+                    {sugestions.map(text => 
+                        <option value={text}/>
+                    )}
+                </datalist>
+            }
         </div>
     );
 }

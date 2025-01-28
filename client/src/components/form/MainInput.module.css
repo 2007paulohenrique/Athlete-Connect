@@ -18,17 +18,10 @@
     margin-bottom: 0.5em;
 }
 
-:where(.text_field, .checkbox_field) > span > label {
+.text_field > span > label {
     height: max-content;
     letter-spacing: 0.5px;
-}
-
-.text_field > span > label {
     font-size: 1.2em;
-}
-
-.checkbox_field > span > label {
-    font-size: 0.65em;
 }
 
 .text_field > input {

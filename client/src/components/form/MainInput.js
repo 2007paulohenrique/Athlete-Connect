@@ -30,6 +30,7 @@ function MainInput({ type, name, labelText, placeholder, maxLength, alertMessage
             {type !== "checkbox" && 
                 <>
                     <input type={type} name={name} id={name} placeholder={placeholder} maxLength={maxLength} onChange={handleChange} value={value || ""}/>
+                    
                     <p className={styles.alert} ref={alertRef}>{alertMessage}</p>
                 </>
             }
