@@ -100,7 +100,7 @@ function SearchPage() {
         setProfilesLoading(true);
 
         try {
-            const resp = await axios.get(`http://localhost:5000/search/profiles/${text}?offset=${profilesOffset}&limit=${10}`);
+            const resp = await axios.get(`http://localhost:5000/search/profiles/${text}?offset=${profilesOffset}`);
             const data = resp.data;
     
             if (data.error) {

@@ -37,8 +37,8 @@ function Profile() {
     const [postsLoading, setPostsLoading] = useState(false);
     const [postsFullScreen, setPostsFullScreen] = useState(false);
     const [selectedPostId, setSelectedPostId] = useState(null);
-    const [postsEnd, setPostsEnd] = useState();
-    const [tagPostsEnd, setTagPostsEnd] = useState();
+    const [postsEnd, setPostsEnd] = useState(true);
+    const [tagPostsEnd, setTagPostsEnd] = useState(true);
     const [tagsType, setTagsType] = useState("followers");
     const [followersOffset, setFollowersOffset] = useState(0);
     const [followedsOffset, setFollowedsOffset] = useState(0);
@@ -47,7 +47,7 @@ function Profile() {
     const [followersEnd, setFollowersEnd] = useState();
     const [followedsEnd, setFollowedsEnd] = useState();
     const [tagsFullScreen, setTagsFullScreen] = useState(false);
-    const [tags, setTags] = useState({})
+    const [tags, setTags] = useState({followers: [], followeds: []});
 
     const { id } = useParams();
     const location = useLocation();
@@ -66,7 +66,7 @@ function Profile() {
         setFollowersLoading(true);
 
         try {
-            const resp = await axios.get(`http://localhost:5000/profiles/${id}/followers?offset=${followersOffset}&limit=${10}`);
+            const resp = await axios.get(`http://localhost:5000/profiles/${id}/followers?offset=${followersOffset}`);
             const data = resp.data;
     
             if (data.error) {
@@ -96,7 +96,7 @@ function Profile() {
         setFollowedsLoading(true);
 
         try {
-            const resp = await axios.get(`http://localhost:5000/profiles/${id}/followeds?offset=${followedsOffset}&limit=${10}`);
+            const resp = await axios.get(`http://localhost:5000/profiles/${id}/followeds?offset=${followedsOffset}`);
             const data = resp.data;
     
             if (data.error) {
@@ -107,7 +107,7 @@ function Profile() {
                     return;
                 }
 
-                setTags(prev => ({...prev, followeds: [...(prev.followeds || []), ...data]}));
+                setTags(prevTags => ({...prevTags, followeds: [...(prevTags.followeds || []), ...data]}));
                 setFollowedsOffset(prevOffset => prevOffset + 10);   
             }
         } catch (err) {
@@ -251,6 +251,9 @@ function Profile() {
                 setPostsEnd(posts.length < postsLimit.current);
                 setTagPostsEnd(tagPosts.length < postsLimit.current);
 
+                loadFollowers(data.id_perfil);
+                loadFolloweds(data.id_perfil);
+
                 fetchComplaintReasons(setComplaintReasons, navigate);
             }    
         } catch (err) {
@@ -258,7 +261,7 @@ function Profile() {
     
             console.error('Erro ao fazer a requisição:', err);
         }    
-    }, [id, navigate])    
+    }, [id, loadFolloweds, loadFollowers, navigate])    
 
     useEffect(() => {
         const viwerId = profileId || localStorage.getItem("athleteConnectProfileId");
@@ -437,45 +440,45 @@ function Profile() {
     useEffect(() => {
         if (!tagsFullScreen && postsToShowType === "posts") {
 
-            const handleScrollPosts = () => handleScroll(() => loadPosts(viwer.id_perfil));
+            const handleScrollPosts = () => handleScroll(() => loadPosts(profile.id_perfil));
 
             window.addEventListener("scroll", handleScrollPosts);
             
             return () => window.removeEventListener("scroll", handleScrollPosts);
         }
-    }, [loadPosts, handleScroll, postsToShowType, viwer.id_perfil, tagsFullScreen]);
+    }, [loadPosts, handleScroll, postsToShowType, profile.id_perfil, tagsFullScreen]);
 
     useEffect(() => {
         if (!tagsFullScreen && postsToShowType === "tagPosts") {   
 
-            const handleScrollTagPosts = () => handleScroll(() => loadTagPosts(viwer.id_perfil));
+            const handleScrollTagPosts = () => handleScroll(() => loadTagPosts(profile.id_perfil));
 
             window.addEventListener("scroll", handleScrollTagPosts);
             
             return () => window.removeEventListener("scroll", handleScrollTagPosts);
         }
-    }, [handleScroll, postsToShowType, loadTagPosts, viwer.id_perfil, tagsFullScreen]);
+    }, [handleScroll, postsToShowType, loadTagPosts, profile.id_perfil, tagsFullScreen]);
 
     useEffect(() => {
         if (tagsFullScreen && tagsType === "followers") {
 
-            const handleScrollFollowers = () => handleScroll(() => loadFollowers(viwer.id_perfil));
+            const handleScrollFollowers = () => handleScroll(() => loadFollowers(profile.id_perfil));
 
             window.addEventListener("scroll", handleScrollFollowers);
             
             return () => window.removeEventListener("scroll", handleScrollFollowers);
         }
-    }, [handleScroll, tagsType, loadFollowers, viwer.id_perfil, tagsFullScreen]);
+    }, [handleScroll, tagsType, loadFollowers, profile.id_perfil, tagsFullScreen]);
 
     useEffect(() => {
         if (tagsFullScreen && tagsType === "followeds") {   
-            const handleScrollFolloweds = () => handleScroll(() => loadFolloweds(viwer.id_perfil));
+            const handleScrollFolloweds = () => handleScroll(() => loadFolloweds(profile.id_perfil));
 
             window.addEventListener("scroll", handleScrollFolloweds);
             
             return () => window.removeEventListener("scroll", handleScrollFolloweds);
         }
-    }, [handleScroll, tagsType, loadFolloweds, viwer.id_perfil, tagsFullScreen]);
+    }, [handleScroll, tagsType, loadFolloweds, profile.id_perfil, tagsFullScreen]);
 
     function handlePostClick(postId) {
         setSelectedPostId(postId)
@@ -626,9 +629,14 @@ function Profile() {
                                         </>
                                     ) : (
                                         <>
-                                            <button className={styles.follow_button}>Editar perfil</button>
+                                            <button className={styles.follow_button} onClick={() => navigate("/myProfile/config")}>Editar perfil</button>
 
-                                            <button className={styles.follow_button}>Editar preferências</button>
+                                            <button 
+                                                className={styles.follow_button}
+                                                onClick={() => navigate("/profilePreferences", {state: {prevPreferences: profile.preferences, modifyProfile: profile}})}
+                                            >
+                                                Editar preferências
+                                            </button>
 
                                             <button className={styles.follow_button}>Adicionar formação</button>
                                         </>
@@ -715,7 +723,7 @@ function Profile() {
                         <SearchResultsContainer
                             results={tagsType === "followers" ? tags.followers : tags.followeds}   
                             resultType="profiles"
-                            notFoundText={tagsType === "followers" ? `${profile.nome} não possui nenhum seguidor.` : `${profile.nome} não segue ninguém`}
+                            notFoundText={tagsType === "followers" ? `${profile.nome} não possui nenhum seguidor.` : `${profile.nome} não segue ninguém.`}
                             tagsLoading={tagsType === "followers" ? followersLoading : followedsLoading}
                         />
                     :

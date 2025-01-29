@@ -409,6 +409,7 @@ def put_profile_preferences(con, profile_id, sports_ids):
                cursor.execute(sql_delete, (profile_id,))    
 
                if not sports_ids:
+                    con.commit()
                     return True
                
                data = [(profile_id, sport_id) for sport_id in sports_ids]
@@ -1436,7 +1437,8 @@ def get_tags(con, offset, text, limit=None):
                     """
                else:
                     sql = """
-                         SELECT p.id_perfil, p.nome, m.caminho, COUNT(s.fk_perfil_id_seguidor) AS numero_seguidores
+                         SELECT p.id_perfil, p.nome, m.caminho, 
+                         (SELECT COUNT(*) FROM segue WHERE fk_perfil_id_seguido = p.id_perfil) AS numero_seguidores
                          FROM perfil p
                          LEFT JOIN midia m ON m.id_midia = p.fk_midia_id_midia
                          LEFT JOIN segue s ON s.fk_perfil_id_seguido = p.id_perfil
@@ -1451,6 +1453,54 @@ def get_tags(con, offset, text, limit=None):
           return result
      except Exception as e:
           print(f"Erro ao recuperar tags dos perfis: {e}")
+          return None
+
+def get_followers_tags(con, offset, profile_id):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               LIMIT = 10
+
+               sql = """
+                    SELECT p.id_perfil, p.nome, m.caminho, 
+                    (SELECT COUNT(*) FROM segue WHERE fk_perfil_id_seguido = p.id_perfil) AS numero_seguidores
+                    FROM perfil p
+                    LEFT JOIN midia m ON m.id_midia = p.fk_midia_id_midia
+                    INNER JOIN segue s ON s.fk_perfil_id_seguidor = p.id_perfil
+                    WHERE s.fk_perfil_id_seguido = %s
+                    GROUP BY p.id_perfil
+                    LIMIT %s OFFSET %s
+               """
+               cursor.execute(sql, (profile_id, LIMIT, offset))
+
+               result = cursor.fetchall()
+
+          return result
+     except Exception as e:
+          print(f"Erro ao recuperar seguidores do perfil: {e}")
+          return None
+
+
+def get_followeds_tags(con, offset, profile_id):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               LIMIT = 10
+
+               sql = """
+                    SELECT p.id_perfil, p.nome, m.caminho, 
+                    (SELECT COUNT(*) FROM segue WHERE fk_perfil_id_seguido = p.id_perfil) AS numero_seguidores
+                    FROM perfil p
+                    LEFT JOIN midia m ON m.id_midia = p.fk_midia_id_midia
+                    INNER JOIN segue s ON s.fk_perfil_id_seguidor = %s AND s.fk_perfil_id_seguido = p.id_perfil
+                    GROUP BY p.id_perfil
+                    LIMIT %s OFFSET %s
+               """
+               cursor.execute(sql, (profile_id, LIMIT, offset))
+
+               result = cursor.fetchall()
+
+          return result
+     except Exception as e:
+          print(f"Erro ao recuperar perfis seguidos: {e}")
           return None
 
 def get_search_result(con, text):

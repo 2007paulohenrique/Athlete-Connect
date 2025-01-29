@@ -10,7 +10,6 @@ export default async function fetchSearchSugestions(navigate, setSearchSugestion
         if (data.error) {
             navigate("/errorPage", {state: {error: data.error}});
         } else {
-            console.log(data)
             setSearchSugestions(data);
         }
     } catch (err) {

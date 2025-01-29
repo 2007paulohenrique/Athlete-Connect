@@ -7,6 +7,7 @@ import NewPost from "./components/pages/NewPost";
 import { ProfileProvider } from './ProfileContext';
 import ErrorPage from "./components/pages/ErrorPage";
 import Profile from "./components/pages/Profile";
+import Config from "./components/pages/Config";
 import SearchPage from "./components/pages/SearchPage";
 
 function App() {
@@ -53,6 +54,11 @@ function App() {
           <Route 
             path="/myProfile" 
             element={<Profile/>} 
+          />
+
+          <Route 
+            path="/myProfile/config" 
+            element={<Config/>} 
           />
 
           <Route 

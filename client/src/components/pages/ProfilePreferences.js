@@ -6,6 +6,7 @@ import SubmitButton from "../form/SubmitButton";
 import { useProfile } from '../../ProfileContext';
 import axios from "axios"
 import loading from "../../img/animations/loading.svg";
+import ConfirmationBox from "../layout/ConfirmationBox";
 
 function ProfilePreferences() {
     const [sports, setSports] = useState([]);
@@ -14,6 +15,7 @@ function ProfilePreferences() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const {setProfileId} = useProfile(); 
     const [isModifyPreferences, setIsModifyPreferences] = useState(false);
+    const [showConfirmation, setShowConfirmation] = useState(false);
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -52,9 +54,10 @@ function ProfilePreferences() {
     }, [fetchSports, location, navigate]);
     
     function handleOnClick(sport) {
+        console.log(profilePreferences)
         setProfilePreferences(prevPreferences => {
             if (prevPreferences.some(prevSport => String(sport.id_esporte) === String(prevSport.id_esporte))) {
-                return prevPreferences.filter(item => item !== sport);
+                return prevPreferences.filter(prevSport => String(sport.id_esporte) !== String(prevSport.id_esporte));
             } else {
                 return [...prevPreferences, sport];
             }
@@ -68,10 +71,14 @@ function ProfilePreferences() {
 
         setIsSubmitting(true);
 
-        if (!isModifyPreferences) {
-            checkProfile();
+        if (profilePreferences.length === 0) {
+            setShowConfirmation(true)
         } else {
-            modifyPreferences();
+            if (!isModifyPreferences) {
+                checkProfile();
+            } else {
+                modifyPreferences();
+            }
         }
     }
 
@@ -132,7 +139,7 @@ function ProfilePreferences() {
 
                 navigate("/errorPage", {state: {error: data.error}})
             } else {                
-                navigate("/myProfile", {state: {message: "Perfil criado com sucesso! Aproveite o Athlete Connect.", type: "success"}});
+                navigate("/myProfile", {state: {message: "Preferências modificadas com sucesso.", type: "success"}});
             }
         } catch (err) {
             setIsSubmitting(false);
@@ -177,6 +184,14 @@ function ProfilePreferences() {
 
     return (
         <main className={styles.profile_preferences_page}>
+            {showConfirmation && 
+                <ConfirmationBox 
+                    text="As preferências são de grande importância para recomendarmos conteúdo para você. Deseja criar seu perfil sem ter nenhuma preferência?" 
+                    handleConfirmation={!isModifyPreferences ? checkProfile : modifyPreferences} 
+                    setShowConfirmation={setShowConfirmation}
+                />
+            }
+
             <header className={styles.title_section}> 
                 <h1>Suas Preferências</h1>
 

@@ -93,7 +93,7 @@
     border: 2px solid var(--dark-theme-color);
     background-color: var(--ligth-theme-color);
     border-radius: 15px;
-    padding: 0.3em;
+    padding: 0.3em 0.6em;
     display: flex;
     align-items: center;
     gap: 0.6em;
@@ -206,7 +206,7 @@
 }
 
 .profile_posts > p {
-    margin: 0 auto;
+    margin: auto auto 0;
     width: max-content;
 }
 
@@ -270,6 +270,7 @@
     align-items: center;
     background-color: var(--dark-bg-color);
     gap: 1.5em;
+    min-height: 100dvh;
 }
 
 @media screen and (max-width: 720px) {

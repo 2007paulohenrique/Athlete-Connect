@@ -214,6 +214,7 @@ def put_profile_preferences_r(profile_id):
         
         preferences = request.form.getlist('preferences')
         preferences = [int(pref) for pref in preferences]
+        print(preferences)
 
         if not put_profile_preferences(con, profile_id, preferences):
             print('Erro ao modificar preferências do perfil.')
@@ -420,6 +421,56 @@ def get_profile_route(profile_id):
     except Exception as e:
         print(f'Erro ao recuperar perfil: {e}')
         return jsonify({'error': 'Não foi possível recuperar o perfil devido a um erro no nosso servidor.'}), 500
+    finally:
+        if con:
+            close_connection(con)
+
+@app.route('/profiles/<int:profile_id>/followers', methods=['GET'])
+def get_profile_followers(profile_id):
+    try:
+        con = open_connection(*con_params)
+
+        if con is None:
+            print('Erro ao abrir conexão com banco de dados.')
+            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+
+        offset = int(request.args.get('offset', 0))
+
+        followers = get_followers_tags(con, offset, profile_id)
+    
+        if followers is None:
+            print('Erro ao recuperar seguidores do perfil.')
+            return jsonify({'error': 'Não foi possível recuperar os seguidores do perfil devido a um erro no nosso servidor.'}), 404  
+      
+        return jsonify(followers), 200
+    except Exception as e:
+            print(f'Erro ao recuperar seguidores do perfil: {e}')
+            return jsonify({'error': 'Não foi possível recuperar os seguidores do perfil devido a um erro no nosso servidor.'}), 404  
+    finally:
+        if con:
+            close_connection(con)
+
+@app.route('/profiles/<int:profile_id>/followeds', methods=['GET'])
+def get_profile_followeds(profile_id):
+    try:
+        con = open_connection(*con_params)
+
+        if con is None:
+            print('Erro ao abrir conexão com banco de dados.')
+            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+
+        offset = int(request.args.get('offset', 0))
+
+        followeds = get_followeds_tags(con, offset, profile_id)
+    
+        if followeds is None:
+            print('Erro ao recuperar perfis seguidos.')
+            return jsonify({'error': 'Não foi possível recuperar os perfis seguidos devido a um erro no nosso servidor.'}), 404  
+      
+        return jsonify(followeds), 200
+    except Exception as e:
+            print(f'Erro ao recuperar perfis seguidos: {e}')
+            return jsonify({'error': 'Não foi possível recuperar os perfis seguidos devido a um erro no nosso servidor.'}), 404  
     finally:
         if con:
             close_connection(con)
