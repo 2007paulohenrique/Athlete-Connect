@@ -1,0 +1,16 @@
+.exit_page_bar {
+    width: 100%;
+    padding: 0.8em 0;
+    text-align: center;
+    position: fixed;
+    top: -2em;
+    left: 0;
+    background-color: var(--dark-font-color);
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    z-index: 2
+}
+
+.exit_page_bar:hover {
+    transform: translateY(2em);
+}

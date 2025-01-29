@@ -52,7 +52,7 @@ function Login() {
                     navigate("/errorPage", {state: {error: data.error}});
                 }
             } else {
-                const updatedProfile = { ...profile, confirmedNameSignUp: profile.nameSignUp };
+                const updatedProfile = {...profile, confirmedNameSignUp: profile.nameSignUp};
             
                 setProfile(updatedProfile);
 

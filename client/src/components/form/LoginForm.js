@@ -14,13 +14,13 @@ function LoginForm({ isLoginForm , handleSubmit, handleChangeForm, isLogin = fal
     function handleOnChangeSignUp(e) {
         e.target.value = e.target.value.replace(/\s+/g, "");
 
-        setProfile({ ...profile, [e.target.name]: e.target.value });
+        setProfile(prevProfile => ({...prevProfile, [e.target.name]: e.target.value}));
     }
 
     function handleOnChangeLogin(e) {
         e.target.value = e.target.value.replace(/\s+/g, "");
 
-        setProfile({ ...profile, [e.target.name]: e.target.value });
+        setProfile(prevProfile => ({...prevProfile, [e.target.name]: e.target.value}));
         resetErrors();
     }
 

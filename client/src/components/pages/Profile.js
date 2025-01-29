@@ -54,6 +54,12 @@ function Profile() {
     const navigate = useNavigate();
     const postsLimit = useRef(24);
 
+    useEffect(() => {
+        const msg = location?.state
+        
+        if (msg) setMessageWithReset(msg.message, msg.type)
+    }, [location])
+
     const loadFollowers = useCallback(async (id) => {
         if (followersLoading || followersEnd) return;
 
@@ -71,7 +77,7 @@ function Profile() {
                     return;
                 }
 
-                setTags(prev => ({...prev, followers: [...(prev.followers || []), ...data]}));
+                setTags(prevTags => ({...prevTags, followers: [...(prevTags.followers || []), ...data]}));
                 setFollowersOffset(prevOffset => prevOffset + 10);   
             }
         } catch (err) {
@@ -140,10 +146,10 @@ function Profile() {
                     }))
                 }));
 
-                setProfile({
-                    ...profile, 
-                    posts: [...profile.posts, ...formattedPosts],
-                }); 
+                setProfile(prevProfile => ({
+                    ...prevProfile, 
+                    posts: [...prevProfile.posts, ...formattedPosts],
+                })); 
 
                 setPostsOffset(prevOffset => postsFullScreen ? prevOffset + 6 : prevOffset + 24);   
             }
@@ -183,12 +189,12 @@ function Profile() {
                     }))
                 }));
 
-                setProfile({
-                    ...profile,
-                    tagPosts: [...profile.tagPosts, ...formattedPosts]     
-                }); 
+                setProfile(prevProfile => ({
+                    ...prevProfile,
+                    tagPosts: [...prevProfile.tagPosts, ...formattedPosts]     
+                })); 
 
-                setTagPostsOffset((prevOffset) => postsFullScreen ? prevOffset + 6 : prevOffset + 24);   
+                setTagPostsOffset(prevOffset => postsFullScreen ? prevOffset + 6 : prevOffset + 24);   
             }
         } catch (err) {
             navigate("/errorPage", {state: {error: err.message}});
@@ -211,7 +217,7 @@ function Profile() {
 
             if (data.error) {
                 if (resp.status === 204) {
-                    navigate(-1, {state: {message: "Perfil desativado.", type: "error"}})
+                    navigate(id ? -1 : "/login", {state: {message: data.error, type: "error"}})
                 } else {
                     navigate("/errorPage", {state: {error: data.error}})                
                 }
@@ -242,6 +248,9 @@ function Profile() {
                 setFollowersNumber(data.followers.length);
                 setPostsToShowType("posts");
 
+                setPostsEnd(posts.length < postsLimit.current);
+                setTagPostsEnd(tagPosts.length < postsLimit.current);
+
                 fetchComplaintReasons(setComplaintReasons, navigate);
             }    
         } catch (err) {
@@ -257,39 +266,39 @@ function Profile() {
         if (id === viwerId) navigate("/myProfile");
 
         fetchUser(viwerId);
-    }, [fetchUser, id, navigate, profileId]) 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []) 
     
     const fetchProfile = useCallback(async (id) => {
-            try {
-                const resp = await axios.get(`http://localhost:5000/profiles/${id}`);
-                const data = resp.data;
-                
-                if (data.error) {
-                    if (resp.status === 404 || resp.status === 204) {
-                        navigate("/login", {state: {message: data.error, type: "error"}});
-                    } else {
-                        navigate("/errorPage", {state: {error: data.error}})
-                    }
+        try {
+            const resp = await axios.get(`http://localhost:5000/profiles/${id}`);
+            const data = resp.data;
+            
+            if (data.error) {
+                if (resp.status === 404 || resp.status === 204) {
+                    navigate("/login", {state: {message: data.error, type: "error"}});
                 } else {
-                    setViewer(data);        
+                    navigate("/errorPage", {state: {error: data.error}})
                 }
-            } catch (err) {
-                navigate("/errorPage", {state: {error: err.message}});
-        
-                console.error('Erro ao fazer a requisição:', err);
-            }
-        }, [navigate]);   
-        
-        useEffect(() => {
-            const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
-    
-            if (!confirmedProfileId) {
-                navigate("/login");
             } else {
-                fetchProfile(confirmedProfileId);
+                setViewer(data);        
             }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        }, []);
+        } catch (err) {
+            navigate("/errorPage", {state: {error: err.message}});
+    
+            console.error('Erro ao fazer a requisição:', err);
+        }
+    }, [navigate]);   
+    
+    useEffect(() => {
+        const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
+
+        if (!confirmedProfileId) {
+            navigate("/login");
+        } else {
+            fetchProfile(confirmedProfileId);
+        }
+    }, [fetchProfile, navigate, profileId]);
 
     function setMessageWithReset(newMessage, type) {
         setMessage(null);
@@ -305,10 +314,8 @@ function Profile() {
         // requisição para mandar uma notificação ao perfil para permitir o follow
     }
 
-    function followProfile() {
-        const followerId = profileId || localStorage.getItem("athleteConnectProfileId");
-    
-        toggleFollow(followerId);
+    function followProfile() {    
+        toggleFollow(viwer.id_perfil);
     }
 
     const toggleFollow = async (followerId) => {
@@ -327,7 +334,7 @@ function Profile() {
             } else {
                 setFollowersNumber(profile.isFollowed ? followersNumber - 1 : followersNumber + 1);
         
-                setProfile({...profile, isFollowed: !profile.isFollowed});
+                setProfile(prevProfile => ({...prevProfile, isFollowed: !prevProfile.isFollowed}));
             }
         } catch (err) {
             navigate("/errorPage", {state: {error: err.message}})
@@ -352,10 +359,9 @@ function Profile() {
     const createComplaint = async () => {
         try {
             const formData = new FormData();
-            const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
     
             formData.append("description", complaintDescription.trim());
-            formData.append("authorId", confirmedProfileId);
+            formData.append("authorId", viwer.id_perfil);
             profileComplaintReasons.forEach(reason => formData.append("complaintReasonsIds", reason.id_motivo_denuncia));
     
             const resp = await axios.post(`http://localhost:5000/profiles/${id}/complaint`, formData, {
@@ -366,7 +372,7 @@ function Profile() {
             if (data.error) {
                 navigate("/errorPage", {state: {error: data.error}})
             } else {
-                setProfile({...profile, isComplainted: !profile.isComplainted})
+                setProfile(prevProfile => ({...prevProfile, isComplainted: !prevProfile.isComplainted}));
     
                 setMessageWithReset("Perfil denunciado! Aguarde para analisarmos a denúncia", "success");
             }
@@ -429,52 +435,47 @@ function Profile() {
     }, [postsFullScreen]);
 
     useEffect(() => {
-        if (postsToShowType === "posts") {
-            const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
+        if (!tagsFullScreen && postsToShowType === "posts") {
 
-            const handleScrollPosts = () => handleScroll(() => loadPosts(confirmedProfileId));
+            const handleScrollPosts = () => handleScroll(() => loadPosts(viwer.id_perfil));
 
             window.addEventListener("scroll", handleScrollPosts);
             
             return () => window.removeEventListener("scroll", handleScrollPosts);
         }
-    }, [loadPosts, handleScroll, postsToShowType, profileId]);
+    }, [loadPosts, handleScroll, postsToShowType, viwer.id_perfil, tagsFullScreen]);
 
     useEffect(() => {
-        if (postsToShowType === "tagPosts") {   
-            const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
+        if (!tagsFullScreen && postsToShowType === "tagPosts") {   
 
-            const handleScrollTagPosts = () => handleScroll(() => loadTagPosts(confirmedProfileId));
+            const handleScrollTagPosts = () => handleScroll(() => loadTagPosts(viwer.id_perfil));
 
             window.addEventListener("scroll", handleScrollTagPosts);
             
             return () => window.removeEventListener("scroll", handleScrollTagPosts);
         }
-    }, [handleScroll, postsToShowType, loadTagPosts, profileId]);
+    }, [handleScroll, postsToShowType, loadTagPosts, viwer.id_perfil, tagsFullScreen]);
 
     useEffect(() => {
-        if (tagsType === "followers") {
-            const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
+        if (tagsFullScreen && tagsType === "followers") {
 
-            const handleScrollFollowers = () => handleScroll(() => loadFollowers(confirmedProfileId));
+            const handleScrollFollowers = () => handleScroll(() => loadFollowers(viwer.id_perfil));
 
             window.addEventListener("scroll", handleScrollFollowers);
             
             return () => window.removeEventListener("scroll", handleScrollFollowers);
         }
-    }, [handleScroll, profileId, tagsType, loadFollowers]);
+    }, [handleScroll, tagsType, loadFollowers, viwer.id_perfil, tagsFullScreen]);
 
     useEffect(() => {
-        if (tagsType === "followeds") {   
-            const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
-
-            const handleScrollFolloweds = () => handleScroll(() => loadFolloweds(confirmedProfileId));
+        if (tagsFullScreen && tagsType === "followeds") {   
+            const handleScrollFolloweds = () => handleScroll(() => loadFolloweds(viwer.id_perfil));
 
             window.addEventListener("scroll", handleScrollFolloweds);
             
             return () => window.removeEventListener("scroll", handleScrollFolloweds);
         }
-    }, [handleScroll, profileId, tagsType, loadFolloweds]);
+    }, [handleScroll, tagsType, loadFolloweds, viwer.id_perfil, tagsFullScreen]);
 
     function handlePostClick(postId) {
         setSelectedPostId(postId)
@@ -495,12 +496,12 @@ function Profile() {
 
     const setPosts = (updater, type) => {
         if (type === "posts") {
-            setProfile((prevProfile) => ({
+            setProfile(prevProfile => ({
                 ...prevProfile,
                 posts: updater(prevProfile.posts),
             }));
         } else if (type === "tagPosts") {
-            setProfile((prevProfile) => ({
+            setProfile(prevProfile => ({
                 ...prevProfile,
                 tagPosts: updater(prevProfile.tagPosts),
             }));

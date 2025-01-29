@@ -13,6 +13,7 @@ import PostsFullScreen from "../layout/PostsFullScreen";
 import formatDate from "../../utils/DateFormatter";
 import { useProfile } from "../../ProfileContext";
 import Message from "../layout/Message";
+import fetchSearchSugestions from "../../utils/profile/FetchSearchSugestions";
 
 function SearchPage() {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -32,6 +33,7 @@ function SearchPage() {
     const [postsFullScreen, setPostsFullScreen] = useState(false);
     const [selectedPostId, setSelectedPostId] = useState(null);
     const [message, setMessage] = useState({});
+    const [searchSugestions, setSearchSugestions] = useState([]);
 
     const postsLimit = useRef(24);
     const navigate = useNavigate();
@@ -80,7 +82,7 @@ function SearchPage() {
                 }));
 
                 setPostsResult(prevPosts => [...prevPosts, ...formattedPosts]);
-                setPostsOffset((prevOffset) => postsFullScreen ? prevOffset + 6 : prevOffset + 24);   
+                setPostsOffset(prevOffset => postsFullScreen ? prevOffset + 6 : prevOffset + 24);   
             }   
         } catch (err) {
             navigate("/errorPage", {state: {error: err.message}});
@@ -104,9 +106,9 @@ function SearchPage() {
             if (data.error) {
                 navigate("/errorPage", {state: {error: data.error}});
             } else {
-                setResult({...result, profiles: {...result.profiles, results: [...result.profiles.results, ...data]}});
+                setResult(prevResult => ({...prevResult, profiles: {...prevResult.profiles, results: [...prevResult.profiles.results, ...data]}}));
 
-                setProfilesOffset((prevOffset) => prevOffset + 10);   
+                setProfilesOffset(prevOffset => prevOffset + 10);   
             }
         } catch (err) {
             navigate("/errorPage", {state: {error: err.message}});
@@ -118,6 +120,20 @@ function SearchPage() {
     }, [navigate, profilesLoading, profilesOffset, result, text]);
     
     const fetchSearchResult = useCallback(async () => {
+        if (!text) {
+            setResult({
+                hashtags: {results: [], notFoundText: "Nenhuma hashtag encontrada."},
+                profiles: {results: [], notFoundText: "Nenhum perfil encontrado."},
+                sports: {results: [], notFoundText: "Nenhum esporte encontrado."},
+                posts: {notFoundText: "Nenhuma postagem encontrada."},
+            });
+            setPostsResult([]);
+            setPostsOffset(0);
+            setProfilesOffset(0);
+
+            return;
+        }
+        
         try {
             const viwerId = profileId || localStorage.getItem("athleteConnectProfileId");
 
@@ -127,13 +143,13 @@ function SearchPage() {
             if (data.error) {
                 navigate("/errorPage", {state: {error: data.error}});
             } else {
-                setResult({
-                    ...result,
+                setResult(prevResult => ({
+                    ...prevResult,
                     hashtags: {results: data.hashtags, notFoundText: "Nenhuma hashtag encontrada."},
                     profiles: {results: data.profiles, notFoundText: "Nenhum perfil encontrado."},
                     sports: {results: data.sports, notFoundText: "Nenhum esporte encontrado."},
                     posts: {notFoundText: "Nenhuma postagem encontrada."},
-                });
+                }));
 
                 const formattedPosts = data.posts.map(post => ({
                     ...post,
@@ -144,10 +160,11 @@ function SearchPage() {
                     }))
                 }));
 
+                fetchSearchSugestions(navigate, setSearchSugestions, profileId);
+                
                 setPostsResult(formattedPosts);
-
-                setPostsOffset(prevOffset => prevOffset + 24);
-                setProfilesOffset(prevOffset => prevOffset + 10);
+                setPostsOffset(24);
+                setProfilesOffset(10);
             }
         } catch (err) {
             navigate("/errorPage", {state: {error: err.message}});
@@ -232,6 +249,11 @@ function SearchPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [location.pathname])
 
+    useEffect(() => {        
+        fetchSearchSugestions(navigate, setSearchSugestions, profileId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     return (
         <>
             {!postsFullScreen ?
@@ -249,6 +271,7 @@ function SearchPage() {
                                 placeholder="Insira o texto da pesquisa" 
                                 haveSubmit={true}
                                 value={searchText}
+                                sugestions={searchSugestions}
                             />
                         </form>
 
@@ -262,9 +285,9 @@ function SearchPage() {
                         <SearchNavBar selectedType={type}/>
 
                         <section className={styles.result}>
-                            {(resultToShow?.results?.length || postsResult?.length) &&
+                            {((resultToShow?.results && resultToShow?.results?.length !== 0) || (postsResult && postsResult?.length !== 0)) &&
                                 <p className={styles.results_number}>{`${formatNumber(resultToShow?.results?.length || postsResult?.length)} resultado${resultToShow?.results?.length === 1 ? "" : "s"}:`}</p>
-                            }
+                            } 
                         
                             {type === "posts" ? (
                                 <div className={styles.posts}>

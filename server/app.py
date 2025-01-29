@@ -203,6 +203,30 @@ def post_profile():
         if con:
             close_connection(con)
 
+@app.route('/profiles/<int:profile_id>/preferences', methods=['PUT'])
+def put_profile_preferences_r(profile_id):
+    try:
+        con = open_connection(*con_params)
+
+        if con is None:
+            print('Erro ao abrir conexão com banco de dados')
+            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+        
+        preferences = request.form.getlist('preferences')
+        preferences = [int(pref) for pref in preferences]
+
+        if not put_profile_preferences(con, profile_id, preferences):
+            print('Erro ao modificar preferências do perfil.')
+            return jsonify({'error': 'Não foi possível modificar suas preferências devido a um erro no nosso servidor.'}), 500     
+        
+        return jsonify({'profileId': profile_id}), 201
+    except Exception as e:
+        print('Erro ao modificar preferências do perfil: {e}')
+        return jsonify({'error': 'Não foi possível modificar suas preferências devido a um erro no nosso servidor.'}), 500     
+    finally:
+        if con:
+            close_connection(con)
+
 @app.route('/profiles/<int:profile_id>', methods=['PUT'])
 def put_profile_route(profile_id):
     try:

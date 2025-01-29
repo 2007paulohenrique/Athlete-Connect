@@ -59,8 +59,7 @@ function NewPost() {
             if (data.error) {
                 navigate("/errorPage", {state: {error: data.error}});
             } else {
-                const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
-                const filteredData = data.filter(tag => String(tag.id_perfil) !== String(confirmedProfileId) && tag.permissao_marcacao);
+                const filteredData = data.filter(tag => String(tag.id_perfil) !== String(profile.id_perfil) && tag.permissao_marcacao);
 
                 setTags(filteredData);
             }
@@ -71,7 +70,7 @@ function NewPost() {
         } finally {
             setTagsLoading(false);
         }
-    }, [navigate, profileId, searchTextTag]);
+    }, [navigate, profile.id_perfil, searchTextTag]);
 
     const fetchProfile = useCallback(async (id) => {
         try {
@@ -156,7 +155,7 @@ function NewPost() {
     function handleOnChange(e) {
         e.target.value = e.target.value.replace(/(\n\s*){3,}/g, '\n\n').trimStart();
 
-        setPost({ ...post, [e.target.name]: e.target.value });
+        setPost(prevPost => ({...prevPost, [e.target.name]: e.target.value }));
     }
 
     const validateCaption = useCallback(() => {
@@ -195,7 +194,7 @@ function NewPost() {
         if (!(validateCaption() && !mediasLengthError)) return;
         
         if (medias.length >= 1) {  
-            setPost({...post, hashtags: hashtagsInPost, tags: tagsInPost});
+            setPost(prevPost => ({...prevPost, hashtags: hashtagsInPost, tags: tagsInPost}));
 
             createPost();
         } else {

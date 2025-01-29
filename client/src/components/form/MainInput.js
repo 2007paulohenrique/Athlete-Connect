@@ -16,12 +16,12 @@ function MainInput({ type, name, labelText, placeholder, maxLength, alertMessage
                 {inputIcon && <img src={inputIcon} alt={inputIconAlt}/>}
 
                 <label htmlFor={name}>
-                    {labelText}
+                    <p>{labelText}</p>
                     {type === "checkbox" && (
                         <>
                             <input type={type} name={name} id={name} onChange={handleChange} value={value || ""} checked={checked}/>
 
-                            <span></span>
+                            <span className={styles.slider}></span>
                         </>
                     )}    
                 </label>

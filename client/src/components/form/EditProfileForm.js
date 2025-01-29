@@ -15,7 +15,7 @@ function EditProfileForm({ handleSubmit, profile, setProfile, setSubmitError }) 
             e.target.value = e.target.value.trimStart().replace(/\n+/g, "").replace(/\s+/g, " ")
         }
 
-        setProfile({...profile, [e.target.name]: e.target.type === "checkbox" ? e.target.checked : e.target.value});
+        setProfile(prevProfile => ({...prevProfile, [e.target.name]: e.target.type === "checkbox" ? e.target.checked : e.target.value}));
     }
 
     const validateName = useCallback(() => {
@@ -47,7 +47,7 @@ function EditProfileForm({ handleSubmit, profile, setProfile, setSubmitError }) 
         const blobUrl = URL.createObjectURL(files[0]); 
     
         if (files.length === 1) {
-            setProfile({...profile, blobUrl, photo: files});
+            setProfile(prevProfile => ({...prevProfile, blobUrl, photo: files}));
         }
     }
 
@@ -91,7 +91,7 @@ function EditProfileForm({ handleSubmit, profile, setProfile, setSubmitError }) 
                     <MainInput 
                         type="checkbox" 
                         name="private"  
-                        labelText="Clique abaixo para tornar seu perfil privado, com isso, somente seus seguidores terão acesso às suas publicações e flashes" 
+                        labelText="Clique abaixo para tornar seu perfil privado, com isso, somente seus seguidores terão acesso às suas publicações e flashes." 
                         handleChange={handleOnChange} 
                         value={profile.private}
                         checked={profile.private}
@@ -102,7 +102,7 @@ function EditProfileForm({ handleSubmit, profile, setProfile, setSubmitError }) 
                         name="acceptTerms"  
                         labelText={
                             <>
-                                Clique abaixo para aceitar os <a href="termosECondicoes" target="_blank" rel="noopener noreferrer">termos e condições</a> do Athlete Connect e sua conta
+                                Clique abaixo para aceitar os <a href="termosECondicoes" target="_blank" rel="noopener noreferrer">termos e condições</a> do Athlete Connect e sua conta.
                             </>
                         } 
                         handleChange={handleOnChange} 

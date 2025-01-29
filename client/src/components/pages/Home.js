@@ -50,8 +50,7 @@ function Home() {
             if (data.error) {
                 navigate("/errorPage", {state: {error: data.error}});
             } else {
-                const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
-                const filteredData = data.filter(tag => String(tag.id_perfil) !== String(confirmedProfileId) && tag.permissao_compartilhamento);
+                const filteredData = data.filter(tag => String(tag.id_perfil) !== String(profile.id_perfil) && tag.permissao_compartilhamento);
 
                 setTags(filteredData);
             }
@@ -62,7 +61,7 @@ function Home() {
         } finally {
             setTagsLoading(false);
         }
-    }, [navigate, profileId, searchTextTag]);
+    }, [navigate, profile.id_perfil, searchTextTag]);
 
     const loadPosts = useCallback(async (id) => {
         if (postsLoading || (feed && feed?.length % 6 !== 0)) return;
@@ -86,7 +85,7 @@ function Home() {
                 }));
 
                 if (feed) {
-                    setFeed((prevPosts) => [...prevPosts, ...formattedFeed]);
+                    setFeed(prevPosts => [...prevPosts, ...formattedFeed]);
                 } else {
                     setFeed(formattedFeed);
                 }
@@ -119,7 +118,7 @@ function Home() {
                 loadPosts(id);
             }
         } catch (err) {
-            navigate("/errorPage", {state: {error: err.message}});
+            navigate("/login", {state: {message: err.message, type: "error"}});
     
             console.error('Erro ao fazer a requisição:', err);
         }
@@ -157,14 +156,13 @@ function Home() {
     
     useEffect(() => {
         let timeoutId;
-        const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
 
         const handleScroll = () => {
             if (timeoutId) clearTimeout(timeoutId);
 
             timeoutId = setTimeout(() => {
                 if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 450) {
-                    loadPosts(confirmedProfileId);
+                    loadPosts(profile.id_perfil);
                 }
             }, 200);
         };
@@ -202,18 +200,18 @@ function Home() {
                             caption={post.legenda}
                             postHashtags={post.hashtags || ""}
                             postTags={post.tags || ""}
-                            likeSubmit={() => toggleLike(profileId, post, navigate, setFeed)}
+                            likeSubmit={() => toggleLike(profile.id_perfil, post, navigate, setFeed)}
                             isLiked={post.isLiked}
                             sharingSubmit={(sharings, sharingCaption) => 
-                                createSharing(profileId, post, sharings, sharingCaption, navigate, setMessage, setFeed)
+                                createSharing(profile.id_perfil, post, sharings, sharingCaption, navigate, setMessage, setFeed)
                             }
                             complaintReasons={complaintReasons}
                             tags={tags}
                             isComplainted={post.isComplainted}
                             complaintSubmit={(postComplaintReasons, complaintDescription) => 
-                                createComplaint(profileId, post, postComplaintReasons, complaintDescription, navigate, setFeed, setMessage)
+                                createComplaint(profile.id_perfil, post, postComplaintReasons, complaintDescription, navigate, setFeed, setMessage)
                             }
-                            commentSubmit={(commentText) => createComment(profileId, post, commentText, navigate, setFeed)}
+                            commentSubmit={(commentText) => createComment(profile.id_perfil, post, commentText, navigate, setFeed)}
                             comments={post.comments}
                             post={post}
                             filteredSharings={tags}

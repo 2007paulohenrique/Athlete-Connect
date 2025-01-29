@@ -117,26 +117,6 @@ def get_profile_likes(con, profile_id):
           print(f"Erro ao recuperar número de curtidas do perfil: {e}")
           return None
      
-def get_profile_preferences(con, profile_id):
-     try:
-          with con.cursor(dictionary=True) as cursor:
-               sql = """
-                    SELECT 
-                    e.nome,
-                    m.caminho AS icone
-                    FROM preferencia p
-                    JOIN esporte e ON p.fk_esporte_id_esporte = e.id_esporte
-                    JOIN midia m ON e.fk_midia_id_icone = m.id_midia
-                    WHERE p.fk_perfil_id_perfil = %s
-               """
-               cursor.execute(sql, (profile_id,))
-               result = cursor.fetchall()
-
-          return result
-     except Exception as e:
-          print(f"Erro ao recuperar preferências do perfil: {e}")
-          return None
-     
 # O usuário é recuperado através do id do perfil
 def get_user(con, profile_id, profile_viewer_id = None):
      try:
@@ -178,7 +158,7 @@ def get_profile_posts(con, profile_id, profile_viewer_id = None, offset=None, li
                     LEFT JOIN compartilhamento cp ON cp.fk_postagem_id_postagem = p.id_postagem
                     LEFT JOIN comentario co ON co.fk_postagem_id_postagem = p.id_postagem
                     JOIN perfil pe ON pe.id_perfil = p.fk_perfil_id_perfil
-                    JOIN config con ON con.fk_perfil_id_perfil = pe.id_perfil
+                    JOIN configuracao con ON con.fk_perfil_id_perfil = pe.id_perfil
                     WHERE p.fk_perfil_id_perfil = %s
                     GROUP BY p.id_postagem
                     ORDER BY p.data_publicacao DESC
@@ -264,7 +244,7 @@ def get_profile_tag_posts(con, profile_id, profile_viewer_id=None, offset=None, 
                     LEFT JOIN comentario co ON co.fk_postagem_id_postagem = p.id_postagem
                     LEFT JOIN marcacao_postagem mp ON mp.fk_postagem_id_postagem = p.id_postagem
                     JOIN perfil pe ON pe.id_perfil = p.fk_perfil_id_perfil
-                    JOIN config con ON con.fk_perfil_id_perfil = pe.id_perfil
+                    JOIN configuracao con ON con.fk_perfil_id_perfil = pe.id_perfil
                     WHERE mp.fk_perfil_id_perfil = %s
                     GROUP BY p.id_postagem
                     ORDER BY p.data_publicacao DESC
@@ -421,6 +401,26 @@ def insert_profile_preferences(con, profile_id, sports_ids):
           con.rollback()
           print(f"Erro ao inserir preferências do perfil: {e}")
           return False
+
+def put_profile_preferences(con, profile_id, sports_ids):
+     try:
+          with con.cursor() as cursor:
+               sql_delete = "DELETE FROM preferencia WHERE fk_perfil_id_perfil = %s"
+               cursor.execute(sql_delete, (profile_id,))    
+
+               if not sports_ids:
+                    return True
+               
+               data = [(profile_id, sport_id) for sport_id in sports_ids]
+               sql = "INSERT INTO preferencia (fk_perfil_id_perfil, fk_esporte_id_esporte) VALUES (%s, %s)"
+               cursor.executemany(sql, data)  
+
+          con.commit() 
+          return True
+     except Exception as e:
+          con.rollback()
+          print(f"Erro ao modificar preferências do perfil: {e}")
+          return False
              
 def get_user_qualifications(con, user_id):
      try:
@@ -454,7 +454,7 @@ def get_profile_preferences(con, profile_id):
           with con.cursor(dictionary=True) as cursor:
                sql = """
                     SELECT 
-                    e.nome,
+                    e.nome, e.id_esporte,
                     m.caminho AS icone
                     FROM preferencia p
                     JOIN esporte e ON p.fk_esporte_id_esporte = e.id_esporte
@@ -467,7 +467,7 @@ def get_profile_preferences(con, profile_id):
           return result
      except Exception as e:
           print(f"Erro ao recuperar preferências do perfil: {e}")
-          return None
+          return None 
 
 def get_profile_config(con, profile_id):
      try:
@@ -708,7 +708,7 @@ def get_feed_posts(con, profile_id, offset):
                     LEFT JOIN compartilhamento cp ON cp.fk_postagem_id_postagem = p.id_postagem
                     LEFT JOIN comentario co ON co.fk_postagem_id_postagem = p.id_postagem
                     JOIN perfil pe ON pe.id_perfil = p.fk_perfil_id_perfil
-                    JOIN config con ON con.fk_perfil_id_perfil = pe.id_perfil
+                    JOIN configuracao con ON con.fk_perfil_id_perfil = pe.id_perfil
                     WHERE p.fk_perfil_id_perfil IN ({placeholders}) AND pe.ativo = 1
                     GROUP BY p.id_postagem
                     ORDER BY p.data_publicacao DESC
@@ -1079,9 +1079,10 @@ def insert_search(con, text, profile_id):
      try:
           with con.cursor() as cursor:
                date = datetime.now()
-               sql = "INSERT INTO pesquisa (texto, data_pesquisa, fk_perfil_id_perfil) VALUES (%s, %s)"
+               sql = "INSERT INTO pesquisa (texto, data_pesquisa, fk_perfil_id_perfil) VALUES (%s, %s, %s)"
                cursor.execute(sql, (text, date, profile_id))
 
+          con.commit() 
           return text
      except Exception as e:
           con.rollback()
@@ -1092,12 +1093,12 @@ def get_search_sugestions(con, profile_id):
      try:
           with con.cursor(dictionary=True) as cursor:
                sql_all_favorites = """
-                    SELECT *, COUNT(*) AS numero_pesquisas 
+                    SELECT texto, COUNT(*) AS numero_pesquisas 
                     FROM pesquisa 
-                    ORDER BY numero_pesquisas DESC, texto ASC
                     GROUP BY texto
+                    ORDER BY numero_pesquisas DESC, texto ASC
                     LIMIT 3   
-               """
+               """  
                cursor.execute(sql_all_favorites)
                all_favorites = cursor.fetchall()
 
@@ -1115,7 +1116,7 @@ def get_search_sugestions(con, profile_id):
                
           return result
      except Exception as e:
-          print(f"Erro ao recuperar sugestões de pesquisa do usuário")
+          print(f"Erro ao recuperar sugestões de pesquisa do usuário: {e}")
           return None
 
 def insert_sharing(con, caption, post_id, profile_id, shared_profiles_ids):
@@ -1577,7 +1578,7 @@ def get_profile_liked_posts(con, profile_id, offset=None, limit=24):
                     LEFT JOIN compartilhamento cp ON cp.fk_postagem_id_postagem = p.id_postagem
                     LEFT JOIN comentario co ON co.fk_postagem_id_postagem = p.id_postagem
                     JOIN perfil pe ON pe.id_perfil = p.fk_perfil_id_perfil
-                    JOIN config con ON con.fk_perfil_id_perfil = pe.id_perfil
+                    JOIN configuracao con ON con.fk_perfil_id_perfil = pe.id_perfil
                     WHERE c.fk_perfil_id_perfil = %s
                     GROUP BY p.id_postagem
                     ORDER BY c.data_curtida DESC
@@ -1655,7 +1656,7 @@ def get_profile_commented_posts(con, profile_id, offset=None, limit=24):
                     LEFT JOIN compartilhamento cp ON cp.fk_postagem_id_postagem = p.id_postagem
                     LEFT JOIN comentario co ON co.fk_postagem_id_postagem = p.id_postagem
                     JOIN perfil pe ON pe.id_perfil = p.fk_perfil_id_perfil
-                    JOIN config con ON con.fk_perfil_id_perfil = pe.id_perfil
+                    JOIN configuracao con ON con.fk_perfil_id_perfil = pe.id_perfil
                     WHERE co.fk_perfil_id_perfil = %s
                     GROUP BY p.id_postagem
                     ORDER BY co.data_comentario DESC
@@ -1733,7 +1734,7 @@ def get_profile_shared_posts(con, profile_id, offset=None, limit=24):
                     LEFT JOIN compartilhamento cp ON cp.fk_postagem_id_postagem = p.id_postagem
                     LEFT JOIN comentario co ON co.fk_postagem_id_postagem = p.id_postagem
                     JOIN perfil pe ON pe.id_perfil = p.fk_perfil_id_perfil
-                    JOIN config con ON con.fk_perfil_id_perfil = pe.id_perfil
+                    JOIN configuracao con ON con.fk_perfil_id_perfil = pe.id_perfil
                     WHERE cp.fk_perfil_id_perfil = %s
                     GROUP BY p.id_postagem
                     ORDER BY cp.data_compartilhamento DESC

@@ -52,25 +52,50 @@
 }
 
 .checkbox_field > span > label {
-
+    font-size: 0.8em;
+    letter-spacing: 0.5px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
 }
 
-.checkbox_field > span > label > span {
-    
+.slider {
+    background-color: var(--ligth-font-color);
+    height: 1.5em;
+    width: 3.5em;
+    display: block;
+    border-radius: 1.5em;
+    cursor: pointer;
+    border: 1px solid var(--ligth-theme-color);
+    position: relative;
+    transition: all 0.3s ease-in-out;
 }
 
-.checkbox_field > span > label > span::before {
-    
+.slider::before {
+    height: 100%;
+    content: "";
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    background-color: var(--dark-theme-color);
+    position: absolute;
+    left: 0;
+    top: 0;
+    transition: all 0.3s ease-in-out;
 }
 
-.checkbox_field > span > label > input:checked + span {
-    
+.checkbox_field > span > label > input:checked + .slider {
+    background-color: var(--dark-theme-color);
 }
 
-.checkbox_field > span > label > input:checked + span::before {
-    
+.checkbox_field > span > label > input:checked + .slider::before {
+    transform: translateX(2em);
+    background-color: var(--ligth-theme-color);
+}
+
+.slider:hover::before {
+    background-color: var(--ligth-theme-color);
 }
 
 .checkbox_field > span > label > input {
-    
+    display: none;
 }

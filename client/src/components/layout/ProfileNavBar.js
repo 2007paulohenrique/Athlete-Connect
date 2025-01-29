@@ -4,11 +4,11 @@ import searchIcon from "../../img/icons/socialMedia/searchIcon.png";
 import notificationsIcon from "../../img/icons/socialMedia/notificationsIcon.png";
 import sharingIcon from "../../img/icons/socialMedia/sharingIcon.png";
 import logo from "../../img/logo/logoNBG.png";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import SearchInput from "./SearchInput";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from '../../ProfileContext';
-import axios from "axios";
+import fetchSearchSugestions from "../../utils/profile/FetchSearchSugestions";
 
 function ProfileNavBar() {
     const [showSearch, setShowSearch] = useState(false);
@@ -35,29 +35,10 @@ function ProfileNavBar() {
         setSearchText("");
     }
 
-    const fetchSearchSugestions = useCallback(async (id) => {
-        try {
-            const resp = await axios.get(`http://localhost:5000/profiles/${id}/search/sugestions`);
-            const data = resp.data;
-            
-            if (data.error) {
-                navigate("/errorPage", {state: {error: data.error}});
-            } else {
-                setSearchSugestions(data);
-            }
-        } catch (err) {
-            navigate("/errorPage", {state: {error: err.message}});
-    
-            console.error('Erro ao fazer a requisição:', err);
-        }
-    }, [navigate]);
-
-    useEffect(() => {
-        const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
-        
-        fetchSearchSugestions(confirmedProfileId);
+    useEffect(() => {        
+        fetchSearchSugestions(navigate, setSearchSugestions, profileId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    }, []);
 
     return (
         <nav className={styles.profile_nav_bar}>

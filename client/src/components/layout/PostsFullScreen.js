@@ -11,6 +11,7 @@ import toggleLike from "../../utils/post/HandleLike";
 import createComment from "../../utils/post/HandleComment";
 import axios from "axios";
 import loading from "../../img/animations/loading.svg";
+import ExitPageBar from "./ExitPageBar";
 
 function PostsFullScreen({ posts, setPosts, postsLoading, initialPostToShow, handleExitFullscreen }) {
     const [complaintReasons, setComplaintReasons] = useState([]);
@@ -75,9 +76,7 @@ function PostsFullScreen({ posts, setPosts, postsLoading, initialPostToShow, han
         <section className={styles.posts_full_screen}>
             {message && <Message message={message.message} type={message.type}/>}
 
-            <div className={styles.exit_fullscreen} onClick={handleExitFullscreen}>
-                Voltar
-            </div>
+            <ExitPageBar handleExitPage={handleExitFullscreen}/>
 
             {posts && posts.map((post) => (
                 <Post 

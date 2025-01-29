@@ -78,7 +78,7 @@ const Post = forwardRef(({ likesVisibility = true, sharingsVisibility = true, co
             const seconds = Math.floor(duration % 60);
             const newDuration =  `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
 
-            setMedias((prevMedias) => {
+            setMedias(prevMedias => {
                 const newMedias = [...prevMedias];
                 newMedias[index].duration = newDuration;
 

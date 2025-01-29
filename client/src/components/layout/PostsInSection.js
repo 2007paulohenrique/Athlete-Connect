@@ -68,7 +68,7 @@ function PostsInSection({ posts, notFoundText, postsLoading, handlePostClick }) 
                         {postsLoading ? 
                             <img className="loading" src={loading} alt="Loading"/>
                         :
-                            {notFoundText}
+                            notFoundText
                         }
                     </p>
             : null}

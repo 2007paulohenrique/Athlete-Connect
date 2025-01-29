@@ -18,6 +18,7 @@ import Collaborate from "./about/Collaborate";
 import PostsInSection from "../layout/PostsInSection";
 import { useNavigate } from "react-router-dom";
 import formatDate from "../../utils/DateFormatter";
+import ExitPageBar from "../layout/ExitPageBar";
 
 function Config() {
     const [configType, setConfigType] = useState("profile");
@@ -244,15 +245,10 @@ function Config() {
         navigate("/login", {state: {message: "Crie ou entre em uma conta para continuar no Athlete Connect.", type: "success"}})
     }
 
-    function desactiveAccount() {
-        const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
-
-        desactiveAccountCallback(confirmedProfileId);
-    }
 
     function desactiveAccountConfirmation() {
         setConfirmationText('Caso desative seu perfil, ele não poderá mais ser usado ou encontrado no Athlete Connect. Clique em "confirmar" para desativar seu perfil.')
-        setHandleOnConfirmation(desactiveAccount)
+        setHandleOnConfirmation(() => desactiveAccountCallback(profile.is_perfil));
         setShowConfirmation(true);
     }
 
@@ -263,10 +259,8 @@ function Config() {
     }
 
     function modifyProfileConfirmation() {
-        const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
-
         setConfirmationText('Sempre será possível modificar seu perfil, mas lembre-se que os outros usuários não vão saber dessa mudança. Clique em "confirmar" para confirmar as mudanças.');
-        setHandleOnConfirmation(() => modifyProfile(confirmedProfileId));
+        setHandleOnConfirmation(() => modifyProfile(profile.id_perfil));
         setShowConfirmation(true);
     }
 
@@ -277,16 +271,14 @@ function Config() {
             e.target.value = e.target.value.trimStart().replace(/\n+/g, "").replace(/\s+/g, " ")
         }
 
-        setProfile({...profile, [e.target.name]: e.target.type === "checkbox" ? e.target.checked : e.target.value});
+        setProfile(prevProfile => ({...prevProfile, [e.target.name]: e.target.type === "checkbox" ? e.target.checked : e.target.value}));
     }
 
-    async function handleOnChangeConfig(e) {
-        const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
-    
+    async function handleOnChangeConfig(e) {    
         try {
-            await modifyConfig(confirmedProfileId, e.target.name, e.target.type === "checkbox" ? e.target.checked : e.target.value);
+            await modifyConfig(profile.id_perfil, e.target.name, e.target.type === "checkbox" ? e.target.checked : e.target.value);
             
-            setConfig({...config, [e.target.name]: e.target.type === "checkbox" ? e.target.checked : e.target.value});
+            setConfig(prevConfig => ({...prevConfig, [e.target.name]: e.target.type === "checkbox" ? e.target.checked : e.target.value}));
         } catch (error) {
             console.error("Erro ao modificar configuração:", error);
         }
@@ -300,7 +292,7 @@ function Config() {
         const blobUrl = URL.createObjectURL(files[0]); 
     
         if (files.length === 1) {
-            setProfile({...profile, blobUrl, photo: files});
+            setProfile(prevProfile => ({...prevProfile, blobUrl, photo: files}));
         }
     }
 
@@ -366,39 +358,33 @@ function Config() {
 
     useEffect(() => {
         if (postsToShowType === "commented") {
-            const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
-
-            const handleScrollCommentedPosts = () => handleScroll(() => loadCommentedPosts(confirmedProfileId));
+            const handleScrollCommentedPosts = () => handleScroll(() => loadCommentedPosts(profile.id_perfil));
 
             window.addEventListener("scroll", handleScrollCommentedPosts);
             
             return () => window.removeEventListener("scroll", handleScrollCommentedPosts);
         }
-    }, [loadCommentedPosts, handleScroll, postsToShowType, profileId]);
+    }, [loadCommentedPosts, handleScroll, postsToShowType, profile.id_perfil]);
 
     useEffect(() => {
         if (postsToShowType === "liked") {   
-            const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
-
-            const handleScrollLikedPosts = () => handleScroll(() => loadLikedPosts(confirmedProfileId));
+            const handleScrollLikedPosts = () => handleScroll(() => loadLikedPosts(profile.id_perfil));
 
             window.addEventListener("scroll", handleScrollLikedPosts);
             
             return () => window.removeEventListener("scroll", handleScrollLikedPosts);
         }
-    }, [handleScroll, postsToShowType, loadLikedPosts, profileId]);
+    }, [handleScroll, postsToShowType, loadLikedPosts, profile.id_perfil]);
 
     useEffect(() => {
         if (postsToShowType === "shared") {   
-            const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
-
-            const handleScrollSharedPosts = () => handleScroll(() => loadSharedPosts(confirmedProfileId));
+            const handleScrollSharedPosts = () => handleScroll(() => loadSharedPosts(profile.id_perfil));
 
             window.addEventListener("scroll", handleScrollSharedPosts);
             
             return () => window.removeEventListener("scroll", handleScrollSharedPosts);
         }
-    }, [handleScroll, postsToShowType, loadSharedPosts, profileId]);
+    }, [handleScroll, postsToShowType, loadSharedPosts, profile.id_perfil]);
 
     function handlePostClick(postId) {
         setSelectedPostId(postId)
@@ -414,17 +400,17 @@ function Config() {
 
     const updatePosts = (updater, type) => {
         if (type === "liked") {
-            setPosts((prevPosts) => ({
+            setPosts(prevPosts => ({
                 ...prevPosts,
                 liked: updater(prevPosts.liked),
             }));
         } else if (type === "shared") {
-            setPosts((prevPosts) => ({
+            setPosts(prevPosts => ({
                 ...prevPosts,
                 shared: updater(prevPosts.shared),
             }));
         } else if (type === "commented") {
-            setPosts((prevPosts) => ({
+            setPosts(prevPosts => ({
                 ...prevPosts,
                 commented: updater(prevPosts.commented),
             }));
@@ -475,6 +461,14 @@ function Config() {
             />                  
 
             <SubmitButton text="Confirmar alterações"/>
+
+            <button onClick={() => navigate("/profilePreferences", {state: {prevPreferences: profile.preferences, modifyProfile: profile}})}>
+                Editar preferências
+            </button>
+
+            <button >
+                Adicionar formação
+            </button>
 
             <button onClick={desactiveAccountConfirmation}>
                 Desativar perfil
@@ -736,6 +730,8 @@ function Config() {
     return (
         !postsFullScreen ?
             <main className={styles.config_page}>
+                <ExitPageBar handleExitPage={() => navigate(-1)}/>
+
                 {showConfirmation && 
                     <ConfirmationBox 
                         text={confirmationText} 

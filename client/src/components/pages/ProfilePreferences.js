@@ -12,7 +12,8 @@ function ProfilePreferences() {
     const [profilePreferences, setProfilePreferences] = useState([]);
     const [profile, setProfile] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const { setProfileId } = useProfile(); 
+    const {setProfileId} = useProfile(); 
+    const [isModifyPreferences, setIsModifyPreferences] = useState(false);
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -35,20 +36,24 @@ function ProfilePreferences() {
     }, [navigate]);
 
     useEffect(() => {
-        const profile = location?.state?.profileReady
+        const profileReady = location?.state?.profileReady
+        const modifyProfile = location?.state?.modifyProfile
+        const prevPreferences = location?.state?.prevPreferences || []
 
-        if (!profile) {
-            navigate("/login");
-        } else {
-            setProfile(location.state.profileReady);
+        if (profileReady || (modifyProfile && prevPreferences)) {
+            setProfile(profileReady || modifyProfile);
+            setProfilePreferences(prevPreferences);
+            setIsModifyPreferences(!profileReady);
 
             fetchSports();
+        } else {
+            navigate("/login");
         }
     }, [fetchSports, location, navigate]);
     
     function handleOnClick(sport) {
         setProfilePreferences(prevPreferences => {
-            if (prevPreferences.includes(sport)) {
+            if (prevPreferences.some(prevSport => String(sport.id_esporte) === String(prevSport.id_esporte))) {
                 return prevPreferences.filter(item => item !== sport);
             } else {
                 return [...prevPreferences, sport];
@@ -63,26 +68,29 @@ function ProfilePreferences() {
 
         setIsSubmitting(true);
 
-        checkProfile();
+        if (!isModifyPreferences) {
+            checkProfile();
+        } else {
+            modifyPreferences();
+        }
     }
 
     const createProfile = async () => {
         try {
             const sportsIds = profilePreferences.map(sport => sport.id_esporte);
-            profile.preferences = sportsIds;
 
-            const formDataB = new FormData();
+            const formData = new FormData();
 
-            formDataB.append("name", profile.confirmedNameSignUp);
-            formDataB.append("email", profile.emailSignUp);
-            formDataB.append("password", profile.passwordSignUp);
-            formDataB.append("bio", profile.bio);
-            formDataB.append("private", profile.private);
-            sportsIds.forEach(sportId => formDataB.append("preferences", sportId));
+            formData.append("name", profile.confirmedNameSignUp);
+            formData.append("email", profile.emailSignUp);
+            formData.append("password", profile.passwordSignUp);
+            formData.append("bio", profile.bio);
+            formData.append("private", profile.private);
+            sportsIds.forEach(sportId => formData.append("preferences", sportId));
 
-            if (profile.photo && profile.photo.length > 0) formDataB.append("photo", profile.photo[0]);
+            if (profile.photo && profile.photo.length > 0) formData.append("photo", profile.photo[0]);
 
-            const resp = await axios.post("http://localhost:5000/profiles", formDataB, {
+            const resp = await axios.post("http://localhost:5000/profiles", formData, {
                 headers: { "Content-Type": "multipart/form-data" }, 
             })
             const data = resp.data;
@@ -96,6 +104,35 @@ function ProfilePreferences() {
                 localStorage.setItem('athleteConnectProfileId', data.profileId)
                 
                 navigate("/", {state: {message: "Perfil criado com sucesso! Aproveite o Athlete Connect.", type: "success"}});
+            }
+        } catch (err) {
+            setIsSubmitting(false);
+                    
+            navigate("/errorPage", {state: {error: err.message}})
+
+            console.error('Erro ao fazer a requisição:', err);
+        }
+    }
+
+    const modifyPreferences = async () => {
+        try {
+            const sportsIds = profilePreferences.map(sport => sport.id_esporte);
+
+            const formData = new FormData();
+
+            sportsIds.forEach(sportId => formData.append("preferences", sportId));
+
+            const resp = await axios.put(`http://localhost:5000/profiles/${profile.id_perfil}/preferences`, formData, {
+                headers: { "Content-Type": "multipart/form-data" }, 
+            })
+            const data = resp.data;
+
+            if (data.error) {
+                setIsSubmitting(false);
+
+                navigate("/errorPage", {state: {error: data.error}})
+            } else {                
+                navigate("/myProfile", {state: {message: "Perfil criado com sucesso! Aproveite o Athlete Connect.", type: "success"}});
             }
         } catch (err) {
             setIsSubmitting(false);
@@ -160,7 +197,7 @@ function ProfilePreferences() {
                         sportName={sport.nome} 
                         categories={sport.categories} 
                         handleClick={() => handleOnClick(sport)}
-                        selected={profilePreferences.includes(sport)}
+                        selected={profilePreferences.some(prevSport => String(sport.id_esporte) === String(prevSport.id_esporte))}
                         sportDescription={sport.descricao}
                     />
                 ))}

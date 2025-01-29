@@ -24,7 +24,7 @@
     outline: none;
 }
 
-.search_input > :where(label, button) > img{
+.search_input > :where(label, button) > img {
     height: 100%;
     cursor: pointer;
 }
