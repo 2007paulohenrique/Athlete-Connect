@@ -1,8 +1,8 @@
 import styles from "./ExitPageBar.module.css";
 
-function ExitPageBar({ handleExitPage}) {
+function ExitPageBar({ handleExitPage }) {
     return (
-        <div className={styles.exit_page_bar} onClick={handleExitPage}>
+        <div className={styles.exit_page_bar} onClick={(handleExitPage)}>
             Voltar
         </div>
     );

@@ -67,7 +67,7 @@ function Login() {
 
     const activeAccountCallback = useCallback(async (id) => {
         try {
-            const resp = await axios.get(`http://localhost:5000/profiles/${id}/active/${true}`);
+            const resp = await axios.put(`http://localhost:5000/profiles/${id}/active/${true}`);
             const data = resp.data;
             
             if (data.error) {
@@ -153,6 +153,7 @@ function Login() {
     return (
         <main className={styles.login_page}>
             {message && <Message message={message.message} type={message.type}/>}
+
             {showConfirmation && 
                 <ConfirmationBox 
                     text='Seu perfil foi desativado. Caso clique em "confirmar" seu perfil vai ser ativado e você poderá usá-lo novamente.' 

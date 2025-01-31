@@ -4,14 +4,9 @@ import SportCard from "./SportCard";
 import ProfileBiggerContainer from "./ProfileBiggerContainer";
 import { useNavigate } from "react-router-dom";
 import formatNumber from "../../utils/NumberFormatter";
-import { useEffect } from "react";
 
 function SearchResultsContainer({ results, resultType, notFoundText, tagsLoading = false }) {
     const navigate = useNavigate();
-
-    useEffect(() => {
-        console.log(results)
-    }, [results])
 
     return (
         <>

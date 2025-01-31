@@ -214,7 +214,6 @@ def put_profile_preferences_r(profile_id):
         
         preferences = request.form.getlist('preferences')
         preferences = [int(pref) for pref in preferences]
-        print(preferences)
 
         if not put_profile_preferences(con, profile_id, preferences):
             print('Erro ao modificar preferências do perfil.')
@@ -356,7 +355,7 @@ def login():
         for profile in profiles:
             if profile['nome'] == nameOrEmailLogin or profile['email'] == nameOrEmailLogin:
                 if bcrypt.check_password_hash(profile['senha'], passwordLogin):
-                    return jsonify({'profileId': profile['id_perfil'], "isActived": profile["ativo"]}), 200
+                    return jsonify({'profileId': profile['id_perfil'], "isActived": True if profile["ativo"] == 1 else False}), 200
                 else:
                     return jsonify({'error': 'login'}), 401
                 

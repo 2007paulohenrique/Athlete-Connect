@@ -4,7 +4,7 @@ import sqlparse
 def get_profiles(con):
      try:
           with con.cursor(dictionary=True) as cursor:
-               sql = "SELECT * FROM perfil"
+               sql = "SELECT id_perfil, nome, email, senha, ativo FROM perfil"
                cursor.execute(sql)
                result = cursor.fetchall()
 
@@ -21,6 +21,8 @@ def get_profile_main_info(con, profile_id):
                result = cursor.fetchone()
 
                if result:
+                    result["ativo"] = True if result["ativo"] == 1 else False
+
                     media_id = result.get("fk_midia_id_midia")
 
                     if media_id:
@@ -43,6 +45,8 @@ def get_profile(con, profile_id, profile_viewer_id=None):
                result = cursor.fetchone()
 
                if result:
+                    result["ativo"] = True if result["ativo"] == 1 else False
+
                     media_id = result.get("fk_midia_id_midia")
 
                     if media_id:
@@ -325,7 +329,7 @@ def insert_profile(con, email, password, name, bio, private):
                if insert_user(con, profile_id) is None:
                     raise Exception("Erro ao inserir usuário do perfil.")
 
-               if insert_default_profile_config(con, profile_id, private) is None:
+               if insert_default_profile_config(con, profile_id) is None:
                     raise Exception("Erro ao inserir configuração do perfil.")
 
           con.commit() 
@@ -479,7 +483,10 @@ def get_profile_config(con, profile_id):
                     WHERE fk_perfil_id_perfil = %s
                """
                cursor.execute(sql, (profile_id,))
-               result = cursor.fetchall()
+               result = cursor.fetchone()
+
+               if result:
+                    result = {key: (True if value == 1 else False if value == 0 else value) for key, value in result.items()}
 
           return result
      except Exception as e:
@@ -500,7 +507,7 @@ def insert_user(con, profile_id):
           print(f"Erro ao inserir usuário: {e}")
           return None
 
-def insert_default_profile_config(con, profile_id, is_private):
+def insert_default_profile_config(con, profile_id):
      try:
           with con.cursor() as cursor:
                sql = """
@@ -528,11 +535,11 @@ def insert_default_profile_config(con, profile_id, is_private):
                     False,  
                     False,  
                     False,  
-                    not is_private,  
-                    not is_private,  
-                    not is_private,  
-                    not is_private,  
-                    not is_private,  
+                    True,  
+                    True,  
+                    True,  
+                    True,  
+                    True,  
                     'todos',
                     'todos',
                     'todos',

@@ -215,12 +215,13 @@ function Profile() {
             const resp = await axios.get(url)
             const data = resp.data;
 
+            if (resp.status === 204) {
+                navigate(id ? -1 : "/login", {state: {message: data.error, type: "error"}})
+                return;
+            }
+
             if (data.error) {
-                if (resp.status === 204) {
-                    navigate(id ? -1 : "/login", {state: {message: data.error, type: "error"}})
-                } else {
-                    navigate("/errorPage", {state: {error: data.error}})                
-                }
+                navigate("/errorPage", {state: {error: data.error}})                
             } else {
                 const formatPosts = (posts) => {
                     return posts.map(post => ({
@@ -277,8 +278,13 @@ function Profile() {
             const resp = await axios.get(`http://localhost:5000/profiles/${id}`);
             const data = resp.data;
             
+            if (resp.status === 204) {
+                navigate("/login", {state: {message: "Seu perfil foi desativado. Faça login e o ative para voltar a usá-lo.", type: "error"}});
+                return;
+            }
+
             if (data.error) {
-                if (resp.status === 404 || resp.status === 204) {
+                if (resp.status === 404) {
                     navigate("/login", {state: {message: data.error, type: "error"}});
                 } else {
                     navigate("/errorPage", {state: {error: data.error}})
@@ -438,7 +444,7 @@ function Profile() {
     }, [postsFullScreen]);
 
     useEffect(() => {
-        if (!tagsFullScreen && postsToShowType === "posts") {
+        if (!tagsFullScreen && postsToShowType === "posts" && profile.id_perfil) {
 
             const handleScrollPosts = () => handleScroll(() => loadPosts(profile.id_perfil));
 
@@ -449,7 +455,7 @@ function Profile() {
     }, [loadPosts, handleScroll, postsToShowType, profile.id_perfil, tagsFullScreen]);
 
     useEffect(() => {
-        if (!tagsFullScreen && postsToShowType === "tagPosts") {   
+        if (!tagsFullScreen && postsToShowType === "tagPosts" && profile.id_perfil) {   
 
             const handleScrollTagPosts = () => handleScroll(() => loadTagPosts(profile.id_perfil));
 
@@ -460,7 +466,7 @@ function Profile() {
     }, [handleScroll, postsToShowType, loadTagPosts, profile.id_perfil, tagsFullScreen]);
 
     useEffect(() => {
-        if (tagsFullScreen && tagsType === "followers") {
+        if (tagsFullScreen && tagsType === "followers" && profile.id_perfil) {
 
             const handleScrollFollowers = () => handleScroll(() => loadFollowers(profile.id_perfil));
 
@@ -471,7 +477,7 @@ function Profile() {
     }, [handleScroll, tagsType, loadFollowers, profile.id_perfil, tagsFullScreen]);
 
     useEffect(() => {
-        if (tagsFullScreen && tagsType === "followeds") {   
+        if (tagsFullScreen && tagsType === "followeds" && profile.id_perfil) {   
             const handleScrollFolloweds = () => handleScroll(() => loadFolloweds(profile.id_perfil));
 
             window.addEventListener("scroll", handleScrollFolloweds);
@@ -561,7 +567,7 @@ function Profile() {
                                     <div>
                                         <span>{formatNumber(profile.likes)}</span>
 
-                                        <span>Curtidas</span>
+                                        <span>{profile.likes === 1 ? "curtida" : "curtidas"}</span>
                                     </div>
                                 </div>
 
@@ -687,7 +693,7 @@ function Profile() {
                             setPosts={(updater) => setPosts(updater, postsToShowType)} 
                             postsLoading={postsToShowType === "posts" ? postsLoading : tagPostsLoading}
                             initialPostToShow={selectedPostId}
-                            handleExitPostsFullscreen={exitPostsFullscreen}   
+                            handleExitFullscreen={exitPostsFullscreen}   
                         />
                     }
                 </>

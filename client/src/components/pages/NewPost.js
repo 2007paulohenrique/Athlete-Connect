@@ -77,8 +77,13 @@ function NewPost() {
             const resp = await axios.get(`http://localhost:5000/profiles/${id}`);
             const data = resp.data;
             
+            if (resp.status === 204) {
+                navigate("/login", {state: {message: "Seu perfil foi desativado. Faça login e o ative para voltar a usá-lo.", type: "error"}});
+                return;
+            }
+
             if (data.error) {
-                if (resp.status === 404 || resp.status === 204) {
+                if (resp.status === 404) {
                     navigate("/login", {state: {message: data.error, type: "error"}});
                 } else {
                     navigate("/errorPage", {state: {error: data.error}})

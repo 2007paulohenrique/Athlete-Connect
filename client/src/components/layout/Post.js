@@ -15,6 +15,7 @@ import ProfileSmallerContainer from "./ProfileSmallerContainer";
 import formatNumber from "../../utils/NumberFormatter";
 import PostItemsContainer from "./PostItemsContainer";
 import { useNavigate } from "react-router-dom";
+import { useProfile } from "../../ProfileContext";
 
 const Post = forwardRef(({ likesVisibility = true, sharingsVisibility = true, commentsVisibility = true, setMessage, canComment = true, author, hashtags = [], complaintReasons = [], moment, mediasPath = [], blobUrlsMedias = [], caption, isInCreating = false, setHashtagsInPost, postHashtags, setTagsInPost, postTags, sharingSubmit, complaintSubmit, isComplainted, comments, commentSubmit, likeSubmit, isLiked, post, searchTextTag, setSearchTextTag, filteredTags, searchTextSharing, setSearchTextSharing, filteredSharings, tagsLoading }, ref) => {
     const [medias, setMedias] = useState([]);
@@ -35,6 +36,7 @@ const Post = forwardRef(({ likesVisibility = true, sharingsVisibility = true, co
     const [selectedComplaintReasons, setSelectedComplaintReasons] = useState([]);
     const [complaintDescription, setComplaintDescription] = useState("");
     const [sharings, setSharings] = useState([]);
+    const {profileId} = useProfile();
 
     const navigate = useNavigate();
 
@@ -246,6 +248,13 @@ const Post = forwardRef(({ likesVisibility = true, sharingsVisibility = true, co
     }
 
     function viewComplaint() {
+        const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
+
+        console.log(likesVisibility, commentsVisibility, sharingsVisibility)
+
+        if (String(author.id_perfil) === String(confirmedProfileId)) return;
+        
+
         showOffAll("complaint");
 
         setSelectedComplaintReasons([]);

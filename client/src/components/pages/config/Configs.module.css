@@ -1,0 +1,72 @@
+
+.config_items {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    height: 100%;
+    align-items: center;
+}
+
+ul.config_items {
+    list-style: none;
+}
+
+ul.config_items > li{
+    width: 100%;
+}
+
+ul.config_items > hr {
+    width: 100%;
+}
+
+ul.config_items > h3 {
+    letter-spacing: 0.8px;
+}
+
+.profile_account_actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2em;
+    width: 100%;
+}
+
+.profile_account_actions > div {
+    display: flex;
+    width: 100%;
+}
+
+.profile_edit_buttons {
+    justify-content: space-evenly;
+}
+
+.profile_actions_buttons {
+    flex-direction: column;
+    align-items: start;
+    gap: 1em;
+}
+
+.profile_account_actions > div > button {
+    background-color: var(--ligth-bg-color);
+    transition: all 0.2s ease-in-out;
+}
+
+.profile_edit_buttons > button:hover {
+    background-color: var(--ligth-theme-color);
+    color: var(--dark-font-color);
+}
+
+.profile_actions_buttons > button:hover {
+    background-color: var(--alert-color);
+    color: var(--dark-font-color);
+}
+
+.profile_account_actions > div > button {
+    outline: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5em 1em;
+    font-weight: bold;
+    letter-spacing: 0.6px;
+    border-radius: 1em;
+}

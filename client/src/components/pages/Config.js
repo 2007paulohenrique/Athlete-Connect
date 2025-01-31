@@ -1,28 +1,24 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./Config.module.css";
-import PhotoInput from "../form/PhotoInput";
-import MainInput from "../form/MainInput";
-import Textarea from "../form/Textarea";
-import SubmitButton from "../form/SubmitButton";
-import Select from "../form/Select";
 import { useProfile } from "../../ProfileContext";
 import ConfirmationBox from "../layout/ConfirmationBox";
 import axios from "axios";
 import PostsFullScreen from "../layout/PostsFullScreen";
-import About from "./about/About";
-import Features from "./about/Features";
-import Security from "./about/Security";
-import Questions from "./about/Questions";
-import Complaints from "./about/Complaints";
-import Collaborate from "./about/Collaborate";
-import PostsInSection from "../layout/PostsInSection";
 import { useNavigate } from "react-router-dom";
 import formatDate from "../../utils/DateFormatter";
 import ExitPageBar from "../layout/ExitPageBar";
+import ProfileConfig from "./config/ProfileConfig";
+import PermissionConfig from "./config/PermissionConfig";
+import NotificationConfig from "./config/NotificationConfig";
+import VisibilityConfig from "./config/VisibilityConfig";
+import AboutInfo from "./config/AboutInfo";
+import History from "./config/History";
+import Message from "../layout/Message";
 
 function Config() {
     const [configType, setConfigType] = useState("profile");
     const [profile, setProfile] = useState({});
+    const [initialProfile, setInitialProfile] = useState({});
     const [config, setConfig] = useState({});
     const {profileId, setProfileId} = useProfile();
     const [showConfirmation, setShowConfirmation] = useState(false);
@@ -41,10 +37,19 @@ function Config() {
     const [likedPostsEnd, setLikedPostsEnd] = useState(0);
     const [commentedPostsEnd, setCommentedPostsEnd] = useState(0);
     const [sharedPostsEnd, setSharedPostsEnd] = useState(0);
-    const [aboutItem, setAboutItem] = useState("about");
+    const [profileSubmitError, setProfileSubmiterror] = useState(false);
+    const [message, setMessage] = useState({});
 
     const postsLimit = useRef(24);
     const navigate = useNavigate();
+
+    function setMessageWithReset(newMessage, type) {
+        setMessage(null);
+
+        setTimeout(() => {
+            setMessage({message: newMessage, type: type});
+        }, 1);
+    }
 
     const loadLikedPosts = useCallback(async (id) => {
         if (likedPostsLoading || likedPostsEnd) return;
@@ -179,9 +184,14 @@ function Config() {
         try {
             const resp = await axios.get(`http://localhost:5000/profiles/${id}`);
             const data = resp.data;
+
+            if (resp.status === 204) {
+                navigate("/login", {state: {message: "Seu perfil foi desativado. Faça login e o ative para voltar a usá-lo.", type: "error"}});
+                return;
+            }
             
             if (data.error) {
-                if (resp.status === 404 || resp.status === 204) {
+                if (resp.status === 404) {
                     navigate("/login", {state: {message: data.error, type: "error"}});
                 } else {
                     navigate("/errorPage", {state: {error: data.error}})
@@ -189,9 +199,10 @@ function Config() {
             } else {
                 const {config, ...others} = data;
 
+                setInitialProfile(others);
                 setProfile(others);
                 setConfig(config);
-                }
+            }
         } catch (err) {
             navigate("/errorPage", {state: {error: err.message}});
     
@@ -199,7 +210,7 @@ function Config() {
         }
     }, [navigate]);  
     
-    const desactiveAccountCallback = useCallback(async (id) => {
+    const desactiveProfileCallback = useCallback(async (id) => {
         try {
             const resp = await axios.put(`http://localhost:5000/profiles/${id}/active/${false}`);
             const data = resp.data;
@@ -227,17 +238,6 @@ function Config() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const validateName = useCallback(() => {
-        return (profile.nome && 
-            /^[a-zA-Z0-9_@+&.]{4,30}$/.test(profile.nome)) ||
-            !profile.nome;
-    }, [profile]); 
-    
-    const validateBio = useCallback(() => {
-        return (profile.biografia && profile.biografia.length <= 150) || 
-            !profile.biografia;
-    }, [profile]); 
-
     function exitAccount() {
         localStorage.removeItem("athleteConnectProfileId");
         setProfileId(null);
@@ -246,53 +246,35 @@ function Config() {
     }
 
 
-    function desactiveAccountConfirmation() {
+    function desactiveProfileConfirmation() {
         setConfirmationText('Caso desative seu perfil, ele não poderá mais ser usado ou encontrado no Athlete Connect. Clique em "confirmar" para desativar seu perfil.')
-        setHandleOnConfirmation(() => desactiveAccountCallback(profile.is_perfil));
+        setHandleOnConfirmation(() => () => desactiveProfileCallback(profile.id_perfil));
         setShowConfirmation(true);
     }
 
     function exitAccountConfirmation() {
         setConfirmationText('Caso saia da sua conta, basta realizar login para acessá-la novamente. Clique em "confirmar" para sair da sua conta.')
-        setHandleOnConfirmation(exitAccount)
+        setHandleOnConfirmation(() => exitAccount)
         setShowConfirmation(true);
     }
 
-    function modifyProfileConfirmation() {
+    function modifyProfileConfirmation(e) {
+        e.preventDefault();
+        
+        if (profileSubmitError) return;
+
         setConfirmationText('Sempre será possível modificar seu perfil, mas lembre-se que os outros usuários não vão saber dessa mudança. Clique em "confirmar" para confirmar as mudanças.');
-        setHandleOnConfirmation(() => modifyProfile(profile.id_perfil));
+        setHandleOnConfirmation(() => () => modifyProfile(profile.id_perfil));
         setShowConfirmation(true);
-    }
-
-    function handleOnChangeProfile(e) {
-        if (e.target.name === "nome") e.target.value = e.target.value.replace(/\s+/g, "");
-
-        if (e.target.name === "biografia") {    
-            e.target.value = e.target.value.trimStart().replace(/\n+/g, "").replace(/\s+/g, " ")
-        }
-
-        setProfile(prevProfile => ({...prevProfile, [e.target.name]: e.target.type === "checkbox" ? e.target.checked : e.target.value}));
     }
 
     async function handleOnChangeConfig(e) {    
         try {
             await modifyConfig(profile.id_perfil, e.target.name, e.target.type === "checkbox" ? e.target.checked : e.target.value);
             
-            setConfig(prevConfig => ({...prevConfig, [e.target.name]: e.target.type === "checkbox" ? e.target.checked : e.target.value}));
+            setConfig(prevConfig => ({...prevConfig, [e.target.name]: e.target.type === "checkbox" ? !e.target.checked : e.target.value}));
         } catch (error) {
             console.error("Erro ao modificar configuração:", error);
-        }
-    }
-
-    function handleOnChangeProfilePhoto(e) {
-        const files = Array.from(e.target.files);
-    
-        if (files.length === 0) return; 
-    
-        const blobUrl = URL.createObjectURL(files[0]); 
-    
-        if (files.length === 1) {
-            setProfile(prevProfile => ({...prevProfile, blobUrl, photo: files}));
         }
     }
 
@@ -313,6 +295,9 @@ function Config() {
 
             if (data.error) {
                 navigate("/errorPage", {state: {error: data.error}})
+            } else {
+                setInitialProfile(profile);
+                setMessageWithReset("Modificações concluídas .", "success");
             }
         } catch (err) {                    
             navigate("/errorPage", {state: {error: err.message}})
@@ -357,34 +342,34 @@ function Config() {
     }, [postsFullScreen]);
 
     useEffect(() => {
-        if (postsToShowType === "commented") {
+        if (configType === "history" && postsToShowType === "commented") {
             const handleScrollCommentedPosts = () => handleScroll(() => loadCommentedPosts(profile.id_perfil));
 
             window.addEventListener("scroll", handleScrollCommentedPosts);
             
             return () => window.removeEventListener("scroll", handleScrollCommentedPosts);
         }
-    }, [loadCommentedPosts, handleScroll, postsToShowType, profile.id_perfil]);
+    }, [loadCommentedPosts, configType, handleScroll, postsToShowType, profile.id_perfil]);
 
     useEffect(() => {
-        if (postsToShowType === "liked") {   
+        if (configType === "history" && postsToShowType === "liked") {   
             const handleScrollLikedPosts = () => handleScroll(() => loadLikedPosts(profile.id_perfil));
 
             window.addEventListener("scroll", handleScrollLikedPosts);
             
             return () => window.removeEventListener("scroll", handleScrollLikedPosts);
         }
-    }, [handleScroll, postsToShowType, loadLikedPosts, profile.id_perfil]);
+    }, [handleScroll, postsToShowType, configType, loadLikedPosts, profile.id_perfil]);
 
     useEffect(() => {
-        if (postsToShowType === "shared") {   
+        if (configType === "history" && postsToShowType === "shared") {   
             const handleScrollSharedPosts = () => handleScroll(() => loadSharedPosts(profile.id_perfil));
 
             window.addEventListener("scroll", handleScrollSharedPosts);
             
             return () => window.removeEventListener("scroll", handleScrollSharedPosts);
         }
-    }, [handleScroll, postsToShowType, loadSharedPosts, profile.id_perfil]);
+    }, [handleScroll, postsToShowType, configType, loadSharedPosts, profile.id_perfil]);
 
     function handlePostClick(postId) {
         setSelectedPostId(postId)
@@ -417,331 +402,68 @@ function Config() {
         }
     };
 
-    // O atributo name dos inputs possuem o valor = nome do campo no banco de dados para melhor manipulação dos dados durante a mudança de estados
-    
-    function ProfileConfig() {
-        return (
-            <form onSubmit={modifyProfileConfirmation}>
-                <PhotoInput 
-                    name="profilePhoto" 
-                    photoPath={profile?.blobUrl || profile?.media?.caminho} 
-                    handleChange={handleOnChangeProfilePhoto} 
-                    size="big"
-                />
-
-                <MainInput
-                    type="text"
-                    name="nome"
-                    placeholder="Insira o nome de usuário" 
-                    labelText="Nome de Usuário*"
-                    maxLength={30} 
-                    alertMessage='O nome de usuário deve ter entre 4 e 30 caracteres, sem espaços e símbolos diferentes de: "_", "@", "+","&" e ".".' 
-                    handleChange={handleOnChangeProfile} 
-                    showAlert={!validateName()}
-                    value={profile.nome}
-                />
-
-                <Textarea 
-                    name="biografia" 
-                    placeholder="Insira sua biografia" 
-                    maxLength={150}
-                    labelText="Biografia" 
-                    alertMessage="A biografia não pode ter mais que 150 caracteres." 
-                    handleChange={handleOnChangeProfile} 
-                    showAlert={!validateBio()}
-                    value={profile.biografia}
-                />     
-
-                <MainInput 
-                    type="checkbox" 
-                    name="privado"  
-                    labelText="Clique abaixo para tornar seu perfil privado, com isso, somente seus seguidores terão acesso às suas publicações e flashes" 
-                    handleChange={handleOnChangeProfile} 
-                    value={profile.privado}
-                    checked={profile.privado}
-                />                  
-
-                <SubmitButton text="Confirmar alterações"/>
-
-                <button onClick={() => navigate("/profilePreferences", {state: {prevPreferences: profile.preferences, modifyProfile: profile}})}>
-                    Editar preferências
-                </button>
-
-                <button >
-                    Adicionar formação
-                </button>
-
-                <button onClick={desactiveAccountConfirmation}>
-                    Desativar perfil
-                </button>
-
-                <button onClick={exitAccountConfirmation}>
-                    Sair da conta
-                </button>
-            </form>
-        )
-    }
-
-    function PermissionConfig() {
-        return (
-            <ul>
-                <h3>Permissões do Aplicativo</h3>
-
-                <li>
-                    <MainInput 
-                        type="checkbox" 
-                        name="permissao_camera"  
-                        labelText="Clique abaixo para permitir que o Athlete Connect acesse a câmera do seu dispositivo" 
-                        handleChange={handleOnChangeConfig} 
-                        value={config.permissao_camera}
-                        checked={config.permissao_camera}
-                    /> 
-                </li>
-
-                <li>
-                    <MainInput 
-                        type="checkbox" 
-                        name="permissao_microfone"  
-                        labelText="Clique abaixo para permitir que o Athlete Connect acesse o microfone do seu dispositivo" 
-                        handleChange={handleOnChangeConfig} 
-                        value={config.permissao_microfone}
-                        checked={config.permissao_microfone}
-                    /> 
-                </li>
-
-                <li>
-                    <MainInput 
-                        type="checkbox" 
-                        name="permissao_fotos_videos"  
-                        labelText="Clique abaixo para permitir que o Athlete Connect acesse o armazenamento do seu dispositivo" 
-                        handleChange={handleOnChangeConfig} 
-                        value={config.permissao_fotos_videos}
-                        checked={config.permissao_fotos_videos}
-                    /> 
-                </li>
-
-                <li>
-                    <MainInput 
-                        type="checkbox" 
-                        name="permissao_localizacao"  
-                        labelText="Clique abaixo para permitir que o Athlete Connect acesse a sua localização" 
-                        handleChange={handleOnChangeConfig} 
-                        value={config.permissao_localizacao}
-                        checked={config.permissao_localizacao}
-                    /> 
-                </li>
-
-                <h3>Permissões do perfil</h3>
-
-                <li>
-                    <Select 
-                        name="permissao_marcacao" 
-                        labelText="Marcações"
-                        handleChange={handleOnChangeConfig}
-                        values={["Todos", "Seguidores", "Seguidos", "Ninguém"]}
-                        selectedValue={config.permissao_marcacao}
-                        description="Indica quem pode te marcar em publicações."
-                    />
-                </li>
-
-                <li>
-                    <Select 
-                        name="permissao_compartilhamento" 
-                        labelText="Compartilhamentos"
-                        handleChange={handleOnChangeConfig}
-                        values={["Todos", "Seguidores", "Seguidos", "Ninguém"]}
-                        selectedValue={config.permissao_compartilhamento}
-                        description="Indica quem pode compartilhar algo para você."
-                    />
-                </li>
-
-                <li>
-                    <Select 
-                        name="permissao_comentario" 
-                        labelText="Comentários"
-                        handleChange={handleOnChangeConfig}
-                        values={["Todos", "Seguidores", "Seguidos", "Ninguém"]}
-                        selectedValue={config.permissao_comentario}
-                        description="Indica quem pode comentar em suas publicações."
-                    />
-                </li>
-            </ul>
-        )
-    }
-
-    function VisibilityConfig() {
-        return (
-            <ul>
-                <li>
-                    <MainInput 
-                        type="checkbox" 
-                        name="visibilidade_curtidas"  
-                        labelText="Clique abaixo para que o número de curtidas apareça em suas postagens" 
-                        handleChange={handleOnChangeConfig} 
-                        value={config.visibilidade_curtidas}
-                        checked={config.visibilidade_curtidas}
-                    /> 
-                </li>
-
-                <li>
-                    <MainInput 
-                        type="checkbox" 
-                        name="visibilidade_compartilhamentos"  
-                        labelText="Clique abaixo para que o número de compartilhamentos apareça em suas postagens" 
-                        handleChange={handleOnChangeConfig} 
-                        value={config.visibilidade_compartilhamentos}
-                        checked={config.visibilidade_compartilhamentos}
-                    /> 
-                </li>
-
-                <li>
-                    <MainInput 
-                        type="checkbox" 
-                        name="visibilidade_comentarios"  
-                        labelText="Clique abaixo para que o número de comentários apareça em suas postagens" 
-                        handleChange={handleOnChangeConfig} 
-                        value={config.visibilidade_comentarios}
-                        checked={config.visibilidade_comentarios}
-                    /> 
-                </li>
-
-                <li>
-                    <MainInput 
-                        type="checkbox" 
-                        name="visibilidade_seguindo"  
-                        labelText="Clique abaixo para que outros perfis possam ver quem você segue" 
-                        handleChange={handleOnChangeConfig} 
-                        value={config.visibilidade_seguindo}
-                        checked={config.visibilidade_seguindo}
-                    /> 
-                </li>
-
-                <li>
-                    <MainInput 
-                        type="checkbox" 
-                        name="visibilidade_seguidores"  
-                        labelText="Clique abaixo para que outros perfis possam ver quem te segue" 
-                        handleChange={handleOnChangeConfig} 
-                        value={config.visibilidade_seguidores}
-                        checked={config.visibilidade_seguidores}
-                    /> 
-                </li>
-            </ul>
-        )
-    }
-
-    function NotificationConfig() {
-        return (
-            <ul>
-                <li>
-                    <MainInput 
-                        type="checkbox" 
-                        name="notificacoes"  
-                        labelText="Clique abaixo para que você receba notificações do Athlete Connect" 
-                        handleChange={handleOnChangeConfig} 
-                        value={config.notificacoes}
-                        checked={config.notificacoes}
-                    /> 
-                </li>
-
-                <li>
-                    <MainInput 
-                        type="checkbox" 
-                        name="notificacoes_email"  
-                        labelText="Clique abaixo para que você receba notificações no E-mail do Athlete Connect" 
-                        handleChange={handleOnChangeConfig} 
-                        value={config.notificacoes_email}
-                        checked={config.notificacoes_email}
-                    /> 
-                </li>
-            </ul>
-        )
-    }
-
-    function History() {
-        return (
-            <ul>
-                <li>
-                    <button onClick={() => setPostsToShowType("liked")}>
-                        Postagens curtidas
-                    </button>
-
-                    <button onClick={() => setPostsToShowType("shared")}>
-                        Postagens compartilhadas
-                    </button>
-
-                    <button onClick={() => setPostsToShowType("commented")}>
-                        Postagens comentadas
-                    </button>
-
-                    <section>
-                        <PostsInSection 
-                            posts={posts[postsToShowType]} 
-                            notFoundText={`Você ainda não ${postsToShowType === "liked" ? "curtiu" : postsToShowType === "commented" ? "comentou" : "compartilhou"} nenhuma postagem.`}
-                            handlePostClick={(postId) => handlePostClick(postId)}
-                            postsLoading={postsToShowType === "liked" ? likedPostsLoading : postsToShowType === "commented" ? commentedPostsLoading : sharedPostsLoading}
-                        />
-                    </section>
-                </li>
-            </ul>
-        )
-    }
-
-    const aboutComponents = {
-        about: <About/>,
-        features: <Features/>,
-        security: <Security/>,
-        questions: <Questions/>,
-        complaints: <Complaints/>,
-        collaborate: <Collaborate/>,
-    };
-    
-    function AboutInfo() {
-        return (
-            <ul>
-                <li>
-                    <button onClick={() => setAboutItem("about")}>
-                        O que é o Athlete Connect?
-                    </button>
-
-                    <button onClick={() => setAboutItem("features")}>
-                        Quais recursos eu posso usar?
-                    </button>
-
-                    <button onClick={() => setAboutItem("security")}>
-                        Minha segurança é garantida?
-                    </button>
-
-                    <button onClick={() => setAboutItem("questions")}>
-                        Como posso tirar dúvidas?
-                    </button>
-
-                    <button onClick={() => setAboutItem("complaints")}>
-                        Como faço para enviar uma reclamação?
-                    </button>
-
-                    <button onClick={() => setAboutItem("collaborate")}>
-                        Como posso colaborar?
-                    </button>
-
-                    {aboutComponents[aboutItem]}
-                </li>
-            </ul>
-        )
-    }
+    useEffect(() => {
+        setProfile(initialProfile);
+    }, [configType, initialProfile]);
 
     const configs = {
-        profile: {title: "Perfil e Conta", component: <ProfileConfig/>},
-        permission: {title: "Permissões", component: <PermissionConfig/>},
-        notification: {title: "Notificações", component: <NotificationConfig/>},
-        visibility: {title: "Visibilidade", component: <VisibilityConfig/>},
-        history: {title: "Histórico", component: <History/>},
-        about: {title: "Athlete Connect", component: <AboutInfo/>},
+        profile: {
+            title: "Perfil e Conta", 
+            component: <ProfileConfig 
+                initialProfile={initialProfile}
+                profile={profile} 
+                setProfile={setProfile}
+                handleModifyProfile={modifyProfileConfirmation}
+                setSubmitError={setProfileSubmiterror}
+                handleDesactiveProfile={desactiveProfileConfirmation}
+                handleExitAccount={exitAccountConfirmation}
+            />
+        },
+        permission: {
+            title: "Permissões", 
+            component: <PermissionConfig
+                config={config}
+                handleChange={handleOnChangeConfig}
+            />
+        },
+        notification: {
+            title: "Notificações", 
+            component: <NotificationConfig
+                config={config}
+                handleChange={handleOnChangeConfig}
+            />
+        },
+        visibility: {
+            title: "Visibilidade", 
+            component: <VisibilityConfig
+                config={config}
+                handleChange={handleOnChangeConfig}
+            />
+        },
+        history: {
+            title: "Histórico", 
+            component: <History
+                posts={posts}
+                postsToShowType={postsToShowType}
+                setPostsToShowType={setPostsToShowType}
+                likedPostsLoading={likedPostsLoading}
+                commentedPostsLoading={commentedPostsLoading}
+                sharedPostsLoading={sharedPostsLoading}
+                handlePostClick={handlePostClick}
+            />
+        },
+        about: {
+            title: "Athlete Connect", 
+            component: <AboutInfo
+            />
+        },
     }
 
     return (
         !postsFullScreen ?
             <main className={styles.config_page}>
+                {message && <Message type={message.type} message={message.message}/>}
+
                 <ExitPageBar handleExitPage={() => navigate(-1)}/>
 
                 {showConfirmation && 
@@ -756,22 +478,61 @@ function Config() {
 
                 <hr/>
 
-                <ul className={styles.config_types}>
-                    <li onClick={() => setConfigType("profile")}>Perfil</li>
-                    <li onClick={() => setConfigType("permission")}>Permissões</li>
-                    <li onClick={() => setConfigType("visibility")}>Visibilidade</li>
-                    <li onClick={() => setConfigType("notification")}>Notificações</li>
-                    <li onClick={() => setConfigType("history")}>Histórico</li>
-                    <li onClick={() => setConfigType("about")}>Athlete Connect</li>
-                </ul>
+                <div className={styles.config}>
+                    <ul className={styles.config_types}>
+                        <li 
+                            onClick={() => setConfigType("profile")} 
+                            className={configType === "profile" ? styles.selected_config : undefined}
+                        >
+                            Perfil e Conta
+                        </li>
 
-                <section className={styles.configs}>
-                    <h2>{configs[configType].title}</h2>
+                        <li 
+                            onClick={() => setConfigType("permission")} 
+                            className={configType === "permission" ? styles.selected_config : undefined}
+                        >
+                            Permissões
+                        </li>
+
+                        <li 
+                            onClick={() => setConfigType("visibility")} 
+                            className={configType === "visibility" ? styles.selected_config : undefined}
+                        >
+                            Visibilidade
+                        </li>
+
+                        <li 
+                            onClick={() => setConfigType("notification")} 
+                            className={configType === "notification" ? styles.selected_config : undefined}
+                        >
+                            Notificações
+                        </li>
+
+                        <li 
+                            onClick={() => setConfigType("history")} 
+                            className={configType === "history" ? styles.selected_config : undefined}
+                        >
+                            Histórico
+                        </li>
+
+                        <li 
+                            onClick={() => setConfigType("about")} 
+                            className={configType === "about" ? styles.selected_config : undefined}
+                        >
+                            Athlete Connect
+                        </li>
+                    </ul>
 
                     <hr/>
 
-                    {configs[configType].component}
-                </section>
+                    <section className={styles.configs}>
+                        <h2>{configs[configType].title}</h2>
+
+                        <hr/>
+
+                        {configs[configType].component}
+                    </section>
+                </div>
             </main>
         :
             <PostsFullScreen

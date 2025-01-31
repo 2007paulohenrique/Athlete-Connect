@@ -15,7 +15,7 @@ function ProfilePhotoContainer({ profilePhotoPath, size = "medium", isBlobUrl = 
 
     return (
         <div className={`${styles.profile_photo_container} ${styles[size]}`}>
-            <img src={profilePhoto} alt="Profile"/>
+            <img src={profilePhoto} alt=""/>
         </div>
     );
 }

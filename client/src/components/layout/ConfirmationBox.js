@@ -2,6 +2,14 @@ import SubmitButton from "../form/SubmitButton";
 import styles from "./ConfirmationBox.module.css";
 
 function ConfirmationBox({ text, handleConfirmation, setShowConfirmation }) {
+    function handleOnConfirmation(e) {
+        e.preventDefault();
+
+        handleConfirmation();
+
+        setShowConfirmation(false);
+    }
+
     return (
         <div className={styles.confirmation_box}>
             <span onClick={() => setShowConfirmation(false)}>
@@ -10,7 +18,7 @@ function ConfirmationBox({ text, handleConfirmation, setShowConfirmation }) {
 
             <p>{text}</p>
 
-            <form onClick={handleConfirmation}>
+            <form onSubmit={handleOnConfirmation}>
                 <SubmitButton text="Confirmar"/>
             </form>
         </div>

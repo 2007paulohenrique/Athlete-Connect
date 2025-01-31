@@ -44,7 +44,7 @@ function ProfileNavBar() {
         <nav className={styles.profile_nav_bar}>
             <ul>
                 <div>
-                    <li>
+                    <li onClick={() => navigate("/myProfile/config")}>
                         <img src={settingsIcon} alt="Settings"/>
                     </li>
 

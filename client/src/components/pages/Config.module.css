@@ -1,0 +1,86 @@
+.config_page {
+    background-color: var(--dark-bg-color);
+    padding: 2em 1em 1em;
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    height: 100dvh;
+}
+
+.config_page > h1 {
+    letter-spacing: 1px;
+    margin-left: 1em;
+}
+
+.config_page > hr {
+    border: 1px solid var(--ligth-font-color);
+}
+
+.config {
+    display: flex;
+    height: 100%;
+    overflow: hidden;
+    width: 100%;
+    gap: 1em;
+}
+
+.config > ul {
+    list-style: none;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+}
+
+.config > ul > li {
+    font-size: 1.3em;
+    text-align: center;
+    padding: 0 0.5em;
+    cursor: pointer;
+}
+
+.selected_config, 
+.config > ul > li:hover {
+    color: var(--ligth-theme-color);
+    position: relative;
+    cursor: pointer;
+}
+
+.config > ul > li::before {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 1px;
+    transition: all 0.3s ease-in-out;
+}
+
+.selected_config::before {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background-color: var(--ligth-theme-color);
+}
+
+.configs {
+    padding: 0 1em 1em;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8em;
+    width: 100%;
+    flex: 1;
+    overflow: auto;
+}
+
+.configs > h2 {
+    letter-spacing: 0.6px;
+    color: var(--ligth-theme-color);
+}
+
+.configs > hr {
+    border: 1px solid var(--ligth-theme-color);
+    margin-bottom: 1em;
+}

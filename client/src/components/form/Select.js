@@ -5,9 +5,9 @@ function Select({ name, labelText, handleChange, values = [], selectedValue, des
         <div className={styles.select}>
             <label htmlFor={name}>{labelText}</label>
 
-            <select name={name} id={name} onChange={handleChange}>
-                {values?.length !== 0 && values.map((value) =>
-                    <option value={value.toLowerCase()} selected={value === selectedValue}>{value}</option>
+            <select name={name} id={name} onChange={handleChange} value={selectedValue}>
+                {values?.length !== 0 && values.map((value, index) =>
+                    <option key={index} value={value.toLowerCase()}>{value}</option>
                 )}
             </select>
 

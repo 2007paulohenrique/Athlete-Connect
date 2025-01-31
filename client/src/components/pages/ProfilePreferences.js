@@ -54,7 +54,6 @@ function ProfilePreferences() {
     }, [fetchSports, location, navigate]);
     
     function handleOnClick(sport) {
-        console.log(profilePreferences)
         setProfilePreferences(prevPreferences => {
             if (prevPreferences.some(prevSport => String(sport.id_esporte) === String(prevSport.id_esporte))) {
                 return prevPreferences.filter(prevSport => String(sport.id_esporte) !== String(prevSport.id_esporte));
@@ -68,10 +67,11 @@ function ProfilePreferences() {
         e.preventDefault();
 
         if (isSubmitting) return; 
-
+    
         setIsSubmitting(true);
-
+        
         if (profilePreferences.length === 0) {
+            setIsSubmitting(false);
             setShowConfirmation(true)
         } else {
             if (!isModifyPreferences) {
