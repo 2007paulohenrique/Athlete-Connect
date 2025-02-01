@@ -34,18 +34,18 @@ function ProfileConfig({ initialProfile, profile, setProfile, handleModifyProfil
     }
 
     const validateName = useCallback(() => {
-        return (profile.nome && 
-            /^[a-zA-Z0-9_@+&.]{4,30}$/.test(profile.nome)) ||
-            !profile.nome;
+        return (profile?.nome && 
+            /^[a-zA-Z0-9_@+&.]{4,30}$/.test(profile?.nome)) ||
+            !profile?.nome;
     }, [profile]); 
     
     const validateBio = useCallback(() => {
-        return (profile.biografia && profile.biografia.length <= 150) || 
-            !profile.biografia;
+        return (profile?.biografia && profile?.biografia.length <= 150) || 
+            !profile?.biografia;
     }, [profile]); 
 
     useEffect(() => {
-        if (!profile.nome) {
+        if (!profile?.nome) {
             setSubmitError(true);
             
             return;
@@ -75,7 +75,7 @@ function ProfileConfig({ initialProfile, profile, setProfile, handleModifyProfil
                 inputIcon={userIcon}
                 inputIconAlt="User Icon"
                 showAlert={!validateName()}
-                value={profile.nome}
+                value={profile?.nome}
             />
 
             <Textarea 
@@ -88,7 +88,7 @@ function ProfileConfig({ initialProfile, profile, setProfile, handleModifyProfil
                 showAlert={!validateBio()}
                 inputIconAlt="Bio Icon"
                 inputIcon={bioIcon}
-                value={profile.biografia}
+                value={profile?.biografia}
             />     
 
             <MainInput 
@@ -96,8 +96,8 @@ function ProfileConfig({ initialProfile, profile, setProfile, handleModifyProfil
                 name="privado"  
                 labelText="Clique abaixo para tornar seu perfil privado, com isso, somente seus seguidores terão acesso às suas publicações e flashes" 
                 handleChange={handleOnChangeProfile} 
-                value={profile.privado}
-                checked={profile.privado}
+                value={profile?.privado}
+                checked={profile?.privado}
             />                  
 
 

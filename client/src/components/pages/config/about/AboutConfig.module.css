@@ -1,0 +1,10 @@
+.about_config {
+
+}
+
+.about_config > h3 {
+    letter-spacing: 0.6px;
+    border-bottom: 1px solid var(--ligth-theme-color);
+    color: var(--ligth-theme-color);
+    padding: 0.3em;
+}

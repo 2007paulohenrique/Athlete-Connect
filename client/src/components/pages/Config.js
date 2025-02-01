@@ -14,11 +14,12 @@ import VisibilityConfig from "./config/VisibilityConfig";
 import AboutInfo from "./config/AboutInfo";
 import History from "./config/History";
 import Message from "../layout/Message";
+import loading from "../../img/animations/loading.svg";
 
 function Config() {
     const [configType, setConfigType] = useState("profile");
     const [profile, setProfile] = useState({});
-    const [initialProfile, setInitialProfile] = useState({});
+    const [initialProfile, setInitialProfile] = useState();
     const [config, setConfig] = useState({});
     const {profileId, setProfileId} = useProfile();
     const [showConfirmation, setShowConfirmation] = useState(false);
@@ -248,7 +249,7 @@ function Config() {
 
     function desactiveProfileConfirmation() {
         setConfirmationText('Caso desative seu perfil, ele não poderá mais ser usado ou encontrado no Athlete Connect. Clique em "confirmar" para desativar seu perfil.')
-        setHandleOnConfirmation(() => () => desactiveProfileCallback(profile.id_perfil));
+        setHandleOnConfirmation(() => () => desactiveProfileCallback(profile?.id_perfil));
         setShowConfirmation(true);
     }
 
@@ -264,15 +265,17 @@ function Config() {
         if (profileSubmitError) return;
 
         setConfirmationText('Sempre será possível modificar seu perfil, mas lembre-se que os outros usuários não vão saber dessa mudança. Clique em "confirmar" para confirmar as mudanças.');
-        setHandleOnConfirmation(() => () => modifyProfile(profile.id_perfil));
+        setHandleOnConfirmation(() => () => modifyProfile(profile?.id_perfil));
         setShowConfirmation(true);
     }
 
     async function handleOnChangeConfig(e) {    
         try {
-            await modifyConfig(profile.id_perfil, e.target.name, e.target.type === "checkbox" ? e.target.checked : e.target.value);
+            const newValue = e.target.type === "checkbox" ? e.target.checked : e.target.value;
+
+            await modifyConfig(profile?.id_perfil, e.target.name, newValue);
             
-            setConfig(prevConfig => ({...prevConfig, [e.target.name]: e.target.type === "checkbox" ? !e.target.checked : e.target.value}));
+            setConfig(prevConfig => ({...prevConfig, [e.target.name]: newValue}));
         } catch (error) {
             console.error("Erro ao modificar configuração:", error);
         }
@@ -282,11 +285,11 @@ function Config() {
         try {
             const formData = new FormData();
 
-            formData.append("name", profile.nome);
-            formData.append("bio", profile.biografia);
-            formData.append("private", profile.privado);
+            formData.append("name", profile?.nome);
+            formData.append("bio", profile?.biografia);
+            formData.append("private", profile?.privado);
 
-            if (profile.photo && profile.photo.length > 0) formData.append("photo", profile.photo[0]);
+            if (profile?.photo && profile?.photo.length > 0) formData.append("photo", profile?.photo[0]);
 
             const resp = await axios.put(`http://localhost:5000/profiles/${id}`, formData, {
                 headers: { "Content-Type": "multipart/form-data" }, 
@@ -343,33 +346,33 @@ function Config() {
 
     useEffect(() => {
         if (configType === "history" && postsToShowType === "commented") {
-            const handleScrollCommentedPosts = () => handleScroll(() => loadCommentedPosts(profile.id_perfil));
+            const handleScrollCommentedPosts = () => handleScroll(() => loadCommentedPosts(profile?.id_perfil));
 
             window.addEventListener("scroll", handleScrollCommentedPosts);
             
             return () => window.removeEventListener("scroll", handleScrollCommentedPosts);
         }
-    }, [loadCommentedPosts, configType, handleScroll, postsToShowType, profile.id_perfil]);
+    }, [loadCommentedPosts, configType, handleScroll, postsToShowType, profile?.id_perfil]);
 
     useEffect(() => {
         if (configType === "history" && postsToShowType === "liked") {   
-            const handleScrollLikedPosts = () => handleScroll(() => loadLikedPosts(profile.id_perfil));
+            const handleScrollLikedPosts = () => handleScroll(() => loadLikedPosts(profile?.id_perfil));
 
             window.addEventListener("scroll", handleScrollLikedPosts);
             
             return () => window.removeEventListener("scroll", handleScrollLikedPosts);
         }
-    }, [handleScroll, postsToShowType, configType, loadLikedPosts, profile.id_perfil]);
+    }, [handleScroll, postsToShowType, configType, loadLikedPosts, profile?.id_perfil]);
 
     useEffect(() => {
         if (configType === "history" && postsToShowType === "shared") {   
-            const handleScrollSharedPosts = () => handleScroll(() => loadSharedPosts(profile.id_perfil));
+            const handleScrollSharedPosts = () => handleScroll(() => loadSharedPosts(profile?.id_perfil));
 
             window.addEventListener("scroll", handleScrollSharedPosts);
             
             return () => window.removeEventListener("scroll", handleScrollSharedPosts);
         }
-    }, [handleScroll, postsToShowType, configType, loadSharedPosts, profile.id_perfil]);
+    }, [handleScroll, postsToShowType, configType, loadSharedPosts, profile?.id_perfil]);
 
     function handlePostClick(postId) {
         setSelectedPostId(postId)
@@ -530,7 +533,11 @@ function Config() {
 
                         <hr/>
 
-                        {configs[configType].component}
+                        {initialProfile ? 
+                            configs[configType].component
+                        : 
+                            <img className="loading" src={loading} alt="Loading"/>
+                        }
                     </section>
                 </div>
             </main>

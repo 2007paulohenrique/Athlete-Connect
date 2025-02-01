@@ -158,7 +158,8 @@
     top: 0;
     height: 100%;
     width: 100%;
-    overflow: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
     background-color: var(--dark-bg-color);
     border: 2px solid var(--dark-theme-color);
     z-index: 3;

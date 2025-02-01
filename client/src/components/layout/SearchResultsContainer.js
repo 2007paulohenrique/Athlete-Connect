@@ -1,5 +1,5 @@
 import styles from "./SearchResultsContainer.module.css";
-import loading from "../../img/animations/loading.svg"
+import loading from "../../img/animations/loading.svg";
 import SportCard from "./SportCard";
 import ProfileBiggerContainer from "./ProfileBiggerContainer";
 import { useNavigate } from "react-router-dom";

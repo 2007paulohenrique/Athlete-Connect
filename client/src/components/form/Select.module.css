@@ -1,15 +1,38 @@
 .select {
-
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
 }
 
 .select > label {
+    font-size: 1.5em;
+    width: max-content;
+}
 
+.select:has(select:focus) > label {
+    color: var(--ligth-theme-color);
 }
 
 .select > select {
-
+    width: max-content;
+    min-width: 10em;
+    outline: none;
+    background-color: var(--ligth-bg-color);
+    border: 1px solid var(--ligth-font-color);
+    cursor: pointer;
+    padding: 0.5em 1em;
+    appearance: none; 
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    position: relative;
 }
 
-.select > select > option {
+.select > select:where(:hover, :focus) {
+    background-color: black;
+}
 
+.description {
+    font-size: 0.9em;
+    color: var(--white-bg-color);
+    letter-spacing: 0.4px;
 }

@@ -20,35 +20,35 @@ function AboutInfo() {
     };
 
     return (
-        <ul className={styles.config_items}>
-            <li>
-                <button onClick={() => setAboutItem("about")}>
+        <div className={styles.about_info}>
+            <ul className={styles.about_themes}>
+                <li className={aboutItem === "about" ? styles.selected_about_theme : undefined} onClick={() => setAboutItem("about")}>
                     O que é o Athlete Connect?
-                </button>
+                </li>
 
-                <button onClick={() => setAboutItem("features")}>
+                <li className={aboutItem === "features" ? styles.selected_about_theme : undefined} onClick={() => setAboutItem("features")}>
                     Quais recursos eu posso usar?
-                </button>
+                </li>
 
-                <button onClick={() => setAboutItem("security")}>
+                <li className={aboutItem === "security" ? styles.selected_about_theme : undefined} onClick={() => setAboutItem("security")}>
                     Minha segurança é garantida?
-                </button>
+                </li>
 
-                <button onClick={() => setAboutItem("questions")}>
+                <li className={aboutItem === "questions" ? styles.selected_about_theme : undefined} onClick={() => setAboutItem("questions")}>
                     Como posso tirar dúvidas?
-                </button>
+                </li>
 
-                <button onClick={() => setAboutItem("complaints")}>
+                <li className={aboutItem === "complaints" ? styles.selected_about_theme : undefined} onClick={() => setAboutItem("complaints")}>
                     Como faço para enviar uma reclamação?
-                </button>
+                </li>
 
-                <button onClick={() => setAboutItem("collaborate")}>
+                <li className={aboutItem === "collaborate" ? styles.selected_about_theme : undefined} onClick={() => setAboutItem("collaborate")}>
                     Como posso colaborar?
-                </button>
+                </li>
+            </ul>
 
-                {aboutComponents[aboutItem]}
-            </li>
-        </ul>
+            {aboutComponents[aboutItem]}
+        </div>
     )
 }
 
