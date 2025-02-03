@@ -193,9 +193,11 @@ def post_profile():
 
             if media_id is None or not insert_profile_photo(con, profile_id, media_id):
                 print('Erro ao inserir foto de perfil')
-                return jsonify({'error': 'Não foi possível registrar sua foto de perfil devido a um erro no nosso servidor.'}), 500     
+                return jsonify({'error': 'Não foi possível registrar sua foto de perfil devido a um erro no nosso servidor.'}), 500  
 
-        return jsonify({'profileId': profile_id}), 201
+        profile = get_profile(con, profile_id, profile_id)   
+
+        return jsonify({'profile': profile}), 201
     except Exception as e:
         print(f'Erro ao inserir perfil: {e}')
         return jsonify({'error': 'Não foi possível criar seu perfil devido a um erro no nosso servidor.'}), 500
@@ -355,7 +357,9 @@ def login():
         for profile in profiles:
             if profile['nome'] == nameOrEmailLogin or profile['email'] == nameOrEmailLogin:
                 if bcrypt.check_password_hash(profile['senha'], passwordLogin):
-                    return jsonify({'profileId': profile['id_perfil'], "isActived": True if profile["ativo"] == 1 else False}), 200
+                    profile = get_profile(con, profile['id_perfil'], profile['id_perfil'])
+
+                    return jsonify({'profile': profile}), 200
                 else:
                     return jsonify({'error': 'login'}), 401
                 

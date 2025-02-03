@@ -16,6 +16,7 @@ import createComplaint from "../../utils/post/HandleComplaint";
 import toggleLike from "../../utils/post/HandleLike";
 import createSharing from "../../utils/post/HandleSharing";
 import createComment from "../../utils/post/HandleComment";
+import { EXPIRATION_TIME } from "../../App";
 
 function Home() {
     const [feed, setFeed] = useState();
@@ -64,6 +65,24 @@ function Home() {
     }, [navigate, profile.id_perfil, searchTextTag]);
 
     const loadPosts = useCallback(async (id) => {
+        const isFirstLoading = !feed;
+
+        const storageData = localStorage.getItem("athleteConnectFeed");
+                
+        if (storageData && isFirstLoading) {
+            try {
+                const parsedData = JSON.parse(storageData);
+                
+                if (Date.now() - parsedData.updateDate < EXPIRATION_TIME) {
+                    setFeed(parsedData.feed);
+                }
+            } catch (err) {
+                console.error("Erro ao recuperar o feed do perfil do cache:", err);
+
+                localStorage.removeItem("athleteConnectFeed");
+            }
+        }
+        
         if (postsLoading || (feed && feed?.length % 6 !== 0)) return;
 
         setPostsLoading(true);
@@ -84,10 +103,12 @@ function Home() {
                     }))
                 }));
 
-                if (feed) {
-                    setFeed(prevPosts => [...prevPosts, ...formattedFeed]);
-                } else {
+                if (isFirstLoading) {
                     setFeed(formattedFeed);
+                    localStorage.setItem('athleteConnectFeed', JSON.stringify({feed: formattedFeed, updateDate: Date.now()}));
+                } else {
+                    setFeed(prevPosts => [...prevPosts, ...formattedFeed]);
+                    localStorage.setItem('athleteConnectFeed', JSON.stringify({feed: [...feed, ...formattedFeed], updateDate: Date.now()}));
                 }
 
                 setOffset((prevOffset) => prevOffset + 6);   
@@ -102,6 +123,22 @@ function Home() {
     }, [feed, postsLoading, navigate, offset]);
 
     const fetchProfile = useCallback(async (id) => {
+        const storageData = localStorage.getItem("profile");
+
+        if (storageData) {
+            try {
+                const parsedData = JSON.parse(storageData);
+                
+                if (Date.now() - parsedData.updateDate < EXPIRATION_TIME) {
+                    setProfile(parsedData.profile);
+                }
+            } catch (err) {
+                console.error("Erro ao recuperar o perfil do cache:", err);
+
+                localStorage.removeItem("profile");
+            }
+        }
+
         try {
             const resp = await axios.get(`http://localhost:5000/profiles/${id}?viewerId=${id}`);
             const data = resp.data;
@@ -119,7 +156,8 @@ function Home() {
                 }
             } else {
                 setProfile(data);
-    
+                localStorage.setItem('profile', JSON.stringify({profile: data, updateDate: Date.now()}));
+                
                 loadPosts(id);
             }
         } catch (err) {

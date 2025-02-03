@@ -12,6 +12,7 @@ import { useProfile } from "../../ProfileContext";
 import formatDate from "../../utils/DateFormatter";
 import Message from "../layout/Message";
 import ExitPageBar from "../layout/ExitPageBar";
+import { EXPIRATION_TIME } from "../../App";
 
 function NewPost() {
     const [profile, setProfile] = useState({});
@@ -32,6 +33,24 @@ function NewPost() {
     const navigate = useNavigate();
 
     const fetchHashtags = useCallback(async () => {
+        const storageData = localStorage.getItem("hashtags");
+
+        if (storageData) {
+            try {
+                const parsedData = JSON.parse(storageData);
+                
+                if (Date.now() - parsedData.updateDate < EXPIRATION_TIME) {
+                    setHashtags(parsedData.hashtags);
+
+                    return;
+                }
+            } catch (err) {
+                console.error("Erro ao recuperar as hashtags do cache:", err);
+
+                localStorage.removeItem("hashtags");
+            }
+        }
+
         try {
             const resp = await axios.get("http://localhost:5000/hashtags");
             const data = resp.data;
@@ -40,6 +59,7 @@ function NewPost() {
                 navigate("/errorPage", {state: {error: data.error}});
             } else {
                 setHashtags(data);
+                localStorage.setItem("hashtags", JSON.stringify({hashtags: data, updateDate: Date.now()}));
             }
         } catch (err) {
             navigate("/errorPage", {state: {error: err.message}});
@@ -74,6 +94,22 @@ function NewPost() {
     }, [navigate, profile.id_perfil, searchTextTag]);
 
     const fetchProfile = useCallback(async (id) => {
+        const storageData = localStorage.getItem("profile");
+
+        if (storageData) {
+            try {
+                const parsedData = JSON.parse(storageData);
+                
+                if (Date.now() - parsedData.updateDate < EXPIRATION_TIME) {
+                    setProfile(parsedData.profile);
+                }
+            } catch (err) {
+                console.error("Erro ao recuperar o perfil do cache:", err);
+
+                localStorage.removeItem("profile");
+            }
+        }
+
         try {
             const resp = await axios.get(`http://localhost:5000/profiles/${id}?viewerId=${id}`);
             const data = resp.data;
@@ -91,6 +127,7 @@ function NewPost() {
                 }
             } else {
                 setProfile(data);
+                localStorage.setItem('profile', JSON.stringify({profile: data, updateDate: Date.now()}));
 
                 fetchHashtags();
             }

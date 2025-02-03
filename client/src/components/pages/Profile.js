@@ -18,6 +18,7 @@ import formatDate from "../../utils/DateFormatter";
 import PostsFullScreen from "../layout/PostsFullScreen";
 import fetchComplaintReasons from "../../utils/post/FetchComplaintReasons";
 import SearchResultsContainer from "../layout/SearchResultsContainer";
+import { EXPIRATION_TIME } from "../../App";
 
 function Profile() {
     const [followersNumber, setFollowersNumber] = useState(0);
@@ -266,13 +267,32 @@ function Profile() {
     useEffect(() => {
         const viewerId = profileId || localStorage.getItem("athleteConnectProfileId");
 
-        if (id === viewerId) navigate("/myProfile");
+        if (id === viewerId) {
+            navigate("/myProfile");
+            return;
+        }
 
         fetchUser(viewerId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [location.pathname]) 
     
     const fetchProfile = useCallback(async (id) => {
+        const storageData = localStorage.getItem("profile");
+        
+        if (storageData) {
+            try {
+                const parsedData = JSON.parse(storageData);
+                
+                if (Date.now() - parsedData.updateDate < EXPIRATION_TIME) {
+                    setViewer(parsedData.profile);
+                }
+            } catch (err) {
+                console.error("Erro ao recuperar o perfil do cache:", err);
+
+                localStorage.removeItem("profile");
+            }
+        }
+        
         try {
             const resp = await axios.get(`http://localhost:5000/profiles/${id}?viewerId=${id}`);
             const data = resp.data;
@@ -289,7 +309,8 @@ function Profile() {
                     navigate("/errorPage", {state: {error: data.error}})
                 }
             } else {
-                setViewer(data);        
+                setViewer(data);  
+                localStorage.setItem('profile', JSON.stringify({profile: data, updateDate: Date.now()}));      
             }
         } catch (err) {
             navigate("/errorPage", {state: {error: err.message}});

@@ -78,8 +78,6 @@ function Login() {
                 navigate("/errorPage", {state: {error: data.error}})
             } else {
                 setLoginSubmitError(false);
-                setProfileId(data.profileId);
-                localStorage.setItem('athleteConnectProfileId', data.profileId);
 
                 navigate("/", {state: {message: "Bem-vindo de volta!", type: "success"}});
             }
@@ -88,7 +86,7 @@ function Login() {
     
             console.error('Erro ao fazer a requisição:', err);
         }
-    }, [navigate, setProfileId]);  
+    }, [navigate]);  
 
     function activeAccount() {
         const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
@@ -115,12 +113,14 @@ function Login() {
                     navigate("/errorPage", {state: {error: data.error}});
                 }
             } else {
+                setProfileId(data.profile.id_perfil);
+                localStorage.setItem('athleteConnectProfileId', data.profile.id_perfil);
+                localStorage.setItem('profile', JSON.stringify({profile: data.profile, updateDate: Date.now()}));
+                
                 if (data.isActived === false) {
                     setShowConfirmation(true);
                 } else {
                     setLoginSubmitError(false);
-                    setProfileId(data.profileId);
-                    localStorage.setItem('athleteConnectProfileId', data.profileId);
                     
                     navigate("/", {state: {message: "Bem-vindo de volta!", type: "success"}});
                 }

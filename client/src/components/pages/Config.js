@@ -15,6 +15,7 @@ import AboutInfo from "./config/AboutInfo";
 import History from "./config/History";
 import Message from "../layout/Message";
 import loading from "../../img/animations/loading.svg";
+import { EXPIRATION_TIME } from "../../App";
 
 function Config() {
     const [configType, setConfigType] = useState("profile");
@@ -179,6 +180,25 @@ function Config() {
     }, [sharedPostsLoading, posts.shared, sharedPostsOffset, navigate]);
 
     const fetchProfile = useCallback(async (id) => {
+        const storageData = localStorage.getItem("profile");
+        
+        if (storageData) {
+            try {
+                const parsedData = JSON.parse(storageData);
+                
+                if (Date.now() - parsedData.updateDate < EXPIRATION_TIME) {
+                    const {config, ...others} = parsedData.profile;
+
+                    setProfile(others);
+                    setConfig(config);
+                }
+            } catch (err) {
+                console.error("Erro ao recuperar o perfil do cache:", err);
+
+                localStorage.removeItem("profile");
+            }
+        }
+        
         try {
             const resp = await axios.get(`http://localhost:5000/profiles/${id}?viewerId=${id}`);
             const data = resp.data;
@@ -199,6 +219,7 @@ function Config() {
 
                 setInitialProfile(others);
                 setProfile(others);
+                localStorage.setItem('profile', JSON.stringify({profile: data, updateDate: Date.now()}));
                 setConfig(config);
 
                 loadLikedPosts(others.id_perfil);

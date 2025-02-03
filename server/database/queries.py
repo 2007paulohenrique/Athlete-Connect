@@ -4,7 +4,7 @@ import sqlparse
 def get_profiles(con):
      try:
           with con.cursor(dictionary=True) as cursor:
-               sql = "SELECT id_perfil, nome, email, senha, ativo FROM perfil"
+               sql = "SELECT id_perfil, nome, email, senha FROM perfil"
                cursor.execute(sql)
                result = cursor.fetchall()
 
@@ -40,7 +40,7 @@ def get_profile_main_info(con, profile_id):
 def get_profile(con, profile_id, profile_viewer_id=None):
      try:
           with con.cursor(dictionary=True) as cursor:
-               sql = "SELECT * FROM perfil WHERE id_perfil = %s"
+               sql = "SELECT id_perfil, nome, verificado, biografia, ativo, privado, fk_midia_id_midia FROM perfil WHERE id_perfil = %s"
                cursor.execute(sql, (profile_id,))
                result = cursor.fetchone()
 

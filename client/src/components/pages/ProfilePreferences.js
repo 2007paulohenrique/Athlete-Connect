@@ -107,8 +107,9 @@ function ProfilePreferences() {
 
                 navigate("/errorPage", {state: {error: data.error}})
             } else {
-                setProfileId(data.profileId);
-                localStorage.setItem('athleteConnectProfileId', data.profileId)
+                setProfileId(data.profile.id_perfil);
+                localStorage.setItem('athleteConnectProfileId', data.profile.id_perfil);
+                localStorage.setItem('profile', JSON.stringify({profile: data.profile, updateDate: Date.now()}));
                 
                 navigate("/", {state: {message: "Perfil criado com sucesso! Aproveite o Athlete Connect.", type: "success"}});
             }

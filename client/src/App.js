@@ -10,6 +10,8 @@ import Profile from "./components/pages/Profile";
 import Config from "./components/pages/Config";
 import SearchPage from "./components/pages/SearchPage";
 
+export const EXPIRATION_TIME = 24 * 60 * 60 * 1000;
+
 function App() {
   document.addEventListener('keydown', function(event) {
     if (event.key === 'Tab') {
