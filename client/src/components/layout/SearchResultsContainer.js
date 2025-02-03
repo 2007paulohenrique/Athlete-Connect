@@ -26,7 +26,10 @@ function SearchResultsContainer({ results, resultType, notFoundText, tagsLoading
                                     profilePhotoPath={item.caminho} 
                                     profileName={item.nome} 
                                     followersNumber={formatNumber(item.numero_seguidores)}
-                                    handleClick={() => navigate(`/profile/${item.id_perfil}`)}
+                                    handleClick={() => {
+                                        navigate(`/profile/${item.id_perfil}`);
+                                        window.location.reload();
+                                    }}
                                 />
                             ) : resultType === "hashtags" ? (
                                 <>

@@ -57,6 +57,11 @@
     transform: scale(0.9);
 }
 
+
+.complainted_post {
+    filter: blur(5px);
+}
+
 @media screen and (max-width: 720px) {
     .post {
         width: 33.33%;

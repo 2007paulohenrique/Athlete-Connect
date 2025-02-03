@@ -192,15 +192,8 @@
     filter: blur(10px);
 }
 
-.complainted_post::before {
-    content: "Postagem denúnciada";
-    color: var(--alert-color);
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
+.complainted_post * {
+    pointer-events: none;
 }
 
 @media screen and (max-width: 720px) {

@@ -44,7 +44,7 @@ function Home() {
         setTagsLoading(true);
 
         try {
-            const resp = await axios.get(`http://localhost:5000/search/profiles/${searchTextTag}`);
+            const resp = await axios.get(`http://localhost:5000/search/profiles/${searchTextTag}?profileId=${profile.id_perfil}`);
             const data = resp.data;
     
             if (data.error) {
@@ -103,7 +103,7 @@ function Home() {
 
     const fetchProfile = useCallback(async (id) => {
         try {
-            const resp = await axios.get(`http://localhost:5000/profiles/${id}`);
+            const resp = await axios.get(`http://localhost:5000/profiles/${id}?viewerId=${id}`);
             const data = resp.data;
 
             if (resp.status === 204) {

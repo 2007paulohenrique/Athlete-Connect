@@ -41,7 +41,7 @@ function Config() {
     const [profileSubmitError, setProfileSubmiterror] = useState(false);
     const [message, setMessage] = useState({});
 
-    const postsLimit = useRef(24);
+    const postsLimit = useRef(12);
     const navigate = useNavigate();
 
     function setMessageWithReset(newMessage, type) {
@@ -66,7 +66,6 @@ function Config() {
             } else {
                 if (data.length < postsLimit.current) {
                     setLikedPostsEnd(true);
-                    return;
                 }
 
                 const formattedPosts = data.map(post => ({
@@ -80,7 +79,7 @@ function Config() {
 
                 setPosts(prevPosts => ({
                     ...prevPosts, 
-                    liked: [...prevPosts.liked, ...formattedPosts],
+                    liked: [...(prevPosts.liked || []), ...formattedPosts],
                 })); 
 
                 setLikedPostsOffset(prevOffset => postsFullScreen ? prevOffset + 6 : prevOffset + 24);   
@@ -109,7 +108,6 @@ function Config() {
             } else {
                 if (data.length < postsLimit.current) {
                     setCommentedPostsEnd(true);
-                    return;
                 }
 
                 const formattedPosts = data.map(post => ({
@@ -123,7 +121,7 @@ function Config() {
 
                 setPosts(prevPosts => ({
                     ...prevPosts, 
-                    commented: [...prevPosts.commented, ...formattedPosts],
+                    commented: [...(prevPosts.commented || []), ...formattedPosts],
                 })); 
 
                 setCommentedPostsOffset(prevOffset => postsFullScreen ? prevOffset + 6 : prevOffset + 24);   
@@ -152,7 +150,6 @@ function Config() {
             } else {
                 if (data.length < postsLimit.current) {
                     setSharedPostsEnd(true);
-                    return;
                 }
 
                 const formattedPosts = data.map(post => ({
@@ -166,7 +163,7 @@ function Config() {
 
                 setPosts(prevPosts => ({
                     ...prevPosts, 
-                    shared: [...prevPosts.shared, ...formattedPosts],
+                    shared: [...(prevPosts.shared || []), ...formattedPosts],
                 })); 
 
                 setSharedPostsOffset(prevOffset => postsFullScreen ? prevOffset + 6 : prevOffset + 24);   
@@ -183,7 +180,7 @@ function Config() {
 
     const fetchProfile = useCallback(async (id) => {
         try {
-            const resp = await axios.get(`http://localhost:5000/profiles/${id}`);
+            const resp = await axios.get(`http://localhost:5000/profiles/${id}?viewerId=${id}`);
             const data = resp.data;
 
             if (resp.status === 204) {
@@ -203,12 +200,17 @@ function Config() {
                 setInitialProfile(others);
                 setProfile(others);
                 setConfig(config);
+
+                loadLikedPosts(others.id_perfil);
+                loadCommentedPosts(others.id_perfil);
+                loadSharedPosts(others.id_perfil);
             }
         } catch (err) {
             navigate("/errorPage", {state: {error: err.message}});
     
             console.error('Erro ao fazer a requisição:', err);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [navigate]);  
     
     const desactiveProfileCallback = useCallback(async (id) => {
@@ -547,7 +549,7 @@ function Config() {
                 setPosts={(updater) => updatePosts(updater, postsToShowType)} 
                 postsLoading={postsToShowType === "liked" ? likedPostsLoading : postsToShowType === "commented" ? commentedPostsLoading : sharedPostsLoading}
                 initialPostToShow={selectedPostId}
-                handleExitPostsFullscreen={exitPostsFullscreen}   
+                handleExitFullscreen={exitPostsFullscreen}   
             />
     );
 }

@@ -24,20 +24,19 @@ function PostsFullScreen({ posts, setPosts, postsLoading, initialPostToShow, han
     const postsRef = useRef([]);
     const navigate = useNavigate();
 
-    const loadTags = useCallback(async () => {
+    const loadTags = useCallback(async (id) => {
         if (!searchTextTag) return;
 
         setTagsLoading(true);
 
-        try {
-            const resp = await axios.get(`http://localhost:5000/search/profiles/${searchTextTag}`);
+        try {            
+            const resp = await axios.get(`http://localhost:5000/search/profiles/${searchTextTag}?profileId=${id}`);
             const data = resp.data;
     
             if (data.error) {
                 navigate("/errorPage", {state: {error: data.error}});
             } else {
-                const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
-                const filteredData = data.filter(tag => String(tag.id_perfil) !== String(confirmedProfileId));
+                const filteredData = data.filter(tag => String(tag.id_perfil) !== String(id));
 
                 setTags(filteredData);
             }
@@ -48,15 +47,17 @@ function PostsFullScreen({ posts, setPosts, postsLoading, initialPostToShow, han
         } finally {
             setTagsLoading(false);
         }
-    }, [navigate, profileId, searchTextTag]);
+    }, [navigate, searchTextTag]);
 
     useEffect(() => {
         fetchComplaintReasons(setComplaintReasons, navigate)
     }, [navigate])
 
     useEffect(() => {
-        loadTags();
-    }, [loadTags, searchTextTag]);
+        const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
+
+        loadTags(confirmedProfileId);
+    }, [loadTags, profileId, searchTextTag]);
 
     useEffect(() => {
         if (initialPostToShow) {

@@ -69,7 +69,6 @@ function SearchPage() {
             } else {
                 if (data.length < postsLimit.current) {
                     setPostsEnd(true);
-                    return;
                 }
 
                 const formattedPosts = data.map(post => ({
@@ -100,7 +99,9 @@ function SearchPage() {
         setProfilesLoading(true);
 
         try {
-            const resp = await axios.get(`http://localhost:5000/search/profiles/${text}?offset=${profilesOffset}`);
+            const viwerId = profileId || localStorage.getItem("athleteConnectProfileId");
+
+            const resp = await axios.get(`http://localhost:5000/search/profiles/${text}?offset=${profilesOffset}&profileId=${viwerId}`);
             const data = resp.data;
     
             if (data.error) {
@@ -117,7 +118,7 @@ function SearchPage() {
         } finally {
             setProfilesLoading(false);
         }
-    }, [navigate, profilesLoading, profilesOffset, result, text]);
+    }, [navigate, profileId, profilesLoading, profilesOffset, result?.profiles, text]);
     
     const fetchSearchResult = useCallback(async () => {
         if (!text) {
@@ -285,8 +286,8 @@ function SearchPage() {
                         <SearchNavBar selectedType={type}/>
 
                         <section className={styles.result}>
-                            {((resultToShow?.results && resultToShow?.results?.length !== 0) || (postsResult && postsResult?.length !== 0)) &&
-                                <p className={styles.results_number}>{`${formatNumber(resultToShow?.results?.length || postsResult?.length)} resultado${resultToShow?.results?.length === 1 ? "" : "s"}:`}</p>
+                            {((type !== "posts" && (resultToShow?.results && resultToShow?.results?.length !== 0)) || (type === "posts" && (postsResult && postsResult?.length !== 0))) &&
+                                <p className={styles.results_number}>{`${formatNumber(type === "posts" ? postsResult?.length : resultToShow?.results?.length)} resultado${(type === "posts" ? postsResult?.length : resultToShow?.results?.length) === 1 ? "" : "s"}:`}</p>
                             } 
                         
                             {type === "posts" ? (

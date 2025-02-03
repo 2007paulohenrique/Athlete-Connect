@@ -6,6 +6,7 @@
     height: 100%;
     align-items: center;
 }
+
 .about_info {
     display: flex;
     flex-direction: column;
@@ -24,6 +25,14 @@ ul.about_themes > li {
     width: max-content;
     text-align: center;
     cursor: pointer;
+}
+
+.config_items > h3 {
+    letter-spacing: 0.6px;
+    border-bottom: 1px solid var(--ligth-theme-color);
+    color: var(--ligth-theme-color);
+    padding: 0.3em;
+    width: 100%;
 }
 
 .selected_about_theme {
@@ -92,4 +101,13 @@ ul.config_items > h3 {
     font-weight: bold;
     letter-spacing: 0.6px;
     border-radius: 1em;
+}
+
+.posts_history {
+    width: 100%;
+    height: max-content;
+    min-height: 5em;
+    display: flex;
+    flex-wrap: wrap;
+    position: relative;
 }

@@ -136,47 +136,55 @@ const Post = forwardRef(({ likesVisibility = true, sharingsVisibility = true, co
     };
 
     const handleClickTag = (tag) => {
-        const isTagIncluded = (prevSelected, tag) => {
-            return prevSelected.some(item => JSON.stringify(item) === JSON.stringify(tag));
-        };
-
-        setTagsInPost(prevTags => {
-           if (isTagIncluded(prevTags, tag)) {
-                return prevTags.filter(item => JSON.stringify(item) !== JSON.stringify(tag));
-            } else {
-                return [...prevTags, tag];
-            }
-        });
-
-        setSelectedTags(prevSelected => {
-            if (isTagIncluded(prevSelected, tag)) {
-                return prevSelected.filter(item => JSON.stringify(item) !== JSON.stringify(tag));
-            } else {
-                return [...prevSelected, tag];
-            }
-        });
+        if (tag.canTag) {
+            const isTagIncluded = (prevSelected, tag) => {
+                return prevSelected.some(item => String(item.id_perfil) === String(tag.id_perfil));
+            };
+    
+            setTagsInPost(prevTags => {
+               if (isTagIncluded(prevTags, tag)) {
+                    return prevTags.filter(item => String(item.id_perfil) !== String(tag.id_perfil));
+                } else {
+                    return [...prevTags, tag];
+                }
+            });
+    
+            setSelectedTags(prevSelected => {
+                if (isTagIncluded(prevSelected, tag)) {
+                    return prevSelected.filter(item => String(item.id_perfil) !== String(tag.id_perfil));
+                } else {
+                    return [...prevSelected, tag];
+                }
+            });
+        } else {
+            setMessage(`Você não tem permissão para marcar ${tag.nome}.`, "error");
+        }
     };
 
     const handleClickSharing = (tag) => {
-        const isTagIncluded = (prevSelected, tag) => {
-            return prevSelected.some(item => JSON.stringify(item) === JSON.stringify(tag));
-        };
-
-        setSharings(prevSharings => {
-            if (isTagIncluded(prevSharings, tag)) {
-                return prevSharings.filter(item => JSON.stringify(item) !== JSON.stringify(tag));
-            } else {
-                return [...prevSharings, tag];
-            }
-        });
-
-        setSelectedSharings(prevSelected => {
-            if (isTagIncluded(prevSelected, tag)) {
-                return prevSelected.filter(item => JSON.stringify(item) !== JSON.stringify(tag));
-            } else {
-                return [...prevSelected, tag];
-            }
-        });
+        if (tag.canShare) {
+            const isTagIncluded = (prevSelected, tag) => {
+                return prevSelected.some(item => String(item.id_perfil) === String(tag.id_perfil));
+            };
+    
+            setSharings(prevSharings => {
+                if (isTagIncluded(prevSharings, tag)) {
+                    return prevSharings.filter(item => String(item.id_perfil) !== String(tag.id_perfil));
+                } else {
+                    return [...prevSharings, tag];
+                }
+            });
+    
+            setSelectedSharings(prevSelected => {
+                if (isTagIncluded(prevSelected, tag)) {
+                    return prevSelected.filter(item => String(item.id_perfil) !== String(tag.id_perfil));
+                } else {
+                    return [...prevSelected, tag];
+                }
+            });
+        } else {
+            setMessage(`Você não tem permissão para compartilhar com ${tag.nome}.`, "error");
+        }
     };
 
     const handleClickComplaintReason = (item) => {
@@ -270,7 +278,7 @@ const Post = forwardRef(({ likesVisibility = true, sharingsVisibility = true, co
             setShowComments(!showComments);
             setCommentText("");
         } else {
-            setMessage(`Você não tem permissão para comentar nas postagens de ${author.nome}.`, "error")
+            setMessage(`Você não tem permissão para comentar nas postagens de ${author.nome}.`, "error");
         }
     }
 
@@ -441,12 +449,12 @@ const Post = forwardRef(({ likesVisibility = true, sharingsVisibility = true, co
 
                                     <PostItemsContainer
                                         searchText={searchTextSharing}
-                                        filteredItems={filteredSharings}
+                                        filteredItems={filteredSharings && filteredSharings.filter(tag => tag.permissao_compartilhamento)}
                                         handleClick={handleClickSharing}
                                         selectedItems={selectedSharings}
                                         isSelectable
                                         haveProfile
-                                        notFoundText="Perfil inexistente ou indisponível"
+                                        notFoundText="Perfil inexistente ou indisponível."
                                         tagsLoading={tagsLoading}
                                     />                                        
                                 </div>
@@ -478,7 +486,7 @@ const Post = forwardRef(({ likesVisibility = true, sharingsVisibility = true, co
 
                                     <PostItemsContainer
                                         searchText={true}
-                                        notFoundText="Faça o primeiro comentário"
+                                        notFoundText="Faça o primeiro comentário!"
                                         filteredItems={comments}
                                         isComment
                                     />
@@ -509,7 +517,7 @@ const Post = forwardRef(({ likesVisibility = true, sharingsVisibility = true, co
                                         isSelectable
                                         selectedItems={selectedTags}
                                         haveProfile
-                                        notFoundText="Não existe um perfil com esse nome"
+                                        notFoundText="Não existe um perfil com esse nome."
                                         tagsLoading={tagsLoading}
                                     />
                                 </div>
@@ -545,7 +553,7 @@ const Post = forwardRef(({ likesVisibility = true, sharingsVisibility = true, co
                                         handleClick={handleClickHashtag}
                                         isSelectable
                                         selectedItems={selectedHashtags}
-                                        notFoundText="Nenhuma hashtag encontrada"
+                                        notFoundText="Nenhuma hashtag encontrada."
                                         isHashtags
                                     />
                                 </div>

@@ -59,9 +59,13 @@ function Login() {
                 navigate("/editProfile", {state: {profile: updatedProfile}});
             }
         } catch (err) {
-            navigate("/errorPage", {state: {error: err.message}})
-            
-            console.error("Erro ao fazer a requisição:", err);
+            if (err.response.status === 409) {
+                navigate("/login", {state: {message: "Já existe um perfil com esse nome ou email.", type: "error"}});
+            } else {
+                navigate("/errorPage", {state: {error: err.message}})
+    
+                console.error("Erro ao fazer a requisição:", err);
+            }
         }
     }
 
@@ -122,9 +126,13 @@ function Login() {
                 }
             }
         } catch (err) {
-            navigate("/errorPage", {state: {error: err.message}})
-            
-            console.error("Erro ao fazer a requisição:", err);
+            if (err.response.status === 401) {
+                setLoginSubmitError(true);
+            } else {
+                navigate("/errorPage", {state: {error: err.message}})
+    
+                console.error("Erro ao fazer a requisição:", err);
+            }
         }
     }
     

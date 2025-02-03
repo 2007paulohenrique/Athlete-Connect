@@ -53,7 +53,7 @@ function EditProfileForm({ handleSubmit, profile, setProfile, setSubmitError }) 
 
     return (
         <form onSubmit={handleSubmit} className={`${styles.edit_profile_form}`}>
-            <PhotoInput name="profilePhoto" photoPath={profile.blobUrl} handleChange={handleFileChange} size="medium"/>
+            <PhotoInput name="profilePhoto" photoPath={profile.blobUrl} handleChange={handleFileChange} size="medium" isBlobUrl/>
 
             <h2>Editar Perfil</h2>
 

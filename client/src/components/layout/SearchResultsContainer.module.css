@@ -15,6 +15,7 @@
 .profiles_result {
     flex-direction: column;
     gap: 1em;
+    width: 100%;
 }
 
 .hashtags_result > li::before {

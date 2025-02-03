@@ -22,7 +22,7 @@ import SearchResultsContainer from "../layout/SearchResultsContainer";
 function Profile() {
     const [followersNumber, setFollowersNumber] = useState(0);
     const [profile, setProfile] = useState({});
-    const [viwer, setViewer] = useState({});
+    const [viewer, setViewer] = useState({});
     const {profileId} = useProfile();
     const [complaintReasons, setComplaintReasons] = useState([]);
     const [showComplaintReasons, setShowComplaintReasons] = useState(false);  
@@ -44,10 +44,11 @@ function Profile() {
     const [followedsOffset, setFollowedsOffset] = useState(0);
     const [followersLoading, setFollowersLoading] = useState(false);
     const [followedsLoading, setFollowedsLoading] = useState(false);
-    const [followersEnd, setFollowersEnd] = useState();
-    const [followedsEnd, setFollowedsEnd] = useState();
     const [tagsFullScreen, setTagsFullScreen] = useState(false);
     const [tags, setTags] = useState({followers: [], followeds: []});
+    const [followersEnd, setFollowersEnd] = useState();
+    const [followedsEnd, setFollowedsEnd] = useState();
+    const [initialLoading, setInitialLoading] = useState(false);
 
     const { id } = useParams();
     const location = useLocation();
@@ -74,10 +75,9 @@ function Profile() {
             } else {
                 if (data.length < 10) {
                     setFollowersEnd(true);
-                    return;
                 }
 
-                setTags(prevTags => ({...prevTags, followers: [...(prevTags.followers || []), ...data]}));
+                setTags(prevTags => ({...prevTags, followers: [...(initialLoading ? prevTags.followers || [] : []), ...data]}));
                 setFollowersOffset(prevOffset => prevOffset + 10);   
             }
         } catch (err) {
@@ -104,10 +104,9 @@ function Profile() {
             } else {
                 if (data.length < 10) {
                     setFollowedsEnd(true);
-                    return;
                 }
 
-                setTags(prevTags => ({...prevTags, followeds: [...(prevTags.followeds || []), ...data]}));
+                setTags(prevTags => ({...prevTags, followeds: [...(initialLoading ? prevTags.followeds || [] : []), ...data]}));
                 setFollowedsOffset(prevOffset => prevOffset + 10);   
             }
         } catch (err) {
@@ -126,7 +125,7 @@ function Profile() {
         setPostsLoading(true);
 
         try {
-            const resp = await axios.get(`http://localhost:5000/profiles/${id}/posts?offset=${postsOffset}&limit=${postsLimit.current}`);
+            const resp = await axios.get(`http://localhost:5000/profiles/${id}/posts?offset=${postsOffset}&limit=${postsLimit.current}&viewerId=${viewer.id_perfil}`);
             const data = resp.data;
     
             if (data.error) {
@@ -134,7 +133,6 @@ function Profile() {
             } else {
                 if (data.length < postsLimit.current) {
                     setPostsEnd(true);
-                    return;
                 }
 
                 const formattedPosts = data.map(post => ({
@@ -169,7 +167,7 @@ function Profile() {
         setTagPostsLoading(true);
 
         try {
-            const resp = await axios.get(`http://localhost:5000/profiles/${id}/tagPosts?offset=${tagPostsOffset}&limit=${postsLimit.current}`);
+            const resp = await axios.get(`http://localhost:5000/profiles/${id}/tagPosts?offset=${tagPostsOffset}&limit=${postsLimit.current}&viewerId=${viewer.id_perfil}`);
             const data = resp.data;
     
             if (data.error) {
@@ -177,7 +175,6 @@ function Profile() {
             } else {
                 if (data.length < postsLimit.current) {
                     setTagPostsEnd(true);
-                    return;
                 }
 
                 const formattedPosts = data.map(post => ({
@@ -206,11 +203,11 @@ function Profile() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [tagPostsLoading, profile.tagPosts, tagPostsOffset, navigate]);
 
-    const fetchUser = useCallback(async (viwerId) => {
+    const fetchUser = useCallback(async (viewerId) => {
         try {
             const url = id
-            ? `http://localhost:5000/profiles/users/${id}?viewerId=${viwerId}`
-            : `http://localhost:5000/profiles/users/${viwerId}`;
+            ? `http://localhost:5000/profiles/users/${id}?viewerId=${viewerId}`
+            : `http://localhost:5000/profiles/users/${viewerId}`;
             
             const resp = await axios.get(url)
             const data = resp.data;
@@ -252,8 +249,10 @@ function Profile() {
                 setPostsEnd(posts.length < postsLimit.current);
                 setTagPostsEnd(tagPosts.length < postsLimit.current);
 
-                loadFollowers(data.id_perfil);
-                loadFolloweds(data.id_perfil);
+                await loadFollowers(data.id_perfil);
+                await loadFolloweds(data.id_perfil);
+
+                setInitialLoading(true);
 
                 fetchComplaintReasons(setComplaintReasons, navigate);
             }    
@@ -265,17 +264,17 @@ function Profile() {
     }, [id, loadFolloweds, loadFollowers, navigate])    
 
     useEffect(() => {
-        const viwerId = profileId || localStorage.getItem("athleteConnectProfileId");
+        const viewerId = profileId || localStorage.getItem("athleteConnectProfileId");
 
-        if (id === viwerId) navigate("/myProfile");
+        if (id === viewerId) navigate("/myProfile");
 
-        fetchUser(viwerId);
+        fetchUser(viewerId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []) 
+    }, [location.pathname]) 
     
     const fetchProfile = useCallback(async (id) => {
         try {
-            const resp = await axios.get(`http://localhost:5000/profiles/${id}`);
+            const resp = await axios.get(`http://localhost:5000/profiles/${id}?viewerId=${id}`);
             const data = resp.data;
             
             if (resp.status === 204) {
@@ -318,13 +317,13 @@ function Profile() {
     }
 
     function sendFollowRequest() {
-        setMessageWithReset(`Solicitação para ${profile.name} enviada.`);
+        setMessageWithReset(`Solicitação para ${profile.nome} enviada.`, "success");
         
         // requisição para mandar uma notificação ao perfil para permitir o follow
     }
 
     function followProfile() {    
-        toggleFollow(viwer.id_perfil);
+        toggleFollow(viewer.id_perfil);
     }
 
     const toggleFollow = async (followerId) => {
@@ -370,7 +369,7 @@ function Profile() {
             const formData = new FormData();
     
             formData.append("description", complaintDescription.trim());
-            formData.append("authorId", viwer.id_perfil);
+            formData.append("authorId", viewer.id_perfil);
             profileComplaintReasons.forEach(reason => formData.append("complaintReasonsIds", reason.id_motivo_denuncia));
     
             const resp = await axios.post(`http://localhost:5000/profiles/${id}/complaint`, formData, {
@@ -500,6 +499,7 @@ function Profile() {
 
     useEffect(() => {
         setPostsFullScreen(false);
+        setTagsFullScreen(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [location.pathname])
 
@@ -594,7 +594,7 @@ function Profile() {
                                         <>
                                             <button 
                                                 className={`${styles.follow_button} ${profile.isFollowed && styles.follow_button_selected}`} 
-                                                onClick={profile.private && !profile.isFollowed ? sendFollowRequest : followProfile}
+                                                onClick={profile.privado && !profile.isFollowed ? sendFollowRequest : followProfile}
                                             >
                                                 {profile.isFollowed ? "Seguindo" : "Seguir"}
                                             </button>
@@ -657,7 +657,7 @@ function Profile() {
                                             }} 
                                             className={postsToShowType === "posts" ? styles.selected_posts_type : null}
                                         >
-                                                Suas postagens
+                                                Postagens
                                         </li>
 
                                         <li 
@@ -672,8 +672,8 @@ function Profile() {
                                 </div>
 
                                 <section className={styles.profile_posts}>
-                                    {id && profile.private && !profile.isFollowed ? 
-                                        <p>O perfil de {profile.name} é privado. Envie uma solicitação para seguí-lo e ver suas postagens.</p>
+                                    {id && profile.privado && !profile.isFollowed ? 
+                                        <p>O perfil de {profile.nome} é privado. Envie uma solicitação para seguí-lo e ver suas postagens.</p>
                                     : 
                                         <PostsInSection 
                                             posts={profile[postsToShowType]} 
@@ -685,7 +685,7 @@ function Profile() {
                                 </section>
                             </main>
                             
-                            <AppNavBar profilePhotoPath={viwer?.media ? viwer.media.caminho : ""}/>
+                            <AppNavBar profilePhotoPath={viewer?.media ? viewer.media.caminho : ""}/>
                         </>
                     : 
                         <PostsFullScreen
@@ -729,11 +729,11 @@ function Profile() {
                         <SearchResultsContainer
                             results={tagsType === "followers" ? tags.followers : tags.followeds}   
                             resultType="profiles"
-                            notFoundText={tagsType === "followers" ? `${profile.nome} não possui nenhum seguidor.` : `${profile.nome} não segue ninguém.`}
+                            notFoundText={tagsType === "followers" ? `${id ? profile.nome : "Você"} não possui nenhum seguidor.` : `${id ? profile.nome : "Você"} não segue ninguém.`}
                             tagsLoading={tagsType === "followers" ? followersLoading : followedsLoading}
                         />
                     :
-                        <p>{`${profile.nome} Não permite que outros perfis vejam ${tagsType === "followers" ? "seus seguidores" : "os perfis que segue"}.`}</p>
+                        <p>{`${profile.nome} não permite que outros perfis vejam ${tagsType === "followers" ? "seus seguidores" : "os perfis que segue"}.`}</p>
                     }
                 </main>
             }

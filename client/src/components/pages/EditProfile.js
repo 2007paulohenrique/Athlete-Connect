@@ -46,9 +46,13 @@ function EditProfile() {
                 navigate("/profilePreferences", {state: {profileReady: profile}});
             }
         } catch (err) {
-            navigate("/errorPage", {state: {error: err.message}})
-
-            console.error("Erro ao fazer a requisição:", err);
+            if (err.response.status === 409) {
+                navigate("/login", {state: {message: "Ocorreu um erro ao criar seu perfil. Tente novamente.", type: "error"}});
+            } else {
+                navigate("/errorPage", {state: {error: err.message}})
+    
+                console.error("Erro ao fazer a requisição:", err);
+            }
         }
     }
 

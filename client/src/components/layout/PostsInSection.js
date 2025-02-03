@@ -55,7 +55,7 @@ function PostsInSection({ posts, notFoundText, postsLoading, handlePostClick }) 
             
             {posts ?
                 posts.length !== 0 ? posts.map((post, index) => (
-                    <div className={styles.post} key={post.id_postagem} onClick={() => handlePostClick(post.id_postagem)}>
+                    <div className={`${styles.post} ${post.isComplainted ? styles.complainted_post : undefined}`} key={post.id_postagem} onClick={() => handlePostClick(post.id_postagem)}>
                         <span>{post.medias.length > 1 ? `${post.medias.length - 1} +` : ""}</span>
 
                         <img 

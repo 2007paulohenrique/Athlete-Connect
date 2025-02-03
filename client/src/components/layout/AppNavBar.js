@@ -39,7 +39,10 @@ function AppNavBar({ profilePhotoPath }) {
                 
                 <li 
                     className={`${profilePhoto && styles.profile_photo} ${location.pathname === "/myProfile" ? styles.selected : undefined}`} 
-                    onClick={() => navigate("/myProfile")}
+                    onClick={() => {
+                        navigate("/myProfile");
+                        window.location.reload();
+                    }}
                 >
                     <img src={profilePhoto} alt="Profile"/>
                 </li>
