@@ -56,17 +56,17 @@ function NewPost() {
             const data = resp.data;
     
             if (data.error) {
-                navigate("/errorPage", {state: {error: data.error}});
+                setMessageWithReset("Não foi possível recuperar as hashtags.", "error");
             } else {
                 setHashtags(data);
                 localStorage.setItem("hashtags", JSON.stringify({hashtags: data, updateDate: Date.now()}));
             }
         } catch (err) {
-            navigate("/errorPage", {state: {error: err.message}});
+            setMessageWithReset("Não foi possível recuperar as hashtags.", "error");
     
             console.error('Erro ao fazer a requisição:', err);
         }
-    }, [navigate]);
+    }, []);
 
     const fetchTags = useCallback(async () => {
         if (!searchTextTag) return;
@@ -78,20 +78,20 @@ function NewPost() {
             const data = resp.data;
     
             if (data.error) {
-                navigate("/errorPage", {state: {error: data.error}});
+                setMessageWithReset("Não foi possível recuperar as tags dos perfis.", "error");
             } else {
                 const filteredData = data.filter(tag => String(tag.id_perfil) !== String(profile.id_perfil) && tag.permissao_marcacao);
 
                 setTags(filteredData);
             }
         } catch (err) {
-            navigate("/errorPage", {state: {error: err.message}});
+            setMessageWithReset("Não foi possível recuperar as tags dos perfis.", "error");
     
             console.error('Erro ao fazer a requisição:', err);
         } finally {
             setTagsLoading(false);
         }
-    }, [navigate, profile.id_perfil, searchTextTag]);
+    }, [profile.id_perfil, searchTextTag]);
 
     const fetchProfile = useCallback(async (id) => {
         const storageData = localStorage.getItem("profile");
@@ -132,7 +132,7 @@ function NewPost() {
                 fetchHashtags();
             }
         } catch (err) {
-            navigate("/errorPage", {state: {error: err.message}});
+            navigate("/login", {state: {message: err.message, type: "error"}});
     
             console.error('Erro ao fazer a requisição:', err);
         }

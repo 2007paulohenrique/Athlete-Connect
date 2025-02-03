@@ -65,7 +65,7 @@ function SearchPage() {
             const data = resp.data;
     
             if (data.error) {
-                navigate("/errorPage", {state: {error: data.error}});
+                setMessageWithReset(`Não foi possível carregar as postagens da pesquisa.`, "error");
             } else {
                 if (data.length < postsLimit.current) {
                     setPostsEnd(true);
@@ -84,7 +84,7 @@ function SearchPage() {
                 setPostsOffset(prevOffset => postsFullScreen ? prevOffset + 6 : prevOffset + 24);   
             }   
         } catch (err) {
-            navigate("/errorPage", {state: {error: err.message}});
+            setMessageWithReset(`Não foi possível carregar as postagens da pesquisa.`, "error");
             
             console.error('Erro ao fazer a requisição:', err);
         } finally {
@@ -105,20 +105,20 @@ function SearchPage() {
             const data = resp.data;
     
             if (data.error) {
-                navigate("/errorPage", {state: {error: data.error}});
+                setMessageWithReset(`Não foi possível carregar os perfis da pesquisa.`, "error");
             } else {
                 setResult(prevResult => ({...prevResult, profiles: {...prevResult.profiles, results: [...prevResult.profiles.results, ...data]}}));
 
                 setProfilesOffset(prevOffset => prevOffset + 10);   
             }
         } catch (err) {
-            navigate("/errorPage", {state: {error: err.message}});
+            setMessageWithReset(`Não foi possível carregar os perfis da pesquisa.`, "error");
             
             console.error('Erro ao fazer a requisição:', err);
         } finally {
             setProfilesLoading(false);
         }
-    }, [navigate, profileId, profilesLoading, profilesOffset, result?.profiles, text]);
+    }, [profileId, profilesLoading, profilesOffset, result?.profiles, text]);
     
     const fetchSearchResult = useCallback(async () => {
         if (!text) {

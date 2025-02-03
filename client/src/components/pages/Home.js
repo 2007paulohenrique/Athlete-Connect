@@ -49,20 +49,20 @@ function Home() {
             const data = resp.data;
     
             if (data.error) {
-                navigate("/errorPage", {state: {error: data.error}});
+                setMessageWithReset("Não foi possível recuperar as tags dos perfis.", "error");
             } else {
                 const filteredData = data.filter(tag => String(tag.id_perfil) !== String(profile.id_perfil) && tag.permissao_compartilhamento);
 
                 setTags(filteredData);
             }
         } catch (err) {
-            navigate("/errorPage", {state: {error: err.message}});
+            setMessageWithReset("Não foi possível recuperar as tags dos perfis.", "error");
     
             console.error('Erro ao fazer a requisição:', err);
         } finally {
             setTagsLoading(false);
         }
-    }, [navigate, profile.id_perfil, searchTextTag]);
+    }, [profile.id_perfil, searchTextTag]);
 
     const loadPosts = useCallback(async (id) => {
         const isFirstLoading = !feed;
@@ -92,7 +92,7 @@ function Home() {
             const data = resp.data;
     
             if (data.error) {
-                navigate("/errorPage", {state: {error: data.error}});
+                setMessageWithReset("Não foi possível recuperar seu feed.", "error");
             } else {
                 const formattedFeed = data.map(post => ({
                     ...post,
@@ -114,13 +114,13 @@ function Home() {
                 setOffset((prevOffset) => prevOffset + 6);   
             }
         } catch (err) {
-            navigate("/errorPage", {state: {error: err.message}});
+            setMessageWithReset("Não foi possível recuperar seu feed.", "error");
             
             console.error('Erro ao fazer a requisição:', err);
         } finally {
             setPostsLoading(false);
         }
-    }, [feed, postsLoading, navigate, offset]);
+    }, [feed, postsLoading, offset]);
 
     const fetchProfile = useCallback(async (id) => {
         const storageData = localStorage.getItem("profile");

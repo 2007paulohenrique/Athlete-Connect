@@ -75,14 +75,14 @@ function Login() {
             const data = resp.data;
             
             if (data.error) {
-                navigate("/errorPage", {state: {error: data.error}})
+                setMessageWithReset("Não foi possível ativar seu perfil.", "error");
             } else {
                 setLoginSubmitError(false);
 
                 navigate("/", {state: {message: "Bem-vindo de volta!", type: "success"}});
             }
         } catch (err) {
-            navigate("/errorPage", {state: {error: err.message}});
+            setMessageWithReset("Não foi possível ativar seu perfil.", "error");
     
             console.error('Erro ao fazer a requisição:', err);
         }

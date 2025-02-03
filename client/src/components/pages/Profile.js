@@ -72,7 +72,7 @@ function Profile() {
             const data = resp.data;
     
             if (data.error) {
-                navigate("/errorPage", {state: {error: data.error}});
+                setMessageWithReset("Não foi possível recuperar os seguidores do perfil.", "error");
             } else {
                 if (data.length < 10) {
                     setFollowersEnd(true);
@@ -82,8 +82,8 @@ function Profile() {
                 setFollowersOffset(prevOffset => prevOffset + 10);   
             }
         } catch (err) {
-            navigate("/errorPage", {state: {error: err.message}});
-            
+            setMessageWithReset("Não foi possível recuperar os seguidores do perfil.", "error");
+
             console.error('Erro ao fazer a requisição:', err);
         } finally {
             setFollowersLoading(false);
@@ -101,7 +101,7 @@ function Profile() {
             const data = resp.data;
     
             if (data.error) {
-                navigate("/errorPage", {state: {error: data.error}});
+                setMessageWithReset("Não foi possível recuperar os seguidos do perfil.", "error");
             } else {
                 if (data.length < 10) {
                     setFollowedsEnd(true);
@@ -111,8 +111,8 @@ function Profile() {
                 setFollowedsOffset(prevOffset => prevOffset + 10);   
             }
         } catch (err) {
-            navigate("/errorPage", {state: {error: err.message}});
-            
+            setMessageWithReset("Não foi possível recuperar os seguidos do perfil.", "error");
+
             console.error('Erro ao fazer a requisição:', err);
         } finally {
             setFollowedsLoading(false);
@@ -130,7 +130,7 @@ function Profile() {
             const data = resp.data;
     
             if (data.error) {
-                navigate("/errorPage", {state: {error: data.error}});
+                setMessageWithReset("Não foi possível recuperar as postagens do perfil.", "error");
             } else {
                 if (data.length < postsLimit.current) {
                     setPostsEnd(true);
@@ -153,7 +153,7 @@ function Profile() {
                 setPostsOffset(prevOffset => postsFullScreen ? prevOffset + 6 : prevOffset + 24);   
             }
         } catch (err) {
-            navigate("/errorPage", {state: {error: err.message}});
+            setMessageWithReset("Não foi possível recuperar as postagens do perfil.", "error");
             
             console.error('Erro ao fazer a requisição:', err);
         } finally {
@@ -172,7 +172,7 @@ function Profile() {
             const data = resp.data;
     
             if (data.error) {
-                navigate("/errorPage", {state: {error: data.error}});
+                setMessageWithReset("Não foi possível recuperar as marcações do perfil.", "error");
             } else {
                 if (data.length < postsLimit.current) {
                     setTagPostsEnd(true);
@@ -195,7 +195,7 @@ function Profile() {
                 setTagPostsOffset(prevOffset => postsFullScreen ? prevOffset + 6 : prevOffset + 24);   
             }
         } catch (err) {
-            navigate("/errorPage", {state: {error: err.message}});
+            setMessageWithReset("Não foi possível recuperar as marcações do perfil.", "error");
             
             console.error('Erro ao fazer a requisição:', err);
         } finally {
@@ -313,7 +313,7 @@ function Profile() {
                 localStorage.setItem('profile', JSON.stringify({profile: data, updateDate: Date.now()}));      
             }
         } catch (err) {
-            navigate("/errorPage", {state: {error: err.message}});
+            navigate("/login", {state: {message: err.message, type: "error"}});
     
             console.error('Erro ao fazer a requisição:', err);
         }
@@ -359,14 +359,14 @@ function Profile() {
             const data = resp.data;
         
             if (data.error) {
-                navigate("/errorPage", {state: {error: data.error}})
+                setMessageWithReset(`Não foi possível ${profile.isFollowed ? "deixar de seguir" : "seguir"} ${profile.nome}.`, "error");
             } else {
                 setFollowersNumber(profile.isFollowed ? followersNumber - 1 : followersNumber + 1);
         
                 setProfile(prevProfile => ({...prevProfile, isFollowed: !prevProfile.isFollowed}));
             }
         } catch (err) {
-            navigate("/errorPage", {state: {error: err.message}})
+            setMessageWithReset(`Não foi possível ${profile.isFollowed ? "deixar de seguir" : "seguir"} ${profile.nome}.`, "error");
         
             console.error("Erro ao fazer a requisição:", err);
         }
@@ -399,14 +399,14 @@ function Profile() {
             const data = resp.data;
 
             if (data.error) {
-                navigate("/errorPage", {state: {error: data.error}})
+                setMessageWithReset("Não foi possível denunciar o perfil.", "error");
             } else {
                 setProfile(prevProfile => ({...prevProfile, isComplainted: !prevProfile.isComplainted}));
     
-                setMessageWithReset("Perfil denunciado! Aguarde para analisarmos a denúncia", "success");
+                setMessageWithReset("Perfil denunciado! Aguarde para analisarmos a denúncia.", "success");
             }
         } catch (err) {
-            navigate("/errorPage", {state: {error: err.message}})
+            setMessageWithReset("Não foi possível denunciar o perfil.", "error");
 
             console.error("Erro ao fazer a requisição:", err);
         }

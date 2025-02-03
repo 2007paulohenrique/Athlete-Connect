@@ -63,7 +63,7 @@ function Config() {
             const data = resp.data;
     
             if (data.error) {
-                navigate("/errorPage", {state: {error: data.error}});
+                setMessageWithReset("Não foi possível carregar as postagens que você curtiu.", "error");
             } else {
                 if (data.length < postsLimit.current) {
                     setLikedPostsEnd(true);
@@ -86,7 +86,7 @@ function Config() {
                 setLikedPostsOffset(prevOffset => postsFullScreen ? prevOffset + 6 : prevOffset + 24);   
             }
         } catch (err) {
-            navigate("/errorPage", {state: {error: err.message}});
+            setMessageWithReset("Não foi possível carregar as postagens que você curtiu.", "error");
             
             console.error('Erro ao fazer a requisição:', err);
         } finally {
@@ -105,7 +105,7 @@ function Config() {
             const data = resp.data;
     
             if (data.error) {
-                navigate("/errorPage", {state: {error: data.error}});
+                setMessageWithReset("Não foi possível carregar as postagens que você comentou.", "error");
             } else {
                 if (data.length < postsLimit.current) {
                     setCommentedPostsEnd(true);
@@ -128,7 +128,7 @@ function Config() {
                 setCommentedPostsOffset(prevOffset => postsFullScreen ? prevOffset + 6 : prevOffset + 24);   
             }
         } catch (err) {
-            navigate("/errorPage", {state: {error: err.message}});
+            setMessageWithReset("Não foi possível carregar as postagens que você comentou.", "error");
             
             console.error('Erro ao fazer a requisição:', err);
         } finally {
@@ -147,7 +147,7 @@ function Config() {
             const data = resp.data;
     
             if (data.error) {
-                navigate("/errorPage", {state: {error: data.error}});
+                setMessageWithReset("Não foi possível carregar as postagens que você compartilhou.", "error");
             } else {
                 if (data.length < postsLimit.current) {
                     setSharedPostsEnd(true);
@@ -170,7 +170,7 @@ function Config() {
                 setSharedPostsOffset(prevOffset => postsFullScreen ? prevOffset + 6 : prevOffset + 24);   
             }
         } catch (err) {
-            navigate("/errorPage", {state: {error: err.message}});
+            setMessageWithReset("Não foi possível carregar as postagens que você compartilhou.", "error");
             
             console.error('Erro ao fazer a requisição:', err);
         } finally {
@@ -240,12 +240,12 @@ function Config() {
             const data = resp.data;
             
             if (data.error) {
-                navigate("/errorPage", {state: {error: data.error}})
+                setMessageWithReset("Não foi possível desativar seu perfil.", "error");
             } else {
                 navigate("/login", {state: {message: "Conta desativada. Crie ou entre em outra conta para continuar no Athlete Connect.", type: "success"}})
             }
         } catch (err) {
-            navigate("/errorPage", {state: {error: err.message}});
+            setMessageWithReset("Não foi possível desativar seu perfil.", "error");
     
             console.error('Erro ao fazer a requisição:', err);
         }
@@ -320,13 +320,13 @@ function Config() {
             const data = resp.data;
 
             if (data.error) {
-                navigate("/errorPage", {state: {error: data.error}})
+                setMessageWithReset(data.error, "error");
             } else {
                 setInitialProfile(profile);
                 setMessageWithReset("Modificações concluídas .", "success");
             }
         } catch (err) {                    
-            navigate("/errorPage", {state: {error: err.message}})
+            setMessageWithReset("Não foi possível modificar seu perfil.", "error");
 
             console.error('Erro ao fazer a requisição:', err);
         }
@@ -344,10 +344,10 @@ function Config() {
             const data = resp.data;
 
             if (data.error) {
-                navigate("/errorPage", {state: {error: data.error}})
+                setMessageWithReset(data.error, "error");
             }
         } catch (err) {                    
-            navigate("/errorPage", {state: {error: err.message}})
+            setMessageWithReset("Não foi possível modificar suas configurações.", "error");
 
             console.error('Erro ao fazer a requisição:', err);
         }
