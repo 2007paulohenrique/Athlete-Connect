@@ -51,6 +51,8 @@ function Login() {
                 } else {
                     navigate("/errorPage", {state: {error: data.error}});
                 }
+
+                throw new Error("Erro ao criar perfil");
             } else {
                 const updatedProfile = {...profile, confirmedNameSignUp: profile.nameSignUp};
             
@@ -65,6 +67,8 @@ function Login() {
                 navigate("/errorPage", {state: {error: err.message}})
     
                 console.error("Erro ao fazer a requisição:", err);
+             
+                throw err;
             }
         }
     }
@@ -76,6 +80,8 @@ function Login() {
             
             if (data.error) {
                 setMessageWithReset("Não foi possível ativar seu perfil.", "error");
+
+                throw new Error("Erro ao ativar perfil");
             } else {
                 setLoginSubmitError(false);
 
@@ -112,6 +118,8 @@ function Login() {
                 } else {
                     navigate("/errorPage", {state: {error: data.error}});
                 }
+
+                throw new Error("Erro ao fazer login");
             } else {
                 setProfileId(data.profile.id_perfil);
                 localStorage.setItem('athleteConnectProfileId', data.profile.id_perfil);
@@ -132,6 +140,8 @@ function Login() {
                 navigate("/errorPage", {state: {error: err.message}})
     
                 console.error("Erro ao fazer a requisição:", err);
+             
+                throw err;
             }
         }
     }

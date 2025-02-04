@@ -39,6 +39,8 @@ function EditProfile() {
                 } else {
                     navigate("/errorPage", {state: {error: data.error}});
                 }
+
+                throw new Error("Erro ao criar perfil");
             } else {
                 if (!profile.bio) profile.bio = "";
                 if (profile.private === undefined) profile.private = false;      
@@ -52,6 +54,8 @@ function EditProfile() {
                 navigate("/errorPage", {state: {error: err.message}});
     
                 console.error("Erro ao fazer a requisição:", err);
+                
+                throw err;
             }
         }
     }

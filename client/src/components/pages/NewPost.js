@@ -57,6 +57,8 @@ function NewPost() {
     
             if (data.error) {
                 setMessageWithReset("Não foi possível recuperar as hashtags.", "error");
+
+                throw new Error("Erro ao recuperar hashtags");
             } else {
                 setHashtags(data);
                 localStorage.setItem("hashtags", JSON.stringify({hashtags: data, updateDate: Date.now()}));
@@ -79,6 +81,8 @@ function NewPost() {
     
             if (data.error) {
                 setMessageWithReset("Não foi possível recuperar as tags dos perfis.", "error");
+
+                throw new Error("Erro ao recuperar tags");
             } else {
                 const filteredData = data.filter(tag => String(tag.id_perfil) !== String(profile.id_perfil) && tag.permissao_marcacao);
 
@@ -116,7 +120,8 @@ function NewPost() {
             
             if (resp.status === 204) {
                 navigate("/login", {state: {message: "Seu perfil foi desativado. Faça login e o ative para voltar a usá-lo.", type: "error"}});
-                return;
+                
+                throw new Error("Perfil desativado");
             }
 
             if (data.error) {
@@ -125,6 +130,8 @@ function NewPost() {
                 } else {
                     navigate("/errorPage", {state: {error: data.error}})
                 }
+
+                throw new Error("Erro ao buscar perfil");
             } else {
                 setProfile(data);
                 localStorage.setItem('profile', JSON.stringify({profile: data, updateDate: Date.now()}));
@@ -132,9 +139,13 @@ function NewPost() {
                 fetchHashtags();
             }
         } catch (err) {
-            navigate("/login", {state: {message: err.message, type: "error"}});
-    
             console.error('Erro ao fazer a requisição:', err);
+    
+            if (err.response.status !== 404) {
+                throw new Error("Erro ao buscar perfil");
+            }
+            
+            navigate("/login", {state: {message: "Não foi possível encontrar nenhum perfil com o id fornecido. Tente fazer o login.", type: "error"}});
         }
     }, [fetchHashtags, navigate]); 
 
@@ -155,6 +166,8 @@ function NewPost() {
 
             if (data.error) {
                 navigate("/errorPage", {state: {error: data.error}})
+
+                throw new Error("Erro ao criar postagem");
             } else {
                 navigate("/", {state: {message: "Publicação feita com sucesso!", type: "success"}});
             }    
@@ -162,6 +175,8 @@ function NewPost() {
             navigate("/errorPage", {state: {error: err.message}})
 
             console.error("Erro ao fazer a requisição:", err);
+
+            throw err;
         }
     }
 
@@ -173,7 +188,8 @@ function NewPost() {
         } else {
             fetchProfile(confirmedProfileId);
         }
-    }, [fetchProfile, navigate, profileId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     useEffect(() => {
         fetchTags();

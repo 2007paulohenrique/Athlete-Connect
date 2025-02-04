@@ -36,6 +36,20 @@ def get_profile_name(con, profile_id):
      except Exception as e:
           print(f"Erro ao recuperar nome do perfil: {e}")
           return None
+
+def get_profile_photo_path(con, profile_id):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               sql = "SELECT fk_midia_id_midia FROM perfil WHERE id_perfil = %s"
+               cursor.execute(sql, (profile_id,))
+               result = cursor.fetchone()
+
+               profile_photo = get_media(con, result["fk_midia_id_midia"])
+
+          return profile_photo["caminho"]
+     except Exception as e:
+          print(f"Erro ao recuperar foto do perfil: {e}")
+          return None
      
 def get_post_author_id(con, post_id):
      try:

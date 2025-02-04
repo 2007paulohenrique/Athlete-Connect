@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
 from database.queries import *
 from database.connection import *
@@ -30,8 +30,10 @@ mail = Mail(app)
 
 UPLOAD_FOLDER = os.path.join('../client/src/img/users')
 
-def send_email_notification(email_dest, subject, message):
-    msg = Message(subject, body=message, sender=app.config['MAIL_USERNAME'], recipients=[email_dest])
+def send_email_notification(email_dest, subject, message, profile_photo_path=None):
+    email_template = render_template("email.html", profile_photo_path=profile_photo_path, message=message)
+
+    msg = Message(subject, html=email_template, sender=app.config['MAIL_USERNAME'], recipients=[email_dest])
 
     with app.app_context():
         try:
@@ -600,7 +602,9 @@ def post_follow(profile_id):
                 if email is None:
                     print("Erro ao recuperar email do perfil")
                 else:
-                    send_email_notification(email, "Novo seguidor no Athlete Connect", message)
+                    profile_photo = get_profile_photo_path(con, follower_id)
+
+                    send_email_notification(email, "Novo seguidor no Athlete Connect", message, profile_photo)
 
         req_status = 201 if is_followed else 204
 
@@ -776,7 +780,9 @@ def post_like(post_id):
                     if email is None:
                         print("Erro ao recuperar email do perfil")
                     else:
-                        send_email_notification(email, "Curtida no Athlete Connect", message)
+                        profile_photo = get_profile_photo_path(con, profile_id)
+
+                        send_email_notification(email, "Curtida no Athlete Connect", message, profile_photo)
 
         req_status = 201 if is_liked else 204
 
@@ -830,7 +836,9 @@ def post_sharing(post_id):
                 if email is None:
                     print("Erro ao recuperar email do perfil")
                 else:
-                    send_email_notification(email, "Compartilhamento no Athlete Connect", message)
+                    profile_photo = get_profile_photo_path(con, author_id)
+
+                    send_email_notification(email, "Compartilhamento no Athlete Connect", message, profile_photo)
     
         return ({'success': 'success'}), 201
     except Exception as e:
@@ -929,7 +937,9 @@ def post_comment(post_id):
                 if email is None:
                     print("Erro ao recuperar email do perfil")
                 else:
-                    send_email_notification(email, "Comentário no Athlete Connect", message)
+                    profile_photo = get_profile_photo_path(con, author_id)
+
+                    send_email_notification(email, "Comentário no Athlete Connect", message, profile_photo)
         
         return jsonify({'newComment': new_comment}), 201
     except Exception as e:

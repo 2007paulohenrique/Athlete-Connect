@@ -64,6 +64,8 @@ function Config() {
     
             if (data.error) {
                 setMessageWithReset("Não foi possível carregar as postagens que você curtiu.", "error");
+
+                throw new Error("Erro ao carregar postagens");
             } else {
                 if (data.length < postsLimit.current) {
                     setLikedPostsEnd(true);
@@ -87,8 +89,8 @@ function Config() {
             }
         } catch (err) {
             setMessageWithReset("Não foi possível carregar as postagens que você curtiu.", "error");
-            
-            console.error('Erro ao fazer a requisição:', err);
+
+            console.error('Erro ao fazer a requisição:', err);                        
         } finally {
             setLikedPostsLoading(false);
         }
@@ -106,6 +108,8 @@ function Config() {
     
             if (data.error) {
                 setMessageWithReset("Não foi possível carregar as postagens que você comentou.", "error");
+
+                throw new Error("Erro ao carregar postagens");
             } else {
                 if (data.length < postsLimit.current) {
                     setCommentedPostsEnd(true);
@@ -148,6 +152,8 @@ function Config() {
     
             if (data.error) {
                 setMessageWithReset("Não foi possível carregar as postagens que você compartilhou.", "error");
+
+                throw new Error("Erro ao carregar postagens");
             } else {
                 if (data.length < postsLimit.current) {
                     setSharedPostsEnd(true);
@@ -205,7 +211,8 @@ function Config() {
 
             if (resp.status === 204) {
                 navigate("/login", {state: {message: "Seu perfil foi desativado. Faça login e o ative para voltar a usá-lo.", type: "error"}});
-                return;
+                
+                throw new Error("Perfil desativado");
             }
             
             if (data.error) {
@@ -214,6 +221,8 @@ function Config() {
                 } else {
                     navigate("/errorPage", {state: {error: data.error}})
                 }
+
+                throw new Error("Erro ao buscar perfil");
             } else {
                 const {config, ...others} = data;
 
@@ -227,9 +236,13 @@ function Config() {
                 loadSharedPosts(others.id_perfil);
             }
         } catch (err) {
-            navigate("/errorPage", {state: {error: err.message}});
-    
             console.error('Erro ao fazer a requisição:', err);
+    
+            if (err.response.status !== 404) {
+                throw new Error("Erro ao buscar perfil");
+            }
+            
+            navigate("/login", {state: {message: "Não foi possível encontrar nenhum perfil com o id fornecido. Tente fazer o login.", type: "error"}});
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [navigate]);  
@@ -244,6 +257,8 @@ function Config() {
             } else {
                 navigate("/login", {state: {message: "Conta desativada. Crie ou entre em outra conta para continuar no Athlete Connect.", type: "success"}})
             }
+
+            throw new Error("Erro ao desativar perfil");
         } catch (err) {
             setMessageWithReset("Não foi possível desativar seu perfil.", "error");
     
@@ -321,6 +336,8 @@ function Config() {
 
             if (data.error) {
                 setMessageWithReset(data.error, "error");
+
+                throw new Error("Erro ao modificar perfil");
             } else {
                 setInitialProfile(profile);
                 setMessageWithReset("Modificações concluídas .", "success");
@@ -345,6 +362,8 @@ function Config() {
 
             if (data.error) {
                 setMessageWithReset(data.error, "error");
+
+                throw new Error("Erro ao modificar configuração");
             }
         } catch (err) {                    
             setMessageWithReset("Não foi possível modificar suas configurações.", "error");

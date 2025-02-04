@@ -66,6 +66,8 @@ function SearchPage() {
     
             if (data.error) {
                 setMessageWithReset(`Não foi possível carregar as postagens da pesquisa.`, "error");
+
+                throw new Error("Erro ao recuperar postagens da pesquisa");
             } else {
                 if (data.length < postsLimit.current) {
                     setPostsEnd(true);
@@ -106,6 +108,8 @@ function SearchPage() {
     
             if (data.error) {
                 setMessageWithReset(`Não foi possível carregar os perfis da pesquisa.`, "error");
+
+                throw new Error("Erro ao recuperar perfis da pesquisa");
             } else {
                 setResult(prevResult => ({...prevResult, profiles: {...prevResult.profiles, results: [...prevResult.profiles.results, ...data]}}));
 
@@ -143,6 +147,8 @@ function SearchPage() {
             
             if (data.error) {
                 navigate("/errorPage", {state: {error: data.error}});
+
+                throw new Error("Erro ao recuperar resultados da pesquisa");
             } else {
                 setResult(prevResult => ({
                     ...prevResult,
@@ -171,6 +177,8 @@ function SearchPage() {
             navigate("/errorPage", {state: {error: err.message}});
     
             console.error('Erro ao fazer a requisição:', err);
+
+            throw err;
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [navigate, text]);

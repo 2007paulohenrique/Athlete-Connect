@@ -27,6 +27,8 @@ function ProfilePreferences() {
             
             if (data.error) {
                 navigate("/errorPage", {state: {error: data.error}});
+
+                throw new Error("Erro ao recuperar esportes");
             } else {
                 setSports(data);
             }
@@ -34,6 +36,8 @@ function ProfilePreferences() {
             navigate("/errorPage", {state: {error: err.message}});
     
             console.error('Erro ao fazer a requisição:', err);
+
+            throw err;
         }
     }, [navigate]);
 
@@ -106,6 +110,8 @@ function ProfilePreferences() {
                 setIsSubmitting(false);
 
                 navigate("/errorPage", {state: {error: data.error}})
+
+                throw new Error("Erro ao criar perfil");
             } else {
                 setProfileId(data.profile.id_perfil);
                 localStorage.setItem('athleteConnectProfileId', data.profile.id_perfil);
@@ -119,6 +125,8 @@ function ProfilePreferences() {
             navigate("/errorPage", {state: {error: err.message}})
 
             console.error('Erro ao fazer a requisição:', err);
+
+            throw err;
         }
     }
 
@@ -138,16 +146,20 @@ function ProfilePreferences() {
             if (data.error) {
                 setIsSubmitting(false);
 
-                navigate("/errorPage", {state: {error: data.error}})
+                navigate("/errorPage", {state: {error: data.error}});
+
+                throw new Error("Erro ao modificar preferências");
             } else {                
                 navigate("/myProfile", {state: {message: "Preferências modificadas com sucesso.", type: "success"}});
             }
         } catch (err) {
             setIsSubmitting(false);
                     
-            navigate("/errorPage", {state: {error: err.message}})
+            navigate("/errorPage", {state: {error: err.message}});
 
             console.error('Erro ao fazer a requisição:', err);
+
+            throw err;
         }
     }
 
@@ -171,6 +183,8 @@ function ProfilePreferences() {
                 } else {
                     navigate("/errorPage", {state: {error: data.error}})
                 }
+
+                throw new Error("Erro ao criar perfil");
             } else {
                 createProfile();
             }
@@ -184,6 +198,8 @@ function ProfilePreferences() {
     
                 console.error("Erro ao fazer a requisição:", err);
             }
+
+            throw err;
         }
     }
 

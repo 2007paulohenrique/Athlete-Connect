@@ -73,6 +73,8 @@ function Profile() {
     
             if (data.error) {
                 setMessageWithReset("Não foi possível recuperar os seguidores do perfil.", "error");
+
+                throw new Error("Erro ao recuperar seguidores");
             } else {
                 if (data.length < 10) {
                     setFollowersEnd(true);
@@ -102,6 +104,8 @@ function Profile() {
     
             if (data.error) {
                 setMessageWithReset("Não foi possível recuperar os seguidos do perfil.", "error");
+
+                throw new Error("Erro ao recuperar seguidos");
             } else {
                 if (data.length < 10) {
                     setFollowedsEnd(true);
@@ -131,6 +135,8 @@ function Profile() {
     
             if (data.error) {
                 setMessageWithReset("Não foi possível recuperar as postagens do perfil.", "error");
+
+                throw new Error("Erro ao recuperar postagens do perfil");
             } else {
                 if (data.length < postsLimit.current) {
                     setPostsEnd(true);
@@ -173,6 +179,8 @@ function Profile() {
     
             if (data.error) {
                 setMessageWithReset("Não foi possível recuperar as marcações do perfil.", "error");
+
+                throw new Error("Erro ao recuperar marcações do perfil");
             } else {
                 if (data.length < postsLimit.current) {
                     setTagPostsEnd(true);
@@ -214,12 +222,15 @@ function Profile() {
             const data = resp.data;
 
             if (resp.status === 204) {
-                navigate(id ? -1 : "/login", {state: {message: data.error, type: "error"}})
-                return;
+                navigate(id ? -1 : "/login", !id && {state: {message: "O perfil foi desativado", type: "error"}})
+                            
+                throw new Error("Perfil desativado");
             }
 
             if (data.error) {
-                navigate("/errorPage", {state: {error: data.error}})                
+                navigate("/errorPage", {state: {error: data.error}});
+
+                throw new Error("Erro ao recuperar perfil do usuário");                
             } else {
                 const formatPosts = (posts) => {
                     return posts.map(post => ({
@@ -261,20 +272,10 @@ function Profile() {
             navigate("/errorPage", {state: {error: err.message}})
     
             console.error('Erro ao fazer a requisição:', err);
+
+            throw err;
         }    
     }, [id, loadFolloweds, loadFollowers, navigate])    
-
-    useEffect(() => {
-        const viewerId = profileId || localStorage.getItem("athleteConnectProfileId");
-
-        if (id === viewerId) {
-            navigate("/myProfile");
-            return;
-        }
-
-        fetchUser(viewerId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [location.pathname]) 
     
     const fetchProfile = useCallback(async (id) => {
         const storageData = localStorage.getItem("profile");
@@ -299,7 +300,8 @@ function Profile() {
             
             if (resp.status === 204) {
                 navigate("/login", {state: {message: "Seu perfil foi desativado. Faça login e o ative para voltar a usá-lo.", type: "error"}});
-                return;
+                
+                throw new Error("Perfil desativado");
             }
 
             if (data.error) {
@@ -308,27 +310,53 @@ function Profile() {
                 } else {
                     navigate("/errorPage", {state: {error: data.error}})
                 }
+
+                throw new Error("Erro ao buscar perfil")
             } else {
                 setViewer(data);  
                 localStorage.setItem('profile', JSON.stringify({profile: data, updateDate: Date.now()}));      
             }
-        } catch (err) {
-            navigate("/login", {state: {message: err.message, type: "error"}});
-    
+        } catch (err) {    
             console.error('Erro ao fazer a requisição:', err);
+            
+            if (err.response.status === 404) {
+                navigate("/login", {state: {message: "Não foi possível encontrar nenhum perfil com o id fornecido. Tente fazer o login.", type: "error"}});
+                
+                throw err
+            }
         }
     }, [navigate]);   
     
     useEffect(() => {
         const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
-
+    
         if (!confirmedProfileId) {
             navigate("/login");
-        } else {
-            fetchProfile(confirmedProfileId);
+            return;
         }
-    }, [fetchProfile, navigate, profileId]);
+    
+        const fetchData = async () => {
+            try {
+                await fetchProfile(confirmedProfileId);
 
+                if (id === confirmedProfileId) {
+                    navigate("/myProfile");
+                    return;
+                }
+
+                await fetchUser(confirmedProfileId);
+            } catch (err) {
+                console.error("Erro ao recuperar perfis:", err);
+
+                throw err;
+            }
+        };
+    
+        fetchData();
+    
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [location.pathname]);
+    
     function setMessageWithReset(newMessage, type) {
         setMessage(null);
 
@@ -360,6 +388,8 @@ function Profile() {
         
             if (data.error) {
                 setMessageWithReset(`Não foi possível ${profile.isFollowed ? "deixar de seguir" : "seguir"} ${profile.nome}.`, "error");
+
+                throw new Error("Erro ao seguir ou deixar de seguir perfil");
             } else {
                 setFollowersNumber(profile.isFollowed ? followersNumber - 1 : followersNumber + 1);
         
@@ -400,6 +430,8 @@ function Profile() {
 
             if (data.error) {
                 setMessageWithReset("Não foi possível denunciar o perfil.", "error");
+
+                throw new Error("Erro ao denunciar perfil");
             } else {
                 setProfile(prevProfile => ({...prevProfile, isComplainted: !prevProfile.isComplainted}));
     
