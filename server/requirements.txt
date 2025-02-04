@@ -11,3 +11,5 @@ sqlparse==0.5.2
 mysql-connector-python==9.1.0
 flask-bcrypt==1.0.1
 bcrypt==4.2.1
+python-dotenv==1.0.1
+Flask-Mail==0.10.0

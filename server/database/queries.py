@@ -13,6 +13,42 @@ def get_profiles(con):
           print(f"Erro ao recuperar perfis: {e}")
           return None
 
+def get_profile_email(con, profile_id):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               sql = "SELECT email FROM perfil WHERE id_perfil = %s"
+               cursor.execute(sql, (profile_id,))
+               result = cursor.fetchone()
+
+          return result["email"]
+     except Exception as e:
+          print(f"Erro ao recuperar email do perfil: {e}")
+          return None
+     
+def get_profile_name(con, profile_id):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               sql = "SELECT nome FROM perfil WHERE id_perfil = %s"
+               cursor.execute(sql, (profile_id,))
+               result = cursor.fetchone()
+
+          return result["nome"]
+     except Exception as e:
+          print(f"Erro ao recuperar nome do perfil: {e}")
+          return None
+     
+def get_post_author_id(con, post_id):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               sql = "SELECT fk_perfil_id_perfil FROM postagem WHERE id_postagem = %s"
+               cursor.execute(sql, (post_id,))
+               result = cursor.fetchone()
+
+          return result["fk_perfil_id_perfil"]
+     except Exception as e:
+          print(f"Erro ao recuperar id do autor da postagem: {e}")
+          return None
+
 def get_profile_main_info(con, profile_id):
      try:
           with con.cursor(dictionary=True) as cursor:
@@ -1890,6 +1926,20 @@ def get_profile_shared_posts(con, profile_id, offset=None, limit=24):
      except Exception as e:
           print(f"Erro ao recuperar postagens compartilhadas pelo perfil: {e}")
           return None
+     
+def insert_notification(con, profile_id, message):
+     try:
+          with con.cursor() as cursor:
+               date = datetime.now()
+               sql = "INSERT INTO notificacao (mensagem, lancamento, fk_perfil_id_perfil) VALUES (%s, %s, %s)"
+               cursor.execute(sql, (message, date, profile_id))
+
+          con.commit()
+          return True
+     except Exception as e:
+          con.rollback()
+          print(f"Erro ao criar notificação: {e}")
+          return False
      
 def create_database(con):
      try: 

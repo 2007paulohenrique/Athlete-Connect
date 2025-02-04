@@ -1,7 +1,13 @@
 from database.queries import *
 from database.connection import *
+import os
 
-con_params = ("localhost", "root", "1234", "athleteconnect")   
+con_params = (
+    os.getenv("DB_HOST"),
+    os.getenv("DB_USER"),
+    os.getenv("DB_PASSWORD"),
+    os.getenv("DB_NAME"),
+)
 
 def main():
     try:

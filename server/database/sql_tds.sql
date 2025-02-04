@@ -273,7 +273,7 @@ CREATE TABLE IF NOT EXISTS grau_formacao (
 
 CREATE TABLE IF NOT EXISTS notificacao (
     id_notificacao int PRIMARY KEY AUTO_INCREMENT,
-    mensagem varchar(50) NOT NULL,
+    mensagem varchar(250) NOT NULL,
     lancamento datetime NOT NULL,
     fk_perfil_id_perfil int NOT NULL,
     FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil)

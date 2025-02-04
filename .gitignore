@@ -30,3 +30,6 @@ __pycache__/
 
 # data
 client/src/img/users/*
+
+# env
+.env

@@ -3,15 +3,44 @@ from flask_cors import CORS
 from database.queries import *
 from database.connection import *
 from flask_bcrypt import Bcrypt
+from dotenv import load_dotenv
+from flask_mail import Mail, Message
 import os
+
+load_dotenv()
 
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
 CORS(app)
 
+con_params = (
+    os.getenv("DB_HOST"),
+    os.getenv("DB_USER"),
+    os.getenv("DB_PASSWORD"),
+    os.getenv("DB_NAME"),
+)  
+
+app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER')
+app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT'))
+app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS') == 'True'
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+
+mail = Mail(app)
+
 UPLOAD_FOLDER = os.path.join('../client/src/img/users')
 
-con_params = ('localhost', 'root', '1234', 'athleteconnect')   
+def send_email_notification(email_dest, subject, message):
+    msg = Message(subject, body=message, sender=app.config['MAIL_USERNAME'], recipients=[email_dest])
+
+    with app.app_context():
+        try:
+            mail.send(msg)
+
+            return True 
+        except Exception as e:
+            print(f'Erro ao enviar email: {e}')
+            return False
 
 @app.route('/hashtags', methods=['GET'])
 def get_hastags_route():
@@ -194,6 +223,16 @@ def post_profile():
             if media_id is None or not insert_profile_photo(con, profile_id, media_id):
                 print('Erro ao inserir foto de perfil')
                 return jsonify({'error': 'Não foi possível registrar sua foto de perfil devido a um erro no nosso servidor.'}), 500  
+            
+        message = """
+            Desejamos que você tenha ótimas experiências como amante dos esportes em nossa rede social. 
+            Explore, conecte-se e compartilhe suas paixões esportivas com a nossa comunidade!
+        """
+
+        if not insert_notification(con, profile_id, message):
+            print('Erro ao inserir notificação')
+        
+        send_email_notification(email, f"Bem-vindo ao Athlete Connect {name}!", message)
 
         profile = get_profile(con, profile_id, profile_id)   
 
@@ -328,6 +367,27 @@ def active_profile_route(profile_id, active):
             print('Erro ao modificar perfil')
             return jsonify({'error': 'Não foi possível modificar seu perfil devido a um erro no nosso servidor.'}), 500
         
+        if active_bool:
+            message = """
+                Bem-vindo de volta!
+                Agora que você ativou seu perfil, poderá voltar a usá-lo normalmente e os outros usuários poderão vê-lo.
+            """
+        else:
+            message = """
+                Você desativou seu perfil.
+                Ficaremos felizes em tê-lo de volta! Para isso, faça login em sua conta e ative seu perfil.
+            """
+
+        if not insert_notification(con, profile_id, message):
+            print('Erro ao inserir notificação')
+
+        email = get_profile_email(con, profile_id)
+
+        if email is None:
+            print("Erro ao recuperar email do perfil")
+        else:
+            send_email_notification(email, "Ativação do perfil no Athlete Connect" if active_bool else "Desativação do perfil no Athlete Connect", message)
+        
         return jsonify({'profileId': profile_id}), 201
     except Exception as e:
         print(f'Erro ao modificar perfil: {e}')
@@ -359,8 +419,34 @@ def login():
                 if bcrypt.check_password_hash(profile['senha'], passwordLogin):
                     profile = get_profile(con, profile['id_perfil'], profile['id_perfil'])
 
+                    message = f"""
+                        Bem-vindo de volta {profile['nome']}!
+                    """
+                    
+                    if not insert_notification(con, profile['id_perfil'], message):
+                        print('Erro ao inserir notificação')
+
+                    send_email_notification(profile['email'], "Login no Athlete Connect", message)
+
                     return jsonify({'profile': profile}), 200
                 else:
+                    message = f"""
+                        Cuidado! 
+                        Alguém acabou de tentar acessar a sua conta.
+                        Caso esse alguém seja você, ignore essa mensagem, caso contrário,
+                        lembre-se sempre de guardar sua credencias e não compartilhá-las com ninguém.
+                    """
+                    
+                    if not insert_notification(con, profile['id_perfil'], message):
+                        print('Erro ao inserir notificação')
+
+                    email = get_profile_email(con, profile["id_perfil"])
+
+                    if email is None:
+                        print("Erro ao recuperar email do perfil")
+                    else:
+                        send_email_notification(email, "Tentativa de login no Athlete Connect", message)
+
                     return jsonify({'error': 'login'}), 401
                 
         return jsonify({'error': 'login'}), 401
@@ -496,6 +582,26 @@ def post_follow(profile_id):
             print('Erro ao conferir estado de seguidor do perfil')
             return jsonify({'error': 'Não foi possível conferir o estado de seguidor do perfil devido a um erro no nosso servidor.'}), 500
 
+        if is_followed:
+            name = get_profile_name(con, follower_id)
+
+            if name is None:
+                print("Erro ao recuperar nome do perfil")
+            else:
+                message = f"""
+                    {name} começou a te seguir.
+                """
+                
+                if not insert_notification(con, profile_id, message):
+                    print('Erro ao inserir notificação')
+
+                email = get_profile_email(con, profile_id)
+
+                if email is None:
+                    print("Erro ao recuperar email do perfil")
+                else:
+                    send_email_notification(email, "Novo seguidor no Athlete Connect", message)
+
         req_status = 201 if is_followed else 204
 
         return jsonify({'isFollowed': is_followed}), req_status
@@ -519,12 +625,26 @@ def profile_complaint(profile_id):
         author_id = int(request.form.get('authorId'))
         complaint_reasons_ids = request.form.getlist('complaintReasonsIds')
         reasons_ids = [int(reason_id) for reason_id in complaint_reasons_ids]
-    
-        complaint_result = insert_profile_complaint(con, description, author_id, profile_id, reasons_ids)
 
-        if not complaint_result:
+        if not insert_profile_complaint(con, description, author_id, profile_id, reasons_ids):
             print('Erro ao denunciar perfil')
             return jsonify({'error': 'Não foi possível denunciar o perfil devido a um erro no nosso servidor.'}), 500
+        
+        message = f"""
+            Seu perfil foi denunciado.
+            Infringir uma lei e fazer algo que possa ofender alguém podem ser motivos para ter seu perfil denunciado.
+            Nós analisaremos a denúncia e seu perfil, então não se preocupe caso não tenha feito nada. 
+        """
+        
+        if not insert_notification(con, profile_id, message):
+            print('Erro ao inserir notificação')
+
+        email = get_profile_email(con, profile_id)
+
+        if email is None:
+            print("Erro ao recuperar email do perfil")
+        else:
+            send_email_notification(email, "Denúncia ao seu perfil no Athlete Connect", message)
         
         return ({'success': 'success'}), 201
     except Exception as e:
@@ -633,6 +753,31 @@ def post_like(post_id):
             print('Erro ao conferir estado de curtida da postagem')
             return jsonify({'error': 'Não foi possível conferir o estado de curtida da postagem devido a um erro no nosso servidor.'}), 500
 
+        if is_liked:
+            name = get_profile_name(con, profile_id)
+
+            if name is None:
+                print("Erro ao recuperar nome do perfil")
+            else:
+                author_id = get_post_author_id(con, post_id)
+
+                if author_id is None:
+                    print("Erro ao recuperar id do autor da postagem")
+                else:
+                    message = f"""
+                        {name} curtiu sua postagem.
+                    """
+
+                    if not insert_notification(con, author_id, message):
+                        print('Erro ao inserir notificação')
+
+                    email = get_profile_email(con, author_id)
+
+                    if email is None:
+                        print("Erro ao recuperar email do perfil")
+                    else:
+                        send_email_notification(email, "Curtida no Athlete Connect", message)
+
         req_status = 201 if is_liked else 204
 
         return jsonify({'isLiked': is_liked}), req_status
@@ -663,6 +808,30 @@ def post_sharing(post_id):
             print('Erro ao compartilhar postagem')
             return jsonify({'error': 'Não foi possível compartilhar a postagem devido a um erro no nosso servidor.'}), 500
         
+        name = get_profile_name(con, author_id)
+
+        if name is None:
+            print("Erro ao recuperar nome do perfil")
+        else:
+            post_author_id = get_post_author_id(con, post_id)
+
+            if post_author_id is None:
+                print("Erro ao recuperar id do autor da postagem")
+            else:
+                message = f"""
+                    {name} compartilhou sua postagem.
+                """
+
+                if not insert_notification(con, post_author_id, message):
+                    print('Erro ao inserir notificação')
+
+                email = get_profile_email(con, post_author_id)
+
+                if email is None:
+                    print("Erro ao recuperar email do perfil")
+                else:
+                    send_email_notification(email, "Compartilhamento no Athlete Connect", message)
+    
         return ({'success': 'success'}), 201
     except Exception as e:
         print(f'Erro ao compartilhar postagem: {e}')
@@ -690,7 +859,28 @@ def post_complaint(post_id):
         if not complaint_result:
             print('Erro ao denunciar postagem')
             return jsonify({'error': 'Não foi possível denunciar a postagem devido a um erro no nosso servidor.'}), 500
-        
+
+        post_author_id = get_post_author_id(con, post_id)
+
+        if post_author_id is None:
+            print("Erro ao recuperar id do autor da postagem")
+        else:
+            message = """
+                Sua postagem foi denunciada.
+                Infringir uma lei e fazer algo que possa ofender alguém podem ser motivos para ter sua postagem denunciada.
+                Nós analisaremos a denúncia e sua postagem, então não se preocupe caso não tenha feito nada. 
+            """
+
+            if not insert_notification(con, post_author_id, message):
+                print('Erro ao inserir notificação')
+
+            email = get_profile_email(con, post_author_id)
+
+            if email is None:
+                print("Erro ao recuperar email do perfil")
+            else:
+                send_email_notification(email, "Denúncia à sua postagem no Athlete Connect", message)
+    
         return ({'success': 'success'}), 201
     except Exception as e:
         print(f'Erro ao denunciar postagem: {e}')
@@ -716,6 +906,30 @@ def post_comment(post_id):
         if new_comment is None:
             print('Erro ao comentar na postagem')
             return jsonify({'error': 'Não foi possível comentar na postagem devido a um erro no nosso servidor.'}), 500
+        
+        name = get_profile_name(con, author_id)
+
+        if name is None:
+            print("Erro ao recuperar nome do perfil")
+        else:
+            post_author_id = get_post_author_id(con, post_id)
+
+            if post_author_id is None:
+                print("Erro ao recuperar id do autor da postagem")
+            else:
+                message = f"""
+                    {name} comentou em sua postagem.
+                """
+
+                if not insert_notification(con, post_author_id, message):
+                    print('Erro ao inserir notificação')
+
+                email = get_profile_email(con, post_author_id)
+
+                if email is None:
+                    print("Erro ao recuperar email do perfil")
+                else:
+                    send_email_notification(email, "Comentário no Athlete Connect", message)
         
         return jsonify({'newComment': new_comment}), 201
     except Exception as e:
