@@ -127,7 +127,7 @@ function Home() {
     }, [feed, postsLoading, offset]);
 
     const fetchProfile = useCallback(async (id) => {
-        const storageData = localStorage.getItem("profile");
+        const storageData = localStorage.getItem("athleteConnectProfile");
 
         if (storageData) {
             try {
@@ -135,11 +135,13 @@ function Home() {
                 
                 if (Date.now() - parsedData.updateDate < EXPIRATION_TIME) {
                     setProfile(parsedData.profile);
+
+                    return;
                 }
             } catch (err) {
                 console.error("Erro ao recuperar o perfil do cache:", err);
 
-                localStorage.removeItem("profile");
+                localStorage.removeItem("athleteConnectProfile");
             }
         }
 
@@ -163,7 +165,7 @@ function Home() {
                 throw new Error("Erro ao buscar perfil");
             } else {
                 setProfile(data);
-                localStorage.setItem('profile', JSON.stringify({profile: data, updateDate: Date.now()}));
+                localStorage.setItem('athleteConnectProfile', JSON.stringify({profile: data, updateDate: Date.now()}));
                 
                 loadPosts(id);
             }
@@ -182,16 +184,28 @@ function Home() {
         const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
 
         if (!confirmedProfileId) {
-            navigate("/login");
-        } else {
-            fetchProfile(confirmedProfileId);
+            console.error("Erro ao indentificar perfil");
+
+            navigate("/login", {state: {message: "Não conseguimos identificar seu perfil. Tente fazer o login.", type: "error"}});
+
+            return;
         }
+    
+        const fetchData = async () => {
+            try {
+                await fetchProfile(confirmedProfileId);
+                await fetchComplaintReasons(setComplaintReasons, navigate);
+            } catch (err) {
+                console.error("Erro ao recuperar perfil:", err);
+
+                throw err;
+            }
+        };
+    
+        fetchData();
+            
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
-    useEffect(() => {
-        fetchComplaintReasons(setComplaintReasons, navigate);
-    }, [navigate]);
 
     function setMessageWithReset(newMessage, type) {
         setMessage(null);
@@ -235,7 +249,7 @@ function Home() {
 
     return (
         <>
-            <ProfileNavBar/>
+            <ProfileNavBar setMessage={setMessageWithReset} permission={JSON.stringify(profile) !== "{}"}/>
         
             <main className={styles.home_page}>
                 {message && <Message message={message.message} type={message.type}/>}
@@ -256,18 +270,18 @@ function Home() {
                             caption={post.legenda}
                             postHashtags={post.hashtags || ""}
                             postTags={post.tags || ""}
-                            likeSubmit={() => toggleLike(profile.id_perfil, post, navigate, setFeed)}
+                            likeSubmit={() => toggleLike(profile.id_perfil, post, navigate, setFeed, setMessageWithReset)}
                             isLiked={post.isLiked}
                             sharingSubmit={(sharings, sharingCaption) => 
-                                createSharing(profile.id_perfil, post, sharings, sharingCaption, navigate, setMessage, setFeed)
+                                createSharing(profile.id_perfil, post, sharings, sharingCaption, navigate, setMessageWithReset, setFeed)
                             }
                             complaintReasons={complaintReasons}
                             tags={tags}
                             isComplainted={post.isComplainted}
                             complaintSubmit={(postComplaintReasons, complaintDescription) => 
-                                createComplaint(profile.id_perfil, post, postComplaintReasons, complaintDescription, navigate, setFeed, setMessage)
+                                createComplaint(profile.id_perfil, post, postComplaintReasons, complaintDescription, navigate, setFeed, setMessageWithReset)
                             }
-                            commentSubmit={(commentText) => createComment(profile.id_perfil, post, commentText, navigate, setFeed)}
+                            commentSubmit={(commentText) => createComment(profile.id_perfil, post, commentText, navigate, setFeed, setMessageWithReset)}
                             comments={post.comments}
                             post={post}
                             filteredSharings={tags}

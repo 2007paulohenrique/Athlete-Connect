@@ -278,7 +278,7 @@ function Profile() {
     }, [id, loadFolloweds, loadFollowers, navigate])    
     
     const fetchProfile = useCallback(async (id) => {
-        const storageData = localStorage.getItem("profile");
+        const storageData = localStorage.getItem("athleteConnectProfile");
         
         if (storageData) {
             try {
@@ -286,11 +286,13 @@ function Profile() {
                 
                 if (Date.now() - parsedData.updateDate < EXPIRATION_TIME) {
                     setViewer(parsedData.profile);
+
+                    return;
                 }
             } catch (err) {
                 console.error("Erro ao recuperar o perfil do cache:", err);
 
-                localStorage.removeItem("profile");
+                localStorage.removeItem("athleteConnectProfile");
             }
         }
         
@@ -314,7 +316,7 @@ function Profile() {
                 throw new Error("Erro ao buscar perfil")
             } else {
                 setViewer(data);  
-                localStorage.setItem('profile', JSON.stringify({profile: data, updateDate: Date.now()}));      
+                localStorage.setItem('athleteConnectProfile', JSON.stringify({profile: data, updateDate: Date.now()}));      
             }
         } catch (err) {    
             console.error('Erro ao fazer a requisição:', err);
@@ -331,7 +333,10 @@ function Profile() {
         const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
     
         if (!confirmedProfileId) {
-            navigate("/login");
+            console.error("Erro ao indentificar perfil");
+
+            navigate("/login", {state: {message: "Não conseguimos identificar seu perfil. Tente fazer o login.", type: "error"}});
+            
             return;
         }
     
@@ -576,7 +581,7 @@ function Profile() {
                 <>
                     {!postsFullScreen ? 
                         <>
-                            <ProfileNavBar/>
+                            <ProfileNavBar setMessage={setMessageWithReset} permission={JSON.stringify(viewer) !== "{}"}/>
 
                             <main className={styles.profile_page}>
                                 {message && <Message message={message.message} type={message.type}/>}
@@ -738,7 +743,7 @@ function Profile() {
                                 </section>
                             </main>
                             
-                            <AppNavBar profilePhotoPath={viewer?.media ? viewer.media.caminho : ""}/>
+                            <AppNavBar profilePhotoPath={viewer?.media ? viewer.media?.caminho : ""}/>
                         </>
                     : 
                         <PostsFullScreen

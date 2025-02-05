@@ -33,7 +33,7 @@ function NewPost() {
     const navigate = useNavigate();
 
     const fetchHashtags = useCallback(async () => {
-        const storageData = localStorage.getItem("hashtags");
+        const storageData = localStorage.getItem("athleteConnectHashtags");
 
         if (storageData) {
             try {
@@ -47,7 +47,7 @@ function NewPost() {
             } catch (err) {
                 console.error("Erro ao recuperar as hashtags do cache:", err);
 
-                localStorage.removeItem("hashtags");
+                localStorage.removeItem("athleteConnectHashtags");
             }
         }
 
@@ -61,7 +61,7 @@ function NewPost() {
                 throw new Error("Erro ao recuperar hashtags");
             } else {
                 setHashtags(data);
-                localStorage.setItem("hashtags", JSON.stringify({hashtags: data, updateDate: Date.now()}));
+                localStorage.setItem("athleteConnectHashtags", JSON.stringify({hashtags: data, updateDate: Date.now()}));
             }
         } catch (err) {
             setMessageWithReset("Não foi possível recuperar as hashtags.", "error");
@@ -98,7 +98,7 @@ function NewPost() {
     }, [profile.id_perfil, searchTextTag]);
 
     const fetchProfile = useCallback(async (id) => {
-        const storageData = localStorage.getItem("profile");
+        const storageData = localStorage.getItem("athleteConnectProfile");
 
         if (storageData) {
             try {
@@ -106,11 +106,13 @@ function NewPost() {
                 
                 if (Date.now() - parsedData.updateDate < EXPIRATION_TIME) {
                     setProfile(parsedData.profile);
+
+                    return;
                 }
             } catch (err) {
                 console.error("Erro ao recuperar o perfil do cache:", err);
 
-                localStorage.removeItem("profile");
+                localStorage.removeItem("athleteConnectProfile");
             }
         }
 
@@ -134,7 +136,7 @@ function NewPost() {
                 throw new Error("Erro ao buscar perfil");
             } else {
                 setProfile(data);
-                localStorage.setItem('profile', JSON.stringify({profile: data, updateDate: Date.now()}));
+                localStorage.setItem('athleteConnectProfile', JSON.stringify({profile: data, updateDate: Date.now()}));
 
                 fetchHashtags();
             }
@@ -184,7 +186,9 @@ function NewPost() {
         const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
 
         if (!confirmedProfileId) {
-            navigate("/login");
+            console.error("Erro ao indentificar perfil");
+
+            navigate("/login", {state: {message: "Não conseguimos identificar seu perfil. Tente fazer o login.", type: "error"}});
         } else {
             fetchProfile(confirmedProfileId);
         }

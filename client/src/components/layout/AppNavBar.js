@@ -9,14 +9,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 function AppNavBar({ profilePhotoPath }) {
     const navigate = useNavigate();
     const location = useLocation();
-    
-    const profilePhoto = (() => {
-        try {
-            return require(`../../img/${profilePhotoPath}`);
-        } catch {
-            return userIcon;
-        }
-    })();
 
     return (
         <nav className={styles.app_nav_bar}>
@@ -38,13 +30,13 @@ function AppNavBar({ profilePhotoPath }) {
                 </li>
                 
                 <li 
-                    className={`${profilePhoto && styles.profile_photo} ${location.pathname === "/myProfile" ? styles.selected : undefined}`} 
+                    className={`${profilePhotoPath && styles.profile_photo} ${location.pathname === "/myProfile" ? styles.selected : undefined}`} 
                     onClick={() => {
                         navigate("/myProfile");
                         window.location.reload();
                     }}
                 >
-                    <img src={profilePhoto} alt="Profile"/>
+                    <img src={profilePhotoPath || userIcon} alt="Profile"/>
                 </li>
             </ul>
         </nav>

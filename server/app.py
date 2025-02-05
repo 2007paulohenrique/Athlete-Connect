@@ -5,6 +5,9 @@ from database.connection import *
 from flask_bcrypt import Bcrypt
 from dotenv import load_dotenv
 from flask_mail import Mail, Message
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 import os
 
 load_dotenv()
@@ -20,15 +23,19 @@ con_params = (
     os.getenv("DB_NAME"),
 )  
 
-app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER')
-app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT'))
-app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS') == 'True'
+app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
+app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', '587')) 
+app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'False').lower() in ['true', '1', 'yes']
 app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 
 mail = Mail(app)
 
-UPLOAD_FOLDER = os.path.join('../client/src/img/users')
+cloudinary.config( 
+    cloud_name = os.getenv('CLOUD_NAME'),  
+    api_key = os.getenv('API_KEY'),  
+    api_secret = os.getenv('API_SECRET')  
+)
 
 def send_email_notification(email_dest, subject, message, profile_photo_path=None):
     email_template = render_template("email.html", profile_photo_path=profile_photo_path, message=message)
@@ -43,6 +50,28 @@ def send_email_notification(email_dest, subject, message, profile_photo_path=Non
         except Exception as e:
             print(f'Erro ao enviar email: {e}')
             return False
+
+def cloud_upload_media(media):
+    try:
+        result = cloudinary.uploader.upload(media)
+
+        return result.get('secure_url')
+    except Exception as e:
+        print(f"Erro ao fazer upload da mídia: {e}")
+        return None
+    
+def cloud_upload_medias(medias):
+    try:
+        urls = []
+
+        for media in medias:
+            url = cloud_upload_media(media)
+
+            urls.append(url)
+        
+        return urls
+    except Exception as e:
+        print(f"Erro ao fazer upload das mídias: {e}")
 
 @app.route('/hashtags', methods=['GET'])
 def get_hastags_route():
@@ -196,35 +225,28 @@ def post_profile():
         if not insert_profile_preferences(con, profile_id, preferences):
             print('Erro ao inserir preferências do perfil')
             return jsonify({'error': 'Não foi possível registrar suas preferências devido a um erro no nosso servidor'}), 500     
-
-        user_folder = os.path.join(UPLOAD_FOLDER, f'{profile_id}')
-
-        os.makedirs(user_folder, exist_ok=True)
-        os.makedirs(os.path.join(user_folder, 'posts'), exist_ok=True)
-        os.makedirs(os.path.join(user_folder, 'flashs'), exist_ok=True)
-        os.makedirs(os.path.join(user_folder, 'profilePhoto'), exist_ok=True)
         
         if photo:
-            filename = photo.filename
-            filename = os.path.basename(filename)
+            photo_path = cloud_upload_media(photo)
 
-            _, file_extension = os.path.splitext(filename)  
-            file_extension = file_extension.lower()
+            if photo_path is not None:    
+                filename = os.path.basename(photo.filename)
+                _, file_extension = os.path.splitext(filename)  
+                file_extension = file_extension.lower()
 
-            filepath = os.path.join(user_folder, 'profilePhoto', filename)
-            photo.save(filepath)
+                saved_file = {
+                    'path': photo_path,
+                    'type': 'image' if photo.mimetype.startswith('image/') else 'video',
+                    'format': file_extension,
+                }
 
-            saved_file = {
-                'path': f'users/{profile_id}/profilePhoto/{filename}',
-                'type': 'image' if photo.mimetype.startswith('image/') else 'video',
-                'format': file_extension,
-            }
+                media_id = insert_media(con, saved_file['path'], saved_file['type'], saved_file['format'])   
 
-            media_id = insert_media(con, saved_file['path'], saved_file['type'], saved_file['format'])   
-
-            if media_id is None or not insert_profile_photo(con, profile_id, media_id):
-                print('Erro ao inserir foto de perfil')
-                return jsonify({'error': 'Não foi possível registrar sua foto de perfil devido a um erro no nosso servidor.'}), 500  
+                if media_id is None or not insert_profile_photo(con, profile_id, media_id):
+                    print('Erro ao inserir foto de perfil')
+                    return jsonify({'error': 'Não foi possível registrar sua foto de perfil devido a um erro no nosso servidor.'}), 500 
+            else:
+                print("Erro ao fazer upload da foto de perfil") 
             
         message = """
             Desejamos que você tenha ótimas experiências como amante dos esportes em nossa rede social. 
@@ -290,28 +312,26 @@ def put_profile_route(profile_id):
             return jsonify({'error': 'Não foi possível modificar seu perfil devido a um erro no nosso servidor.'}), 500
         
         if photo:
-            filename = photo.filename
-            filename = os.path.basename(filename)
+            photo_path = cloud_upload_media(photo)
 
-            _, file_extension = os.path.splitext(filename)  
-            file_extension = file_extension.lower()
+            if photo_path is not None:    
+                filename = os.path.basename(photo.filename)
+                _, file_extension = os.path.splitext(filename)  
+                file_extension = file_extension.lower()
 
-            user_folder = os.path.join(UPLOAD_FOLDER, f'{profile_id}')
+                saved_file = {
+                    'path': photo_path,
+                    'type': 'image' if photo.mimetype.startswith('image/') else 'video',
+                    'format': file_extension,
+                }
 
-            filepath = os.path.join(user_folder, 'profilePhoto', filename)
-            photo.save(filepath)
+                media_id = insert_media(con, saved_file['path'], saved_file['type'], saved_file['format'])   
 
-            saved_file = {
-                'path': f'users/{profile_id}/profilePhoto/{filename}',
-                'type': 'image' if photo.mimetype.startswith('image/') else 'video',
-                'format': file_extension,
-            }
-
-            media_id = insert_media(con, saved_file['path'], saved_file['type'], saved_file['format'])   
-
-            if media_id is None or not insert_profile_photo(con, profile_id, media_id):
-                print('Erro ao modificar foto de perfil')
-                return jsonify({'error': 'Não foi possível modificar sua foto de perfil devido a um erro no nosso servidor.'}), 500     
+                if media_id is None or not insert_profile_photo(con, profile_id, media_id):
+                    print('Erro ao modificar foto de perfil')
+                    return jsonify({'error': 'Não foi possível modificar sua foto de perfil devido a um erro no nosso servidor.'}), 500   
+            else:
+                print("Erro ao fazer upload da nova foto de perfil")   
 
         return jsonify({'profileId': profile_id}), 201
     except Exception as e:
@@ -419,18 +439,18 @@ def login():
         for profile in profiles:
             if profile['nome'] == nameOrEmailLogin or profile['email'] == nameOrEmailLogin:
                 if bcrypt.check_password_hash(profile['senha'], passwordLogin):
-                    profile = get_profile(con, profile['id_perfil'], profile['id_perfil'])
+                    correct_profile = get_profile(con, profile['id_perfil'], profile['id_perfil'])
 
                     message = f"""
                         Bem-vindo de volta {profile['nome']}!
                     """
                     
-                    if not insert_notification(con, profile['id_perfil'], message):
+                    if not insert_notification(con, correct_profile['id_perfil'], message):
                         print('Erro ao inserir notificação')
 
                     send_email_notification(profile['email'], "Login no Athlete Connect", message)
 
-                    return jsonify({'profile': profile}), 200
+                    return jsonify({'profile': correct_profile}), 200
                 else:
                     message = f"""
                         Cuidado! 
@@ -692,9 +712,6 @@ def post_post(profile_id):
             print('Erro ao abrir conexão com banco de dados')
             return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
 
-        user_folder = os.path.join(UPLOAD_FOLDER, f'{profile_id}', 'posts')
-        os.makedirs(user_folder, exist_ok=True)
-
         caption = request.form.get('caption')
         hashtags = request.form.getlist('hashtags')
         hashtag_ids = [int(hashtag) for hashtag in hashtags]
@@ -702,36 +719,30 @@ def post_post(profile_id):
         tag_ids = [int(tag) for tag in tags]
         medias = request.files.getlist('medias')
 
-        saved_files = []
+        medias_path = cloud_upload_medias(medias)
 
-        for file in medias:
-            filename = file.filename
-            filename = os.path.basename(filename)
+        if medias_path is not None:
+            saved_files = []
 
-            base_filename, file_extension = os.path.splitext(filename)
-            file_extension = file_extension.lower()
+            for index, file in enumerate(medias):
+                filename = os.path.basename(file.filename)
+                _, file_extension = os.path.splitext(filename)
+                file_extension = file_extension.lower()
 
-            counter = 1
-            new_filename = filename
+                saved_files.append({
+                    'path': medias_path[index],
+                    'type': 'image' if file.mimetype.startswith('image/') else 'video',
+                    'format': file_extension,
+                })
 
-            while os.path.exists(os.path.join(user_folder, new_filename)):
-                new_filename = f'{base_filename}_{counter}{file_extension}'
-                counter += 1
+            post_id = insert_post(con, caption, profile_id, hashtag_ids, tag_ids, saved_files)
 
-            filepath = os.path.join(user_folder, new_filename)
-            file.save(filepath)
-
-            saved_files.append({
-                'path': f'users/{profile_id}/posts/{new_filename}',
-                'type': 'image' if file.mimetype.startswith('image/') else 'video',
-                'format': file_extension,
-            })
-
-        post_id = insert_post(con, caption, profile_id, hashtag_ids, tag_ids, saved_files)
-
-        if post_id is None:
-            print('Erro ao inserir postagem')
-            return jsonify({'error': 'Não foi possível publicar sua postagem devido a um erro no nosso servidor.'}), 500
+            if post_id is None:
+                print('Erro ao inserir postagem')
+                return jsonify({'error': 'Não foi possível publicar sua postagem devido a um erro no nosso servidor.'}), 500
+        else:
+            print("Erro ao fazer upload das mídias da postagem")
+            return jsonify({'error': 'Não foi possível publicar sua postagem devido a um erro durante o upload das suas imagens/vídeos.'}), 500
         
         return jsonify({'postId': post_id}), 201
     except Exception as e:
@@ -982,45 +993,36 @@ def post_flash(profile_id):
             print('Erro ao abrir conexão com banco de dados')
             return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
 
-        user_folder = os.path.join(UPLOAD_FOLDER, f'{profile_id}', 'flashs')
-        os.makedirs(user_folder, exist_ok=True)
-
         available_time = int(request.form.get('availableTime'))
         media = request.files.get('media')
 
-        filename = media.filename
-        filename = os.path.basename(filename)
+        media_path = cloud_upload_media(media)
 
-        base_filename, file_extension = os.path.splitext(filename)
-        file_extension = file_extension.lower()
+        if media_path is not None:
+            filename = os.path.basename(media.filename)
+            _, file_extension = os.path.splitext(filename)
+            file_extension = file_extension.lower()
+                
+            saved_file = {
+                'path': media_path,
+                'type': 'image' if media.mimetype.startswith('image/') else 'video',
+                'format': file_extension,
+            }
 
-        counter = 1
-        new_filename = filename
+            media_id = insert_media(con, saved_file['path'], saved_file['type'], saved_file['format'])
 
-        while os.path.exists(os.path.join(user_folder, new_filename)):
-            new_filename = f'{base_filename}_{counter}{file_extension}'
-            counter += 1
+            if media_id is None:
+                print('Erro ao inserir mídia do flash')
+                return jsonify({'error': 'Não foi possível registrar a mídia do flash devido a um erro no nosso servidor.'}), 500
+            
+            flash_id = insert_flash(con, available_time, profile_id, media_id)
 
-        filepath = os.path.join(user_folder, new_filename)
-        media.save(filepath)
-
-        saved_file = {
-            'path': f'users/{profile_id}/posts/{new_filename}',
-            'type': 'image' if media.mimetype.startswith('image/') else 'video',
-            'format': file_extension,
-        }
-
-        media_id = insert_media(con, saved_file['path'], saved_file['type'], saved_file['format'])
-
-        if media_id is None:
-            print('Erro ao inserir mídia do flash')
-            return jsonify({'error': 'Não foi possível registrar a mídia do flash devido a um erro no nosso servidor.'}), 500
-        
-        flash_id = insert_flash(con, available_time, profile_id, media_id)
-
-        if flash_id is None:
-            print('Erro ao inserir flash')
-            return jsonify({'error': 'Não foi possível criar seu flash devido a um erro no nosso servidor.'}), 500
+            if flash_id is None:
+                print('Erro ao inserir flash')
+                return jsonify({'error': 'Não foi possível criar seu flash devido a um erro no nosso servidor.'}), 500
+        else:
+            print("Erro ao fazer upload da mídia do flash")
+            return jsonify({'error': 'Não foi possível criar seu flash devido a um erro durante o upload da sua foto/vídeo.'}), 500
         
         return jsonify({'flashId': flash_id}), 201
     except Exception as e:

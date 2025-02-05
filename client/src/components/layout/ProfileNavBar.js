@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { useProfile } from '../../ProfileContext';
 import fetchSearchSugestions from "../../utils/profile/FetchSearchSugestions";
 
-function ProfileNavBar() {
+function ProfileNavBar({ setMessage, permission = false }) {
     const [showSearch, setShowSearch] = useState(false);
     const [searchText, setSearchText] = useState("");
     const [searchSugestions, setSearchSugestions] = useState([]);
@@ -36,9 +36,9 @@ function ProfileNavBar() {
     }
 
     useEffect(() => {        
-        fetchSearchSugestions(navigate, setSearchSugestions, profileId);
+        fetchSearchSugestions(navigate, setSearchSugestions, profileId, setMessage, permission);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [permission]);
 
     return (
         <nav className={styles.profile_nav_bar}>

@@ -35,7 +35,7 @@ function PostsInSection({ posts, notFoundText, postsLoading, handlePostClick }) 
                         if (post.medias[0].tipo === "video") {
                             return await generateVideoThumbnail(post.medias[0].caminho);
                         } else {
-                            return require(`../../img/${post.medias[0].caminho}`)
+                            return post.medias[0].caminho
                         }    
                     })
                 );

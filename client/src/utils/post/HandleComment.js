@@ -1,7 +1,7 @@
 import axios from "axios";
 import formatDate from "../DateFormatter";
 
-export default async function createComment(profileId, post, commentText, navigate, setPosts) {
+export default async function createComment(profileId, post, commentText, navigate, setPosts, setMessage) {
     try {
         const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
 
@@ -16,7 +16,9 @@ export default async function createComment(profileId, post, commentText, naviga
         const data = resp.data;
 
         if (data.error) {
-            navigate("/errorPage", {state: {error: data.error}})
+            navigate("/errorPage", {state: {error: data.error}});
+
+            throw new Error("Erro ao comentar");
         } else {
             const newComment = data.newComment;
 
@@ -29,7 +31,7 @@ export default async function createComment(profileId, post, commentText, naviga
             );
         }
     } catch (err) {
-        navigate("/errorPage", {state: {error: err.message}})
+        setMessage("Não foi possível comentar na postagem.", "error");
 
         console.error("Erro ao fazer a requisição:", err);
     }

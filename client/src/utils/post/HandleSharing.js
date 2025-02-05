@@ -16,7 +16,9 @@ export default async function createSharing(profileId, post, sharings, sharingCa
         const data = resp.data;
 
         if (data.error) {
-            navigate("/errorPage", {state: {error: data.error}})
+            navigate("/errorPage", {state: {error: data.error}});
+
+            throw new Error("Erro ao compartilhar postagem");
         } else {
             setPosts(prevPosts =>
                 prevPosts.map(p => p.id_postagem === post.id_postagem ? { 
@@ -24,19 +26,11 @@ export default async function createSharing(profileId, post, sharings, sharingCa
                     total_compartilhamentos: p.total_compartilhamentos + 1
                 } : p)
             );
-
-            const setMessageWithReset = (newMessage, type) => {
-                setMessage(null);
             
-                setTimeout(() => {
-                    setMessage({message: newMessage, type: type});
-                }, 1);
-            }
-            
-            setMessageWithReset("Postagem compartilhada com sucesso!", "success");
+            setMessage("Postagem compartilhada com sucesso!", "success");
         }
     } catch (err) {
-        navigate("/errorPage", {state: {error: err.message}})
+        setMessage("Não foi possível compartilhar a postagem", "error");
 
         console.error("Erro ao fazer a requisição:", err);
     }

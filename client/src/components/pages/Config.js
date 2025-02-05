@@ -186,7 +186,7 @@ function Config() {
     }, [sharedPostsLoading, posts.shared, sharedPostsOffset, navigate]);
 
     const fetchProfile = useCallback(async (id) => {
-        const storageData = localStorage.getItem("profile");
+        const storageData = localStorage.getItem("athleteConnectProfile");
         
         if (storageData) {
             try {
@@ -201,7 +201,7 @@ function Config() {
             } catch (err) {
                 console.error("Erro ao recuperar o perfil do cache:", err);
 
-                localStorage.removeItem("profile");
+                localStorage.removeItem("athleteConnectProfile");
             }
         }
         
@@ -228,7 +228,7 @@ function Config() {
 
                 setInitialProfile(others);
                 setProfile(others);
-                localStorage.setItem('profile', JSON.stringify({profile: data, updateDate: Date.now()}));
+                localStorage.setItem('athleteConnectProfile', JSON.stringify({profile: data, updateDate: Date.now()}));
                 setConfig(config);
 
                 loadLikedPosts(others.id_perfil);
@@ -270,7 +270,9 @@ function Config() {
         const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
 
         if (!confirmedProfileId) {
-            navigate("/login");
+            console.error("Erro ao indentificar perfil");
+
+            navigate("/login", {state: {message: "Não conseguimos identificar seu perfil. Tente fazer o login.", type: "error"}});
         } else {
             fetchProfile(confirmedProfileId);
         }

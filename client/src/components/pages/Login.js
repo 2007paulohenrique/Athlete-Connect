@@ -123,7 +123,7 @@ function Login() {
             } else {
                 setProfileId(data.profile.id_perfil);
                 localStorage.setItem('athleteConnectProfileId', data.profile.id_perfil);
-                localStorage.setItem('profile', JSON.stringify({profile: data.profile, updateDate: Date.now()}));
+                localStorage.setItem('athleteConnectProfile', JSON.stringify({profile: data.profile, updateDate: Date.now()}));
                 
                 if (data.isActived === false) {
                     setShowConfirmation(true);

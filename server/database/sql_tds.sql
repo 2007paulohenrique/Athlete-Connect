@@ -1,3 +1,48 @@
+SET FOREIGN_KEY_CHECKS = 0;
+
+DROP TABLE IF EXISTS marca;
+DROP TABLE IF EXISTS perfil;
+DROP TABLE IF EXISTS postagem;
+DROP TABLE IF EXISTS midia;
+DROP TABLE IF EXISTS esporte;
+DROP TABLE IF EXISTS categoria_esporte;
+DROP TABLE IF EXISTS compartilhamento;
+DROP TABLE IF EXISTS comentario;
+DROP TABLE IF EXISTS estado;
+DROP TABLE IF EXISTS cidade;
+DROP TABLE IF EXISTS instituicao;
+DROP TABLE IF EXISTS curso;
+DROP TABLE IF EXISTS hashtag;
+DROP TABLE IF EXISTS usuario;
+DROP TABLE IF EXISTS pesquisa;
+DROP TABLE IF EXISTS endereco;
+DROP TABLE IF EXISTS denuncia;
+DROP TABLE IF EXISTS motivo_denuncia;
+DROP TABLE IF EXISTS segue;
+DROP TABLE IF EXISTS responde;
+DROP TABLE IF EXISTS curso_instituicao;
+DROP TABLE IF EXISTS postagem_hashtag;
+DROP TABLE IF EXISTS categorias_esporte;
+DROP TABLE IF EXISTS preferencia;
+DROP TABLE IF EXISTS motivos_denuncia;
+DROP TABLE IF EXISTS compartilhado;
+DROP TABLE IF EXISTS marcacao_comentario;
+DROP TABLE IF EXISTS marcacao_postagem;
+DROP TABLE IF EXISTS local_favorito;
+DROP TABLE IF EXISTS evento_endereco;
+DROP TABLE IF EXISTS esporte_hashtag;
+DROP TABLE IF EXISTS evento;
+DROP TABLE IF EXISTS curte;
+DROP TABLE IF EXISTS grau_formacao;
+DROP TABLE IF EXISTS notificacao;
+DROP TABLE IF EXISTS flash;
+DROP TABLE IF EXISTS live;
+DROP TABLE IF EXISTS interacao;
+DROP TABLE IF EXISTS configuracao;
+DROP TABLE IF EXISTS formacao;
+
+SET FOREIGN_KEY_CHECKS = 1;
+
 CREATE TABLE IF NOT EXISTS perfil (
     id_perfil int PRIMARY KEY AUTO_INCREMENT,
     email varchar(255) NOT NULL UNIQUE,

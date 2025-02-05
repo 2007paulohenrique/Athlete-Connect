@@ -6,12 +6,8 @@ function ProfilePhotoContainer({ profilePhotoPath, size = "medium", isBlobUrl = 
     const [profilePhoto, setProfilePhoto] = useState();
 
     useEffect(() => {
-        if (!isBlobUrl) {
-            setProfilePhoto(profilePhotoPath ? require(`../../img/${profilePhotoPath}`) : userIcon);
-        } else {
-            setProfilePhoto(profilePhotoPath || userIcon)
-        }
-    }, [isBlobUrl, profilePhotoPath])
+        setProfilePhoto(profilePhotoPath || userIcon);
+    }, [isBlobUrl, profilePhotoPath]);
 
     return (
         <div className={`${styles.profile_photo_container} ${styles[size]}`}>

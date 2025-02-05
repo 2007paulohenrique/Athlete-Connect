@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export default async function toggleLike(profileId, post, navigate, setPosts) {
+export default async function toggleLike(profileId, post, navigate, setPosts, setMessage) {
     try {
         const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
 
@@ -14,7 +14,9 @@ export default async function toggleLike(profileId, post, navigate, setPosts) {
         const data = resp.data;
 
         if (data.error) {
-            navigate("/errorPage", {state: {error: data.error}})
+            navigate("/errorPage", {state: {error: data.error}});
+
+            throw new Error("Erro ao curtir postagem");
         } else {
             setPosts(prevPosts =>
                 prevPosts.map(p => p.id_postagem === post.id_postagem ? {
@@ -25,7 +27,7 @@ export default async function toggleLike(profileId, post, navigate, setPosts) {
             );
         }
     } catch (err) {
-        navigate("/errorPage", {state: {error: err.message}})
+        setMessage("Não foi possível curtir a postagem", "error");
 
         console.error("Erro ao fazer a requisição:", err);
     }

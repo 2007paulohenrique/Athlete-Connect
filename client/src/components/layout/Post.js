@@ -48,7 +48,7 @@ const Post = forwardRef(({ likesVisibility = true, sharingsVisibility = true, co
         
                 return {
                     type: isImage ? 'imagem' : isVideo ? 'video' : 'unknown',
-                    path: require(`../../img/${mediaPath}`),
+                    path: mediaPath,
                     duration: isVideo ? null : undefined,
                 };
             });

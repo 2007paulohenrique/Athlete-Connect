@@ -89,18 +89,18 @@ function PostsFullScreen({ posts, setPosts, postsLoading, initialPostToShow, han
                     caption={post.legenda}
                     postHashtags={post.hashtags || ""}
                     postTags={post.tags || ""}
-                    likeSubmit={() => toggleLike(profileId, post, navigate, setPosts)}
+                    likeSubmit={() => toggleLike(profileId, post, navigate, setPosts, setMessageWithReset)}
                     isLiked={post.isLiked}
                     sharingSubmit={(sharings, sharingCaption) => 
-                        createSharing(profileId, post, sharings, sharingCaption, navigate, setMessage, setPosts)
+                        createSharing(profileId, post, sharings, sharingCaption, navigate, setMessageWithReset, setPosts)
                     }
                     complaintReasons={complaintReasons}
                     tags={tags}
                     isComplainted={post.isComplainted}
                     complaintSubmit={(postComplaintReasons, complaintDescription) => 
-                        createComplaint(profileId, post, postComplaintReasons, complaintDescription, navigate, setPosts, setMessage)
+                        createComplaint(profileId, post, postComplaintReasons, complaintDescription, navigate, setPosts, setMessageWithReset)
                     }
-                    commentSubmit={(commentText) => createComment(profileId, post, commentText, navigate, setPosts)}
+                    commentSubmit={(commentText) => createComment(profileId, post, commentText, navigate, setPosts, setMessageWithReset)}
                     comments={post.comments}
                     post={post}
                     filteredSharings={tags}

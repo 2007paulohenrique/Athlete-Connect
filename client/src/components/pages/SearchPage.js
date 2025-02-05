@@ -267,7 +267,7 @@ function SearchPage() {
         <>
             {!postsFullScreen ?
                 <>
-                    <ProfileNavBar/>
+                    <ProfileNavBar setMessage={setMessageWithReset} permission={JSON.stringify(result) !== "{}"}/>
 
                     <main className={styles.search_page}>
                         {message && <Message message={message.message} type={message.type}/>}

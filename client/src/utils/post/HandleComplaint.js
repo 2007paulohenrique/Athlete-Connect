@@ -16,25 +16,19 @@ export default async function createComplaint(profileId, post, postComplaintReas
         const data = resp.data;
 
         if (data.error) {
-            navigate("/errorPage", {state: {error: data.error}})
+            navigate("/errorPage", {state: {error: data.error}});
+
+            throw new Error("Erro ao denunciar postagem");
         } else {
             setPosts(prevPosts =>
                 prevPosts.map(p => p.id_postagem === post.id_postagem ? { ...p, isComplainted: true } : p
                 )
             );
 
-            const setMessageWithReset = (newMessage, type) => {
-                setMessage(null);
-            
-                setTimeout(() => {
-                    setMessage({message: newMessage, type: type});
-                }, 1);
-            }
-
-            setMessageWithReset("Postagem denunciada! Aguarde para analisarmos a denúncia", "success");
+            setMessage("Postagem denunciada! Aguarde para analisarmos a denúncia", "success");
         }
     } catch (err) {
-        navigate("/errorPage", {state: {error: err.message}})
+        setMessage("Não foi possível denunciar a postagem", "error");
 
         console.error("Erro ao fazer a requisição:", err);
     }

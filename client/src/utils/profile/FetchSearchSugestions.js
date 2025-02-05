@@ -1,6 +1,8 @@
 import axios from "axios";
 
-export default async function fetchSearchSugestions(navigate, setSearchSugestions, profileId) {
+export default async function fetchSearchSugestions(navigate, setSearchSugestions, profileId, setMessage, permission = false) {
+    if (!permission) return;
+
     try {
         const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
 
@@ -9,11 +11,13 @@ export default async function fetchSearchSugestions(navigate, setSearchSugestion
         
         if (data.error) {
             navigate("/errorPage", {state: {error: data.error}});
+
+            throw new Error("Erro ao recuperar sugestões de pesquisa");
         } else {
             setSearchSugestions(data);
         }
     } catch (err) {
-        navigate("/errorPage", {state: {error: err.message}});
+        setMessage("Não foi possível recuperar as sugestões de pesquisa");
 
         console.error('Erro ao fazer a requisição:', err);
     }
