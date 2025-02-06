@@ -366,7 +366,7 @@ CREATE TABLE IF NOT EXISTS configuracao (
     permissao_marcacao varchar(20) NOT NULL,
     permissao_compartilhamento varchar(20) NOT NULL,
     permissao_comentario varchar(20) NOT NULL,
-    notificacoes boolean NOT NULL,
+    notificacoes_dispositivos boolean NOT NULL,
     notificacoes_email boolean NOT NULL,
     fk_perfil_id_perfil int NOT NULL UNIQUE,
     FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil)

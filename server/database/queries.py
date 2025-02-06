@@ -37,6 +37,18 @@ def get_profile_name(con, profile_id):
           print(f"Erro ao recuperar nome do perfil: {e}")
           return None
 
+def check_email_notification_permission(con, profile_id):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               sql = "SELECT notificacoes_email FROM configuracao WHERE fk_perfil_id_perfil = %s"
+               cursor.execute(sql, (profile_id,))
+               result = cursor.fetchone()
+
+          return True if result["notificacoes_email"] == 1 else False
+     except Exception as e:
+          print(f"Erro ao recuperar permissão de notificação por e-mail do perfil: {e}")
+          return None
+
 def get_profile_photo_path(con, profile_id):
      try:
           with con.cursor(dictionary=True) as cursor:
@@ -568,7 +580,7 @@ def insert_default_profile_config(con, profile_id):
                     permissao_marcacao,
                     permissao_compartilhamento,
                     permissao_comentario,
-                    notificacoes,
+                    notificacoes_dispositivos,
                     notificacoes_email,
                     fk_perfil_id_perfil
                     ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
