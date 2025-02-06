@@ -136,6 +136,8 @@ function Home() {
                 if (Date.now() - parsedData.updateDate < EXPIRATION_TIME) {
                     setProfile(parsedData.profile);
 
+                    loadPosts(parsedData.profile.id_perfil);
+
                     return;
                 }
             } catch (err) {
@@ -172,11 +174,11 @@ function Home() {
         } catch (err) {
             console.error('Erro ao fazer a requisição:', err);
 
-            if (err.response.status !== 404) {
-                throw new Error("Erro ao buscar perfil");
+            if (err.response.status === 404) {
+                navigate("/login", {state: {message: "Não foi possível encontrar nenhum perfil com o id fornecido. Tente fazer o login.", type: "error"}});
             }    
 
-            navigate("/login", {state: {message: "Não foi possível encontrar nenhum perfil com o id fornecido. Tente fazer o login.", type: "error"}});
+            throw err;
         }
     }, [loadPosts, navigate]);   
     
@@ -194,11 +196,9 @@ function Home() {
         const fetchData = async () => {
             try {
                 await fetchProfile(confirmedProfileId);
-                await fetchComplaintReasons(setComplaintReasons, navigate);
+                await fetchComplaintReasons(setComplaintReasons, navigate, setMessageWithReset);
             } catch (err) {
                 console.error("Erro ao recuperar perfil:", err);
-
-                throw err;
             }
         };
     

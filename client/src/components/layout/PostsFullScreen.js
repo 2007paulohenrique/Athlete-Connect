@@ -50,7 +50,7 @@ function PostsFullScreen({ posts, setPosts, postsLoading, initialPostToShow, han
     }, [navigate, searchTextTag]);
 
     useEffect(() => {
-        fetchComplaintReasons(setComplaintReasons, navigate)
+        fetchComplaintReasons(setComplaintReasons, navigate, setMessageWithReset)
     }, [navigate])
 
     useEffect(() => {

@@ -17,7 +17,7 @@ export default async function fetchSearchSugestions(navigate, setSearchSugestion
             setSearchSugestions(data);
         }
     } catch (err) {
-        setMessage("Não foi possível recuperar as sugestões de pesquisa");
+        setMessage("Não foi possível recuperar as sugestões de pesquisa.", "error");
 
         console.error('Erro ao fazer a requisição:', err);
     }

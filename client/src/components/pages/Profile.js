@@ -266,7 +266,7 @@ function Profile() {
 
                 setInitialLoading(true);
 
-                fetchComplaintReasons(setComplaintReasons, navigate);
+                fetchComplaintReasons(setComplaintReasons, navigate, setMessageWithReset);
             }    
         } catch (err) {
             navigate("/errorPage", {state: {error: err.message}})

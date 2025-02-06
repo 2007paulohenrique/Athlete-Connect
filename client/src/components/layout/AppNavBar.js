@@ -36,7 +36,7 @@ function AppNavBar({ profilePhotoPath }) {
                         window.location.reload();
                     }}
                 >
-                    <img src={profilePhotoPath || userIcon} alt="Profile"/>
+                    <img src={profilePhotoPath || userIcon} alt="Profile" onError={(e) => e.target.src = userIcon}/>
                 </li>
             </ul>
         </nav>

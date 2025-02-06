@@ -7,11 +7,11 @@ function NotificationConfig({ config, handleChange}) {
             <li>
                 <MainInput 
                     type="checkbox" 
-                    name="notificacoes"  
-                    labelText="Clique abaixo para que você receba notificações do Athlete Connect" 
+                    name="notificacoes_dispositivos"  
+                    labelText="Clique abaixo para que você receba notificações nos dispositivos que você fez login no Athlete Connect" 
                     handleChange={handleChange} 
-                    value={config.notificacoes}
-                    checked={config.notificacoes}
+                    value={config.notificacoes_dispositivos}
+                    checked={config.notificacoes_dispositivos}
                 /> 
             </li>
 
