@@ -1,4 +1,5 @@
 from datetime import datetime
+from ..app import send_email_notification
 import sqlparse
 
 def get_profiles(con):
@@ -632,6 +633,28 @@ def insert_post(con, caption, profile_id, hashtags_ids, tags_ids, medias):
 
                if not insert_post_medias(con, post_id, medias):
                     raise Exception("Erro ao inserir mídias da postagem.")
+
+               name = get_profile_name(con, profile_id)
+
+               if name is None:
+                    print("Erro ao recuperar nome do perfil")
+               else:
+                    for tag_id in tags_ids:
+                         message = f"""
+                              {name} publicou uma postagem e te marcou.
+                         """
+
+                         if not insert_notification(con, tag_id, message):
+                              print('Erro ao inserir notificação')
+
+                         email = get_profile_email(con, tag_id)
+
+                         if email is None:
+                              print("Erro ao recuperar email do perfil")
+                         else:
+                              profile_photo = get_profile_photo_path(con, profile_id)
+
+                              send_email_notification(tag_id, email, "Marcação em postagem no Athlete Connect", message, profile_photo_path=profile_photo)
 
           con.commit()
           return post_id
