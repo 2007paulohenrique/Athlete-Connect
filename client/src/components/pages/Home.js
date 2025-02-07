@@ -24,11 +24,11 @@ function Home() {
     const [profile, setProfile] = useState({});
     const [message, setMessage] = useState({});
     const [tags, setTags] = useState();
+    const [searchTextTag, setSearchTextTag] = useState("");
+    const [tagsLoading, setTagsLoading] = useState(false);
     const [complaintReasons, setComplaintReasons] = useState([]);    
     const [postsLoading, setPostsLoading] = useState(false);
-    const [tagsLoading, setTagsLoading] = useState(false);
     const [offset, setOffset] = useState(0);
-    const [searchTextTag, setSearchTextTag] = useState("");
     
     const navigate = useNavigate();
     const location = useLocation();

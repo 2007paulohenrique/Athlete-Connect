@@ -261,7 +261,7 @@ def post_profile():
             Explore, conecte-se e compartilhe suas paixões esportivas com a nossa comunidade!
         """
 
-        if not insert_notification(con, profile_id, message):
+        if not insert_notification(con, "generica", message, profile_id):
             print('Erro ao inserir notificação')
         
         send_email_notification(profile_id, email, f"Criação de perfil no Athlete Connect", message, "Bem-vindo!")
@@ -410,7 +410,7 @@ def active_profile_route(profile_id, active):
                 Ficaremos felizes em tê-lo de volta! Para isso, faça login em sua conta e reative seu perfil.
             """
 
-        if not insert_notification(con, profile_id, message):
+        if not insert_notification(con, "generica", message, profile_id):
             print('Erro ao inserir notificação')
 
         email = get_profile_email(con, profile_id)
@@ -456,7 +456,7 @@ def login():
                         e contribuir para o crescimento do mundo dos esportes.
                     """
                     
-                    if not insert_notification(con, correct_profile['id_perfil'], message):
+                    if not insert_notification(con, "generica", message, correct_profile['id_perfil']):
                         print('Erro ao inserir notificação')
 
                     send_email_notification(correct_profile['id_perfil'], profile['email'], "Login no Athlete Connect", message, "Bem-vindo de volta!")
@@ -469,7 +469,7 @@ def login():
                         lembre-se sempre de guardar sua credencias e não compartilhá-las com ninguém.
                     """
                     
-                    if not insert_notification(con, profile['id_perfil'], message):
+                    if not insert_notification(con, "alerta", message, profile['id_perfil']):
                         print('Erro ao inserir notificação')
 
                     email = get_profile_email(con, profile["id_perfil"])
@@ -624,7 +624,7 @@ def post_follow(profile_id):
                     {name} começou a te seguir.
                 """
                 
-                if not insert_notification(con, profile_id, message):
+                if not insert_notification(con, "generica", message, profile_id, follower_id):
                     print('Erro ao inserir notificação')
 
                 email = get_profile_email(con, profile_id)
@@ -642,6 +642,92 @@ def post_follow(profile_id):
     except Exception as e:
         print(f'Erro ao conferir estado de seguidor do perfil: {e}')
         return jsonify({'error': 'Não foi possível conferir o estado de seguidor do perfil devido a um erro no nosso servidor.'}), 500
+    finally:
+        if con:
+            close_connection(con)
+
+@app.route('/profiles/<int:profile_id>/followRequest', methods=['POST'])
+def post_follow_request(profile_id):
+    try:
+        con = open_connection(*con_params)
+
+        if con is None:
+            print('Erro ao abrir conexão com banco de dados')
+            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+
+        follower_id = int(request.form.get('followerId'))
+
+        if not send_follower_request(con, follower_id, profile_id):
+            print(f'Erro ao enviar solicitação de seguidor: {e}')
+            return jsonify({'error': 'Não foi possível enviar solicitação de seguidor devido a um erro no nosso servidor.'}), 500
+
+        name = get_profile_name(con, follower_id)
+
+        if name is None:
+            print("Erro ao recuperar nome do perfil")
+        else:
+            message = f"""
+                {name} enviou uma solicitação para te seguir.
+                Entre no Athlete Connect e aceite sua solicitação em notificações se quiser que ele te siga. 
+            """
+
+            email = get_profile_email(con, profile_id)
+
+            if email is None:
+                print("Erro ao recuperar email do perfil")
+            else:
+                profile_photo = get_profile_photo_path(con, follower_id)
+
+                send_email_notification(profile_id, email, "Solicitação no Athlete Connect", message, profile_photo_path=profile_photo)
+
+        return ({'success': 'success'}), 201
+    except Exception as e:
+        print(f'Erro ao enviar solicitação de seguidor: {e}')
+        return jsonify({'error': 'Não foi possível enviar solicitação de seguidor devido a um erro no nosso servidor.'}), 500
+    finally:
+        if con:
+            close_connection(con)
+
+@app.route('/profiles/<int:profile_id>/followRequest/accept', methods=['POST'])
+def post_follow_request_accept(profile_id):
+    try:
+        con = open_connection(*con_params)
+
+        if con is None:
+            print('Erro ao abrir conexão com banco de dados')
+            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+
+        follower_id = int(request.form.get('followerId'))
+
+        if not accept_follower_request(con, follower_id, profile_id):
+            print(f'Erro ao aceitar solicitação: {e}')
+            return jsonify({'error': 'Não foi possível aceitar solicitação devido a um erro no nosso servidor.'}), 500
+
+        name = get_profile_name(con, profile_id)
+
+        if name is None:
+            print("Erro ao recuperar nome do perfil")
+        else:
+            message = f"""
+                {name} aceitou a sua solicitação para seguí-lo .
+            """
+            
+            if not insert_notification(con, "generica", message, follower_id, profile_id):
+                print('Erro ao inserir notificação')
+
+            email = get_profile_email(con, follower_id)
+
+            if email is None:
+                print("Erro ao recuperar email do perfil")
+            else:
+                profile_photo = get_profile_photo_path(con, profile_id)
+
+                send_email_notification(follower_id, email, "Solicitação aceita no Athlete Connect", message, profile_photo_path=profile_photo)
+
+        return ({'success': 'success'}), 201
+    except Exception as e:
+        print(f'Erro ao aceitar solicitação: {e}')
+        return jsonify({'error': 'Não foi possível aceitar solicitação devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
             close_connection(con)
@@ -669,7 +755,7 @@ def profile_complaint(profile_id):
             Nós analisaremos a denúncia e seu perfil, então não se preocupe caso não tenha feito nada. 
         """
         
-        if not insert_notification(con, profile_id, message):
+        if not insert_notification(con, "denuncia", message, profile_id):
             print('Erro ao inserir notificação')
 
         email = get_profile_email(con, profile_id)
@@ -793,7 +879,7 @@ def post_like(post_id):
                             {name} curtiu sua postagem.
                         """
 
-                        if not insert_notification(con, author_id, message):
+                        if not insert_notification(con, "curtida", message, author_id, profile_id, post_id):
                             print('Erro ao inserir notificação')
 
                         email = get_profile_email(con, author_id)
@@ -849,7 +935,7 @@ def post_sharing(post_id):
                     {name} compartilhou sua postagem.
                 """
 
-                if not insert_notification(con, post_author_id, message):
+                if not insert_notification(con, "compartilhamento", message, post_author_id, author_id, post_id):
                     print('Erro ao inserir notificação')
 
                 email = get_profile_email(con, post_author_id)
@@ -899,7 +985,7 @@ def post_complaint(post_id):
                 Nós analisaremos a denúncia e sua postagem, então não se preocupe caso não tenha feito nada. 
             """
 
-            if not insert_notification(con, post_author_id, message):
+            if not insert_notification(con, "denuncia", message, post_author_id, post_id=post_id):
                 print('Erro ao inserir notificação')
 
             email = get_profile_email(con, post_author_id)
@@ -950,7 +1036,7 @@ def post_comment(post_id):
                         {name} comentou em sua postagem.
                     """
 
-                    if not insert_notification(con, post_author_id, message):
+                    if not insert_notification(con, "comentario", message, post_author_id, author_id, post_id):
                         print('Erro ao inserir notificação')
 
                     email = get_profile_email(con, post_author_id)
@@ -1096,6 +1182,31 @@ def get_search(text):
             return jsonify({'error': 'Não foi possível recuperar os resultados da pesquisa devido a um erro no nosso servidor.'}), 500
 
         return jsonify(result), 200
+    except Exception as e:
+        print(f'Erro ao recuperar resultados da pesquisa: {e}')
+        return jsonify({'error': 'Não foi possível recuperar os resultados da pesquisa devido a um erro no nosso servidor.'}), 500
+    finally:
+        if con:
+            close_connection(con)
+
+@app.route('/posts/<int:post_id>', methods=['GET'])
+def get_post_route(post_id):
+    try:
+        con = open_connection(*con_params)
+
+        if con is None:
+            print('Erro ao abrir conexão com banco de dados')
+            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+        
+        viewer_id = int(request.args.get('viewer_id'))
+
+        post = get_post(con, post_id, viewer_id)
+
+        if post is None:
+            print('Erro ao recuperar postagem')
+            return jsonify({'error': 'Não foi possível recuperar a postagem devido a um erro no nosso servidor.'}), 500
+        
+        return jsonify(post), 200
     except Exception as e:
         print(f'Erro ao recuperar resultados da pesquisa: {e}')
         return jsonify({'error': 'Não foi possível recuperar os resultados da pesquisa devido a um erro no nosso servidor.'}), 500

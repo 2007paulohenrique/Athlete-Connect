@@ -371,13 +371,17 @@ function Profile() {
     }
 
     function sendFollowRequest() {
-        setMessageWithReset(`Solicitação para ${profile.nome} enviada.`, "success");
-        
-        // requisição para mandar uma notificação ao perfil para permitir o follow
-    }
+        const trySendFollowRequest = async () => {
+            try {
+                await followRequest(viewer.id_perfil);
+    
+                setMessageWithReset(`Solicitação para ${profile.nome} enviada.`, "success");
+            } catch (err) {
+                console.Error(err)
+            }
+        };
 
-    function followProfile() {    
-        toggleFollow(viewer.id_perfil);
+        trySendFollowRequest();
     }
 
     const toggleFollow = async (followerId) => {
@@ -402,6 +406,29 @@ function Profile() {
             }
         } catch (err) {
             setMessageWithReset(`Não foi possível ${profile.isFollowed ? "deixar de seguir" : "seguir"} ${profile.nome}.`, "error");
+        
+            console.error("Erro ao fazer a requisição:", err);
+        }
+    }
+
+    const followRequest = async (followerId) => {
+        try {
+            const formData = new FormData();
+            
+            formData.append("followerId", followerId);
+            
+            const resp = await axios.post(`http://localhost:5000/profiles/${id}/followRequest`, formData, {
+                headers: { "Content-Type": "multipart/form-data" }, 
+            })
+            const data = resp.data;
+        
+            if (data.error) {
+                setMessageWithReset(`Não foi possível enviar a solicitação para ${profile.nome}.`, "error");
+
+                throw new Error("Erro ao enviar solicitação de seguidor");
+            }
+        } catch (err) {
+            setMessageWithReset(`Não foi possível enviar a solicitação para ${profile.nome}.`, "error");
         
             console.error("Erro ao fazer a requisição:", err);
         }
@@ -652,7 +679,7 @@ function Profile() {
                                         <>
                                             <button 
                                                 className={`${styles.follow_button} ${profile.isFollowed && styles.follow_button_selected}`} 
-                                                onClick={profile.privado && !profile.isFollowed ? sendFollowRequest : followProfile}
+                                                onClick={profile.privado && !profile.isFollowed ? sendFollowRequest : () => toggleFollow(viewer.id_perfil)}
                                             >
                                                 {profile.isFollowed ? "Seguindo" : "Seguir"}
                                             </button>

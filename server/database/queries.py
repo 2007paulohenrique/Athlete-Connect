@@ -644,7 +644,7 @@ def insert_post(con, caption, profile_id, hashtags_ids, tags_ids, medias):
                               {name} publicou uma postagem e te marcou.
                          """
 
-                         if not insert_notification(con, tag_id, message):
+                         if not insert_notification(con, "marcacao", message, tag_id, profile_id, post_id):
                               print('Erro ao inserir notificação')
 
                          email = get_profile_email(con, tag_id)
@@ -796,7 +796,7 @@ def get_feed_posts(con, profile_id, offset):
                     LEFT JOIN comentario co ON co.fk_postagem_id_postagem = p.id_postagem
                     JOIN perfil pe ON pe.id_perfil = p.fk_perfil_id_perfil
                     JOIN configuracao con ON con.fk_perfil_id_perfil = pe.id_perfil
-                    WHERE p.fk_perfil_id_perfil IN ({placeholders}) AND pe.ativo = 1
+                    WHERE p.fk_perfil_id_perfil IN ({placeholders}) AND pe.ativo = 1 AND p.data_publicacao BETWEEN NOW() - INTERVAL 1 DAY AND NOW()
                     GROUP BY p.id_postagem
                     ORDER BY p.data_publicacao DESC
                     LIMIT %s OFFSET %s
@@ -865,6 +865,74 @@ def get_feed_posts(con, profile_id, offset):
           return feed
      except Exception as e:
           print(f"Erro ao recuperar feed do perfil: {e}")
+          return None
+
+def get_post(con, post_id, profile_viewer_id):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               sql = f"""
+                    SELECT p.*, con.permissao_comentario, con.permissao_marcacao, con.permissao_compartilhamento, con.visibilidade_curtidas, con.visibilidade_compartilhamentos, con.visibilidade_comentarios,
+                    COUNT(DISTINCT c.fk_perfil_id_perfil) AS total_curtidas,
+                    COUNT(DISTINCT cp.id_compartilhamento) AS total_compartilhamentos,
+                    COUNT(DISTINCT co.id_comentario) AS total_comentarios
+                    FROM postagem p
+                    LEFT JOIN curte c ON c.fk_postagem_id_postagem = p.id_postagem
+                    LEFT JOIN compartilhamento cp ON cp.fk_postagem_id_postagem = p.id_postagem
+                    LEFT JOIN comentario co ON co.fk_postagem_id_postagem = p.id_postagem
+                    JOIN perfil pe ON pe.id_perfil = p.fk_perfil_id_perfil
+                    JOIN configuracao con ON con.fk_perfil_id_perfil = pe.id_perfil
+                    WHERE p.id_postagem = %s AND pe.ativo = 1 
+                    GROUP BY p.id_postagem
+               """
+               cursor.execute(sql, (post_id,))
+               result = cursor.fetchone()
+          
+               medias = get_post_medias_for_feed(con, [post_id]) 
+               hashtags = get_post_hashtags_for_feed(con, [post_id]) 
+               tags = get_post_tags_for_feed(con, [post_id]) 
+               comments = get_post_comments_for_feed(con, [post_id])       
+               authors = get_profiles_for_feed(con, [result["fk_perfil_id_perfil"]])
+
+               if medias is None or hashtags is None or tags is None or comments is None or authors is None:
+                    raise Exception("Erro ao recuperar dados da postagem.")
+
+               result["medias"] = medias.get(result["id_postagem"], [])
+
+               if not result["medias"]:
+                    raise Exception("Erro ao recuperar mídias da postagem.")
+
+               result["author"] = authors.get(result["fk_perfil_id_perfil"], {})
+               
+               if not result["author"]:
+                    raise Exception("Erro ao recuperar autor da postagem.")
+
+               result["hashtags"] = hashtags.get(result["id_postagem"], [])
+               result["tags"] = tags.get(result["id_postagem"], [])
+               result["comments"] = comments.get(result["id_postagem"], [])
+               result["isLiked"] = check_like(con, profile_viewer_id, result["id_postagem"])
+               
+               if result["isLiked"] is None:
+                    raise Exception("Erro ao recuperar estado de curtida da postagem.")
+
+               result["isComplainted"] = check_post_complaint(con, profile_viewer_id, result["id_postagem"])
+               
+               if result["isComplainted"] is None:
+                    raise Exception("Erro ao recuperar estado de denúncia da postagem. ")
+               
+               comment_permission = result["permissao_comentario"].lower()
+
+               if profile_viewer_id == result["fk_perfil_id_perfil"]:
+                    result["canComment"] = True
+               elif comment_permission == "ninguém":
+                    result["canComment"] = False
+               elif (comment_permission == "seguidos" and not check_follow(con, result["fk_perfil_id_perfil"], profile_viewer_id)) or (comment_permission == "seguidores" and not check_follow(con, profile_viewer_id, result["fk_perfil_id_perfil"])):
+                    result["canComment"] = False
+               else:
+                    result["canComment"] = True
+
+          return result
+     except Exception as e:
+          print(f"Erro ao recuperar postagem: {e}")
           return None
           
 def get_profiles_for_feed(con, profiles_ids):
@@ -1975,21 +2043,67 @@ def get_profile_shared_posts(con, profile_id, offset=None, limit=24):
      except Exception as e:
           print(f"Erro ao recuperar postagens compartilhadas pelo perfil: {e}")
           return None
-     
-def insert_notification(con, profile_id, message):
+
+def send_follower_request(con, follower_id, followed_id):
      try:
           with con.cursor() as cursor:
                date = datetime.now()
-               sql = "INSERT INTO notificacao (mensagem, lancamento, fk_perfil_id_perfil) VALUES (%s, %s, %s)"
-               cursor.execute(sql, (message, date, profile_id))
+               sql = "INSERT INTO solicitacao_seguidor (fk_perfil_id_seguidor, fk_perfil_id_seguido, envio) VALUES (%s, %s, %s)"
+               cursor.execute(sql, (follower_id, followed_id, date))
 
           con.commit()
           return True
      except Exception as e:
           con.rollback()
-          print(f"Erro ao criar notificação: {e}")
+          print(f"Erro ao enviar solicitação de seguidor: {e}")
           return False
      
+def accept_follower_request(con, follower_id, followed_id):
+     try:
+          with con.cursor() as cursor:
+               date = datetime.now()
+               sql = "DELETE FROM solicitacao_seguidor WHERE fk_perfil_id_seguidor = %s AND fk_perfil_id_seguido = %s"
+               cursor.execute(sql, (follower_id, followed_id))
+
+          con.commit()
+          return True
+     except Exception as e:
+          con.rollback()
+          print(f"Erro ao enviar solicitação de seguidor: {e}")
+          return False
+     
+def insert_notification(con, type, message, profile_destiny_id, profile_origin_id=None, post_id=None):
+     try:
+          with con.cursor() as cursor:
+               date = datetime.now()
+
+               columns = ["tipo", "mensagem", "lancamento", "fk_perfil_id_perfil_destino"]
+               values = ["%s", "%s", "%s", "%s"]
+               params = [type, message, date, profile_destiny_id]
+
+               if profile_origin_id is not None:
+                    columns.append("fk_perfil_id_perfil_origem")
+                    values.append("%s")
+                    params.append(profile_origin_id)
+
+               if post_id is not None:
+                    columns.append("fk_postagem_id_postagem")
+                    values.append("%s")
+                    params.append(post_id)
+
+               sql = f"""
+                    INSERT INTO notificacao ({", ".join(columns)}) 
+                    VALUES ({", ".join(values)})
+               """
+               
+               cursor.execute(sql, tuple(params))
+               con.commit()
+               return True
+     except Exception as e:
+          con.rollback()
+          print(f"Erro ao criar notificação: {e}")
+          return False
+         
 def create_database(con):
      try: 
           with open("database/sql_tds.sql", "r", encoding="utf-8") as file:

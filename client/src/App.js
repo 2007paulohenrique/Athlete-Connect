@@ -9,6 +9,7 @@ import ErrorPage from "./components/pages/ErrorPage";
 import Profile from "./components/pages/Profile";
 import Config from "./components/pages/Config";
 import SearchPage from "./components/pages/SearchPage";
+import PostPage from "./components/pages/PostPage";
 
 export const EXPIRATION_TIME = 24 * 60 * 60 * 1000;
 
@@ -51,6 +52,11 @@ function App() {
           <Route 
             path="/profile/:id" 
             element={<Profile/>} 
+          />
+
+          <Route 
+            path="/post/:id" 
+            element={<PostPage/>} 
           />
 
           <Route 

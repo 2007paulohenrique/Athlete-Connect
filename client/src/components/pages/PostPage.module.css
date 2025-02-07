@@ -1,0 +1,7 @@
+.post_page {
+    min-height: 100dvh;
+    background-color: var(--dark-bg-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

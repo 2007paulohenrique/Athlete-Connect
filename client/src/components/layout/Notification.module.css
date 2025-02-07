@@ -1,0 +1,30 @@
+.notification {
+    width: 100%;
+    min-width: max-content;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+    padding: 0.6em 1em;
+    cursor: pointer;
+}
+
+.email_main_content {
+    display: flex;
+}
+
+.email_main_content > p {
+    flex: 1;
+    letter-spacing: 0.3px;
+}
+
+.email_main_content > img {
+    height: 2.5em;
+    width: 2.5em;
+    display: block;
+}
+
+.notification > span {
+    color: var(--ligth-bg-color);
+    font-size: 0.9em;
+    margin-left: auto;
+}

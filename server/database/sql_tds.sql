@@ -317,11 +317,16 @@ CREATE TABLE IF NOT EXISTS grau_formacao (
 );
 
 CREATE TABLE IF NOT EXISTS notificacao (
-    id_notificacao int PRIMARY KEY AUTO_INCREMENT,
-    mensagem varchar(500) NOT NULL,
-    lancamento datetime NOT NULL,
-    fk_perfil_id_perfil int NOT NULL,
-    FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil)
+    id_notificacao INT PRIMARY KEY AUTO_INCREMENT,
+    mensagem VARCHAR(500) NOT NULL,
+    lancamento DATETIME NOT NULL,
+    tipo VARCHAR(30) NOT NULL,
+    fk_perfil_id_perfil_origem INT NULL, 
+    fk_perfil_id_perfil_destino INT NOT NULL,
+    fk_postagem_id_postagem INT NULL,
+    FOREIGN KEY (fk_perfil_id_perfil_origem) REFERENCES perfil(id_perfil),
+    FOREIGN KEY (fk_perfil_id_perfil_destino) REFERENCES perfil(id_perfil),
+    FOREIGN KEY (fk_postagem_id_postagem) REFERENCES postagem(id_postagem)
 );
 
 CREATE TABLE IF NOT EXISTS flash (
@@ -383,3 +388,11 @@ CREATE TABLE IF NOT EXISTS formacao (
     FOREIGN KEY (fk_usuario_id_usuario) REFERENCES usuario(id_usuario),
     FOREIGN KEY (fk_curso_instituicao_id_curso_instituicao) REFERENCES curso_instituicao(id_curso_instituicao)
 );
+
+CREATE TABLE IF NOT EXISTS solicitacao_seguidor (
+    fk_perfil_id_seguidor int NOT NULL,
+    fk_perfil_id_seguido int NOT NULL,
+    envio DATETIME NOT NULL,
+    FOREIGN KEY (fk_perfil_id_seguidor) REFERENCES perfil(id_perfil),
+    FOREIGN KEY (fk_perfil_id_seguido) REFERENCES perfil(id_perfil)
+)
