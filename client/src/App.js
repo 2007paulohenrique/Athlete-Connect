@@ -10,6 +10,7 @@ import Profile from "./components/pages/Profile";
 import Config from "./components/pages/Config";
 import SearchPage from "./components/pages/SearchPage";
 import PostPage from "./components/pages/PostPage";
+import NotificationsPage from "./components/pages/NotificationsPage";
 
 export const EXPIRATION_TIME = 24 * 60 * 60 * 1000;
 
@@ -67,6 +68,11 @@ function App() {
           <Route 
             path="/myProfile/config" 
             element={<Config/>} 
+          />
+
+          <Route  
+            path="/myProfile/notifications" 
+            element={<NotificationsPage/>} 
           />
 
           <Route 

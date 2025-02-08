@@ -6,12 +6,11 @@ import commentIcon from "../../img/icons/socialMedia/commentIcon.png"
 import tagIcon from "../../img/icons/socialMedia/tagIcon.png"
 import complaintedIcon from "../../img/icons/socialMedia/complaintedIcon.png"
 import alertIcon from "../../img/icons/socialMedia/errorIcon.png"
-import formatDate from "../../utils/DateFormatter";
 import SubmitButton from "../form/SubmitButton";
 import { useProfile } from "../../ProfileContext";
 import axios from "axios";
 
-function Notification({ profileOriginId, profileOriginPhotoPath, type, message, postId, notificationDate, isFollowRequest = false, navigate, setMessage }) {
+function Notification({ profileOriginId = null, profileOriginPhotoPath = null, type = null, message, postId = null, notificationDate, isFollowRequest = false, navigate, setMessage }) {
     const {profileId} = useProfile();
     
     const notificationIcons = {
@@ -70,7 +69,7 @@ function Notification({ profileOriginId, profileOriginPhotoPath, type, message, 
                 }
             </div>
 
-            <span>{formatDate(notificationDate)}</span>
+            <span>{notificationDate}</span>
         </div>
     );
 }

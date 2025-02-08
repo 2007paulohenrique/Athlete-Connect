@@ -72,7 +72,7 @@ function ProfileNavBar({ setMessage, permission = false }) {
                 </li>
 
                 <div>
-                    <li>
+                    <li onClick={() => navigate("/myProfile/notifications")}>
                         <img src={notificationsIcon} alt="Notifications"/>
                     </li>
                     

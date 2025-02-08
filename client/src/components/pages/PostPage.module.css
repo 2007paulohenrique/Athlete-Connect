@@ -1,7 +1,15 @@
 .post_page {
     min-height: 100dvh;
+    padding: 0 10em;
     background-color: var(--dark-bg-color);
     display: flex;
     justify-content: center;
     align-items: center;
+    overflow-y: auto;
+}
+
+@media screen and (max-width: 720px) {
+    .post_page {
+        padding: 0;
+    }
 }

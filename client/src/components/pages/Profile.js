@@ -91,7 +91,7 @@ function Profile() {
             setFollowersLoading(false);
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [followersLoading, tags.followers, followersOffset, navigate]);
+    }, [followersLoading, tags.followers, followersOffset]);
 
     const loadFolloweds = useCallback(async (id) => {
         if (followedsLoading || followedsEnd) return;
@@ -122,7 +122,7 @@ function Profile() {
             setFollowedsLoading(false);
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [followedsLoading, tags.followeds, followedsOffset, navigate]);
+    }, [followedsLoading, tags.followeds, followedsOffset]);
 
     const loadPosts = useCallback(async (id) => {
         if (postsLoading || postsEnd) return;
@@ -166,7 +166,7 @@ function Profile() {
             setPostsLoading(false);
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [postsLoading, profile.posts, postsOffset, navigate]);
+    }, [postsLoading, profile.posts, postsOffset]);
 
     const loadTagPosts = useCallback(async (id) => {
         if (tagPostsLoading || tagPostsEnd) return;
@@ -210,7 +210,7 @@ function Profile() {
             setTagPostsLoading(false);
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [tagPostsLoading, profile.tagPosts, tagPostsOffset, navigate]);
+    }, [tagPostsLoading, profile.tagPosts, tagPostsOffset]);
 
     const fetchUser = useCallback(async (viewerId) => {
         try {

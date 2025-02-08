@@ -38,6 +38,9 @@ cloudinary.config(
 )
 
 def send_email_notification(profile_id, email_dest, subject, message, key_word=None, isAlert=False, profile_photo_path=None):
+    if not check_can_insert_notification(con, profile_id):
+        return
+    
     con = open_connection(*con_params)
 
     if con is None:
@@ -277,7 +280,7 @@ def post_profile():
             close_connection(con)
 
 @app.route('/profiles/<int:profile_id>/preferences', methods=['PUT'])
-def put_profile_preferences_r(profile_id):
+def put_profile_preferences_route(profile_id):
     try:
         con = open_connection(*con_params)
 
@@ -1215,7 +1218,7 @@ def get_post_route(post_id):
             close_connection(con)
 
 @app.route('/profiles/<int:profile_id>/search/sugestions', methods=['GET'])
-def get_search_sugestions_r(profile_id):
+def get_search_sugestions_route(profile_id):
     try:
         con = open_connection(*con_params)
 
@@ -1292,7 +1295,7 @@ def get_search_profiles(text):
             close_connection(con)
 
 @app.route('/profiles/<int:profile_id>/posts', methods=['GET'])
-def get_profile_posts_r(profile_id):
+def get_profile_posts_route(profile_id):
     try:
         con = open_connection(*con_params)
 
@@ -1319,7 +1322,7 @@ def get_profile_posts_r(profile_id):
             close_connection(con)
 
 @app.route('/profiles/<int:profile_id>/tagPosts', methods=['GET'])
-def get_profile_tag_posts_r(profile_id):
+def get_profile_tag_posts_route(profile_id):
     try:
         con = open_connection(*con_params)
 
@@ -1345,8 +1348,60 @@ def get_profile_tag_posts_r(profile_id):
         if con:
             close_connection(con)
 
+@app.route('/profiles/<int:profile_id>/notifications', methods=['GET'])
+def get_profile_notifications_route(profile_id):
+    try:
+        con = open_connection(*con_params)
+
+        if con is None:
+            print('Erro ao abrir conexão com banco de dados')
+            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+        
+        offset = int(request.args.get('offset', 0))
+        limit = int(request.args.get('limit', 15))
+
+        result = get_profile_notifications(con, profile_id, offset, limit)
+
+        if result is None:
+            print('Erro ao recuperar notificações do perfil')
+            return jsonify({'error': 'Não foi possível recuperar as notificações do perfil devido a um erro no nosso servidor.'}), 500
+
+        return jsonify(result), 200
+    except Exception as e:
+        print('Erro ao recuperar notificações do perfil')
+        return jsonify({'error': 'Não foi possível recuperar as notificações do perfil devido a um erro no nosso servidor.'}), 500
+    finally:
+        if con:
+            close_connection(con)
+
+@app.route('/profiles/<int:profile_id>/followRequests', methods=['GET'])
+def get_profile_follow_requests_route(profile_id):
+    try:
+        con = open_connection(*con_params)
+
+        if con is None:
+            print('Erro ao abrir conexão com banco de dados')
+            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+        
+        offset = int(request.args.get('offset', 0))
+        limit = int(request.args.get('limit', 15))
+
+        result = get_profile_follow_requests(con, profile_id, offset, limit)
+
+        if result is None:
+            print('Erro ao recuperar solicitações para seguir o perfil')
+            return jsonify({'error': 'Não foi possível recuperar as solicitações para seguir o perfil devido a um erro no nosso servidor.'}), 500
+
+        return jsonify(result), 200
+    except Exception as e:
+        print('Erro ao recuperar solicitações para seguir o perfil')
+        return jsonify({'error': 'Não foi possível recuperar as solicitações para seguir o perfil devido a um erro no nosso servidor.'}), 500
+    finally:
+        if con:
+            close_connection(con)
+
 @app.route('/profiles/<int:profile_id>/posts/liked', methods=['GET'])
-def get_profile_liked_posts_r(profile_id):
+def get_profile_liked_posts_route(profile_id):
     try:
         con = open_connection(*con_params)
 
@@ -1372,7 +1427,7 @@ def get_profile_liked_posts_r(profile_id):
             close_connection(con)
 
 @app.route('/profiles/<int:profile_id>/posts/commented', methods=['GET'])
-def get_profile_commented_posts_r(profile_id):
+def get_profile_commented_posts_route(profile_id):
     try:
         con = open_connection(*con_params)
 
@@ -1398,7 +1453,7 @@ def get_profile_commented_posts_r(profile_id):
             close_connection(con)
 
 @app.route('/profiles/<int:profile_id>/posts/shared', methods=['GET'])
-def get_profile_shared_posts_r(profile_id):
+def get_profile_shared_posts_route(profile_id):
     try:
         con = open_connection(*con_params)
 

@@ -406,17 +406,13 @@ def put_profile(con, profile_id, name=None, bio=None, private=None, active=None)
                          WHERE id_perfil = %s
                     """
                     cursor.execute(sql, (1 if active else 0, profile_id))
-               else:
-                    if name is None or bio is None or private is None:
-                         print(f"Erro ao modificar perfil. Nem todos os parâmetros foram passados.")
-                         return None
-                    else:
-                         sql = """
-                              UPDATE perfil 
-                              SET nome = %s, privado = %s, biografia = %s 
-                              WHERE id_perfil = %s
-                         """
-                         cursor.execute(sql, (name, 1 if private else 0, bio, profile_id))
+               else:                   
+                    sql = """
+                         UPDATE perfil 
+                         SET nome = %s, privado = %s, biografia = %s 
+                         WHERE id_perfil = %s
+                    """
+                    cursor.execute(sql, (name, 1 if private else 0, bio, profile_id))
 
           con.commit() 
           return profile_id
@@ -583,8 +579,9 @@ def insert_default_profile_config(con, profile_id):
                     permissao_comentario,
                     notificacoes_dispositivos,
                     notificacoes_email,
+                    maximo_notificacoes_diarias,
                     fk_perfil_id_perfil
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                """
 
                default_values = (
@@ -602,6 +599,7 @@ def insert_default_profile_config(con, profile_id):
                     'todos',
                     True,  
                     True,  
+                    50,
                     profile_id
                )
 
@@ -614,6 +612,40 @@ def insert_default_profile_config(con, profile_id):
           con.rollback()
           print(f"Erro ao inserir configuração do perfil: {e}")
           return None
+
+def get_profile_max_daily_notifications(con, profile_id):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               sql = "SELECT maximo_notificacoes_diarias FROM configuracao WHERE fk_perfil_id_perfil = %s"
+               cursor.execute(sql, (profile_id,))
+               result = cursor.fetchone()
+
+          return result["maximo_notificacoes_diarias"]
+     except Exception as e:
+          print(f"Erro ao recuperar configuração de número máximo de notificações diárias: {e}")
+          return None
+
+def check_can_insert_notification(con, profile_id):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               sql = """
+                    SELECT COUNT(id_notificacao) AS notificacoes_dia
+                    FROM notificacao 
+                    WHERE fk_perfil_id_perfil_destino = %s AND lancamento BETWEEN NOW() - INTERVAL 1 DAY AND NOW()
+               """
+               cursor.execute(sql, (profile_id,))
+               result = cursor.fetchone()
+
+               max_daily_notifications = get_profile_max_daily_notifications(con, profile_id)
+
+               if max_daily_notifications is not None and result["notificacoes_dia"] < max_daily_notifications:
+                    return True
+               else:
+                    return False
+               
+     except Exception as e:
+          print(f"Erro ao conferir possibilidade de criação da notificação: {e}")
+          return False
 
 def insert_post(con, caption, profile_id, hashtags_ids, tags_ids, medias):
      try:
@@ -2075,6 +2107,9 @@ def accept_follower_request(con, follower_id, followed_id):
 def insert_notification(con, type, message, profile_destiny_id, profile_origin_id=None, post_id=None):
      try:
           with con.cursor() as cursor:
+               if not check_can_insert_notification(con, profile_destiny_id):
+                    return
+               
                date = datetime.now()
 
                columns = ["tipo", "mensagem", "lancamento", "fk_perfil_id_perfil_destino"]
@@ -2103,7 +2138,59 @@ def insert_notification(con, type, message, profile_destiny_id, profile_origin_i
           con.rollback()
           print(f"Erro ao criar notificação: {e}")
           return False
-         
+
+def get_profile_notifications(con, profile_id, offset, limit):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               sql = """
+                    SELECT * 
+                    FROM notificacao 
+                    WHERE fk_perfil_id_perfil_destino = %s
+                    ORDER BY lancamento DESC
+                    LIMIT %s OFFSET %s
+               """
+               cursor.execute(sql, (profile_id, limit, offset))
+               result = cursor.fetchall()
+
+               notifications = []
+
+               for notification in result:
+                    if notification["fk_perfil_id_perfil_origem"]:
+                         notification["origin_profile_photo"] = get_profile_photo_path(con, notification["fk_perfil_id_perfil_origem"])
+                    
+                    notifications.append(notification)
+
+          return notifications
+     except Exception as e:
+          print(f"Erro ao recuperar notificações do perfil: {e}")
+          return None
+
+def get_profile_follow_requests(con, profile_id, offset, limit):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               sql = """
+                    SELECT * 
+                    FROM solicitacao_seguidor 
+                    WHERE fk_perfil_id_seguido = %s
+                    ORDER BY envio DESC
+                    LIMIT %s OFFSET %s
+               """
+               cursor.execute(sql, (profile_id, limit, offset))
+               result = cursor.fetchall()
+
+               follow_requests = []
+
+               for follow_request in result:
+                    follow_request["follower_photo"] = get_profile_photo_path(con, follow_request["fk_perfil_id_seguidor"])
+                    follow_request["follower_name"] = get_profile_name(con, follow_request["fk_perfil_id_seguidor"])
+                    
+                    follow_requests.append(follow_request)
+
+          return follow_requests
+     except Exception as e:
+          print(f"Erro ao recuperar solicitações para seguir o perfil: {e}")
+          return None
+
 def create_database(con):
      try: 
           with open("database/sql_tds.sql", "r", encoding="utf-8") as file:
