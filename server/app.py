@@ -9,6 +9,7 @@ import cloudinary
 import cloudinary.uploader
 import cloudinary.api
 import os
+import sys
 
 load_dotenv()
 
@@ -38,10 +39,10 @@ cloudinary.config(
 )
 
 def send_email_notification(profile_id, email_dest, subject, message, key_word=None, isAlert=False, profile_photo_path=None):
+    con = open_connection(*con_params)
+    
     if not check_can_insert_notification(con, profile_id):
         return
-    
-    con = open_connection(*con_params)
 
     if con is None:
         print('Erro ao abrir conexão com banco de dados')
@@ -59,7 +60,8 @@ def send_email_notification(profile_id, email_dest, subject, message, key_word=N
 
             return True 
         except Exception as e:
-            print(f'Erro ao enviar email: {e}')
+            _, _, exc_tb = sys.exc_info()
+            print(f'Erro ao enviar email: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
             return False
 
 def cloud_upload_media(media):
@@ -68,7 +70,8 @@ def cloud_upload_media(media):
 
         return result.get('secure_url')
     except Exception as e:
-        print(f"Erro ao fazer upload da mídia: {e}")
+        _, _, exc_tb = sys.exc_info()
+        print(f"Erro ao fazer upload da mídia: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
         return None
     
 def cloud_upload_medias(medias):
@@ -82,7 +85,8 @@ def cloud_upload_medias(medias):
         
         return urls
     except Exception as e:
-        print(f"Erro ao fazer upload das mídias: {e}")
+        _, _, exc_tb = sys.exc_info()
+        print(f"Erro ao fazer upload das mídias: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
 
 @app.route('/hashtags', methods=['GET'])
 def get_hastags_route():
@@ -101,7 +105,8 @@ def get_hastags_route():
 
         return jsonify(hashtags), 200
     except Exception as e:
-        print(f'Erro ao recuperar hashtags: {e}')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao recuperar hashtags: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível recuperar as hashtags devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -124,7 +129,8 @@ def get_hastags_route():
 
 #         return jsonify(tags), 200
 #     except Exception as e:
-#         print(f'Erro ao recuperar tags: {e}')
+_, _, exc_tb = sys.exc_info()
+#         print(f'Erro ao recuperar tags: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
 #         return jsonify({'error': 'Não foi possível recuperar as tags devido a um erro no nosso servidor.'}), 500
 #     finally:
 #         if con:
@@ -147,7 +153,8 @@ def get_complaint_reasons_route():
 
         return jsonify(reasons), 200
     except Exception as e:
-        print(f'Erro ao recuperar motivos de denúncia: {e}')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao recuperar motivos de denúncia: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível recuperar os motivos de denúncia devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -170,7 +177,8 @@ def get_profiles_route():
         
         return jsonify(profiles), 200
     except Exception as e:
-        print(f'Erro ao recuperar perfis: {e}')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao recuperar perfis: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível recuperar os perfis devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -200,7 +208,8 @@ def get_user_route(profile_id):
         
         return jsonify(user), 200
     except Exception as e:
-        print(f'Erro ao recuperar usuário: {e}')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao recuperar usuário: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível recuperar o usuário devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -273,7 +282,8 @@ def post_profile():
 
         return jsonify({'profile': profile}), 201
     except Exception as e:
-        print(f'Erro ao inserir perfil: {e}')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao inserir perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível criar seu perfil devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -297,7 +307,8 @@ def put_profile_preferences_route(profile_id):
         
         return jsonify({'profileId': profile_id}), 201
     except Exception as e:
-        print('Erro ao modificar preferências do perfil: {e}')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao modificar preferências do perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível modificar suas preferências devido a um erro no nosso servidor.'}), 500     
     finally:
         if con:
@@ -346,7 +357,8 @@ def put_profile_route(profile_id):
 
         return jsonify({'profileId': profile_id}), 201
     except Exception as e:
-        print(f'Erro ao modificar perfil: {e}')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao modificar perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível modificar seu perfil devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -374,7 +386,8 @@ def put_config_route(profile_id, field_name):
         
         return jsonify({'profileId': profile_id}), 201
     except Exception as e:
-        print(f'Erro ao modificar configuração: {e}')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao modificar configuração: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível modificar sua configuração devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -425,7 +438,8 @@ def active_profile_route(profile_id, active):
         
         return jsonify({'profileId': profile_id}), 201
     except Exception as e:
-        print(f'Erro ao modificar perfil: {e}')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao modificar perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível modificar seu perfil devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -486,7 +500,8 @@ def login():
                 
         return jsonify({'error': 'login'}), 401
     except Exception as e:
-        print(f'Erro ao realizar login: {e}')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao realizar login: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível realizar o login devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -516,7 +531,8 @@ def signup():
         
         return jsonify({'success': 'success'}), 200
     except Exception as e:
-        print(f'Erro ao validar registro do perfil: {e}')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao validar registro do perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível conferir a correspondência de dados no registro do perfil devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -545,7 +561,8 @@ def get_profile_route(profile_id):
 
         return jsonify(profile), 200
     except Exception as e:
-        print(f'Erro ao recuperar perfil: {e}')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao recuperar perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível recuperar o perfil devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -570,8 +587,9 @@ def get_profile_followers(profile_id):
       
         return jsonify(followers), 200
     except Exception as e:
-            print(f'Erro ao recuperar seguidores do perfil: {e}')
-            return jsonify({'error': 'Não foi possível recuperar os seguidores do perfil devido a um erro no nosso servidor.'}), 404  
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao recuperar seguidores do perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
+        return jsonify({'error': 'Não foi possível recuperar os seguidores do perfil devido a um erro no nosso servidor.'}), 404  
     finally:
         if con:
             close_connection(con)
@@ -595,8 +613,9 @@ def get_profile_followeds(profile_id):
       
         return jsonify(followeds), 200
     except Exception as e:
-            print(f'Erro ao recuperar perfis seguidos: {e}')
-            return jsonify({'error': 'Não foi possível recuperar os perfis seguidos devido a um erro no nosso servidor.'}), 404  
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao recuperar perfis seguidos: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
+        return jsonify({'error': 'Não foi possível recuperar os perfis seguidos devido a um erro no nosso servidor.'}), 404  
     finally:
         if con:
             close_connection(con)
@@ -643,7 +662,8 @@ def post_follow(profile_id):
 
         return jsonify({'isFollowed': is_followed}), req_status
     except Exception as e:
-        print(f'Erro ao conferir estado de seguidor do perfil: {e}')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao conferir estado de seguidor do perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível conferir o estado de seguidor do perfil devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -685,7 +705,8 @@ def post_follow_request(profile_id):
 
         return ({'success': 'success'}), 201
     except Exception as e:
-        print(f'Erro ao enviar solicitação de seguidor: {e}')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao enviar solicitação de seguidor: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível enviar solicitação de seguidor devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -703,7 +724,7 @@ def post_follow_request_accept(profile_id):
         follower_id = int(request.form.get('followerId'))
 
         if not accept_follower_request(con, follower_id, profile_id):
-            print(f'Erro ao aceitar solicitação: {e}')
+            print('Erro ao aceitar solicitação')
             return jsonify({'error': 'Não foi possível aceitar solicitação devido a um erro no nosso servidor.'}), 500
 
         name = get_profile_name(con, profile_id)
@@ -729,7 +750,8 @@ def post_follow_request_accept(profile_id):
 
         return ({'success': 'success'}), 201
     except Exception as e:
-        print(f'Erro ao aceitar solicitação: {e}')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao aceitar solicitação: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível aceitar solicitação devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -770,7 +792,8 @@ def profile_complaint(profile_id):
         
         return ({'success': 'success'}), 201
     except Exception as e:
-        print(f'Erro ao denunciar perfil: {e}')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao denunciar perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível denunciar o perfil devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -795,7 +818,8 @@ def get_feed(profile_id):
 
         return jsonify(feed), 200
     except Exception as e:
-        print(f'Erro ao recuperar feed fo perfil: {e}')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao recuperar feed fo perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível recuperar o feed do perfil devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -819,32 +843,55 @@ def post_post(profile_id):
 
         medias_path = cloud_upload_medias(medias)
 
-        if medias_path is not None:
-            saved_files = []
-
-            for index, file in enumerate(medias):
-                filename = os.path.basename(file.filename)
-                _, file_extension = os.path.splitext(filename)
-                file_extension = file_extension.lower()
-
-                saved_files.append({
-                    'path': medias_path[index],
-                    'type': 'image' if file.mimetype.startswith('image/') else 'video',
-                    'format': file_extension,
-                })
-
-            post_id = insert_post(con, caption, profile_id, hashtag_ids, tag_ids, saved_files)
-
-            if post_id is None:
-                print('Erro ao inserir postagem')
-                return jsonify({'error': 'Não foi possível publicar sua postagem devido a um erro no nosso servidor.'}), 500
-        else:
+        if medias_path is None:
             print("Erro ao fazer upload das mídias da postagem")
             return jsonify({'error': 'Não foi possível publicar sua postagem devido a um erro durante o upload das suas imagens/vídeos.'}), 500
         
+        saved_files = []
+
+        for index, file in enumerate(medias):
+            filename = os.path.basename(file.filename)
+            _, file_extension = os.path.splitext(filename)
+            file_extension = file_extension.lower()
+
+            saved_files.append({
+                'path': medias_path[index],
+                'type': 'image' if file.mimetype.startswith('image/') else 'video',
+                'format': file_extension,
+            })
+
+        post_id = insert_post(con, caption, profile_id, hashtag_ids, tag_ids, saved_files)
+
+        if post_id is None:
+            print('Erro ao inserir postagem')
+            return jsonify({'error': 'Não foi possível publicar sua postagem devido a um erro no nosso servidor.'}), 500
+
+        name = get_profile_name(con, profile_id)
+
+        if name is None:
+            print("Erro ao recuperar nome do perfil")
+        else:
+            for tag_id in tag_ids:
+                    message = f"""
+                        {name} publicou uma postagem e te marcou.
+                    """
+
+                    if not insert_notification(con, "marcacao", message, tag_id, profile_id, post_id):
+                        print('Erro ao inserir notificação')
+
+                    email = get_profile_email(con, tag_id)
+
+                    if email is None:
+                        print("Erro ao recuperar email do perfil")
+                    else:
+                        profile_photo = get_profile_photo_path(con, profile_id)
+
+                        send_email_notification(tag_id, email, "Marcação em postagem no Athlete Connect", message, profile_photo_path=profile_photo)
+    
         return jsonify({'postId': post_id}), 201
     except Exception as e:
-        print(f'Erro ao inserir postagem: {e}')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao inserir postagem: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível publicar sua postagem devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -898,7 +945,8 @@ def post_like(post_id):
 
         return jsonify({'isLiked': is_liked}), req_status
     except Exception as e:
-        print(f'Erro ao conferir estado de curtida da postagem: {e}')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao conferir estado de curtida da postagem: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível conferir o estado de curtida da postagem devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -952,7 +1000,8 @@ def post_sharing(post_id):
     
         return ({'success': 'success'}), 201
     except Exception as e:
-        print(f'Erro ao compartilhar postagem: {e}')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao compartilhar postagem: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível compartilhar a postagem devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -1000,7 +1049,8 @@ def post_complaint(post_id):
     
         return ({'success': 'success'}), 201
     except Exception as e:
-        print(f'Erro ao denunciar postagem: {e}')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao denunciar postagem: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível denunciar a postagem devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -1053,7 +1103,8 @@ def post_comment(post_id):
             
         return jsonify({'newComment': new_comment}), 201
     except Exception as e:
-        print(f'Erro ao comentar na postagem: {e}')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao comentar na postagem: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível comentar na postagem devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -1076,7 +1127,8 @@ def get_flashs_route(profile_id):
         
         return jsonify(flashs), 200
     except Exception as e:
-        print(f'Erro ao recuperar flashs: {e}')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao recuperar flashs: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível recuperar os flashs devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -1125,7 +1177,8 @@ def post_flash(profile_id):
         
         return jsonify({'flashId': flash_id}), 201
     except Exception as e:
-        print(f'Erro ao inserir flash: {e}')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao inserir flash: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível criar seu flash devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -1148,7 +1201,8 @@ def get_sports_route():
         
         return jsonify(sports), 200
     except Exception as e:
-        print(f'Erro ao recuperar os esportes: {e}')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao recuperar os esportes: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível recuperar os esportes devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -1186,7 +1240,8 @@ def get_search(text):
 
         return jsonify(result), 200
     except Exception as e:
-        print(f'Erro ao recuperar resultados da pesquisa: {e}')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao recuperar resultados da pesquisa: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível recuperar os resultados da pesquisa devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -1211,7 +1266,8 @@ def get_post_route(post_id):
         
         return jsonify(post), 200
     except Exception as e:
-        print(f'Erro ao recuperar resultados da pesquisa: {e}')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao recuperar resultados da pesquisa: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível recuperar os resultados da pesquisa devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -1234,7 +1290,8 @@ def get_search_sugestions_route(profile_id):
         
         return jsonify(result), 200
     except Exception as e:
-        print(f'Erro ao recuperar sugestões de pesquisa do usuário: {e}')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao recuperar sugestões de pesquisa do usuário: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível recuperar as sugestões de pesquisa do usuário devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -1261,7 +1318,8 @@ def get_search_posts(text):
 
         return jsonify(result), 200
     except Exception as e:
-        print(f'Erro ao recuperar outros resultados de posts da pesquisa: {e}')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao recuperar outros resultados de posts da pesquisa: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível recuperar outros resultados de posts da pesquisa devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -1288,7 +1346,8 @@ def get_search_profiles(text):
         
         return jsonify(result), 200
     except Exception as e:
-        print(f'Erro ao recuperar outros resultados de perfis da pesquisa: {e}')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao recuperar outros resultados de perfis da pesquisa: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível recuperar outros resultados de perfis da pesquisa devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -1315,7 +1374,8 @@ def get_profile_posts_route(profile_id):
 
         return jsonify(result), 200
     except Exception as e:
-        print(f'Erro ao recuperar outras postagens do perfil: {e}')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao recuperar outras postagens do perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível recuperar outras postagens do perfil devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -1342,7 +1402,8 @@ def get_profile_tag_posts_route(profile_id):
 
         return jsonify(result), 200
     except Exception as e:
-        print(f'Erro ao recuperar outras postagens em que o perfil foi marcado: {e}')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao recuperar outras postagens em que o perfil foi marcado: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível recuperar outras postagens em que o perfil foi marcado devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -1368,7 +1429,8 @@ def get_profile_notifications_route(profile_id):
 
         return jsonify(result), 200
     except Exception as e:
-        print('Erro ao recuperar notificações do perfil')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao recuperar notificações do perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível recuperar as notificações do perfil devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -1394,8 +1456,36 @@ def get_profile_follow_requests_route(profile_id):
 
         return jsonify(result), 200
     except Exception as e:
-        print('Erro ao recuperar solicitações para seguir o perfil')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao recuperar solicitações para seguir o perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível recuperar as solicitações para seguir o perfil devido a um erro no nosso servidor.'}), 500
+    finally:
+        if con:
+            close_connection(con)
+
+@app.route('/profiles/<int:profile_id>/sharings', methods=['GET'])
+def get_profile_sharings_route(profile_id):
+    try:
+        con = open_connection(*con_params)
+
+        if con is None:
+            print('Erro ao abrir conexão com banco de dados')
+            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+        
+        offset = int(request.args.get('offset', 0))
+        limit = int(request.args.get('limit', 15))
+
+        result = get_profile_sharings(con, profile_id, offset, limit)
+
+        if result is None:
+            print('Erro ao recuperar compartilhamentos do perfil')
+            return jsonify({'error': 'Não foi possível recuperar os compartilhamentos do perfil devido a um erro no nosso servidor.'}), 500
+
+        return jsonify(result), 200
+    except Exception as e:
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao recuperar compartilhamentos do perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
+        return jsonify({'error': 'Não foi possível recuperar os compartilhamentos do perfil devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
             close_connection(con)
@@ -1420,7 +1510,8 @@ def get_profile_liked_posts_route(profile_id):
 
         return jsonify(result), 200
     except Exception as e:
-        print(f'Erro ao recuperar outras postagens curtidas do perfil: {e}')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao recuperar outras postagens curtidas do perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível recuperar outras postagens curtidas do perfil devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -1446,7 +1537,8 @@ def get_profile_commented_posts_route(profile_id):
 
         return jsonify(result), 200
     except Exception as e:
-        print(f'Erro ao recuperar outras postagens comentadas do perfil: {e}')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao recuperar outras postagens comentadas do perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível recuperar outras postagens comentadas do perfil devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
@@ -1472,7 +1564,8 @@ def get_profile_shared_posts_route(profile_id):
 
         return jsonify(result), 200
     except Exception as e:
-        print(f'Erro ao recuperar outras postagens compartilhadas do perfil: {e}')
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao recuperar outras postagens compartilhadas do perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível recuperar outras postagens compartilhadas do perfil devido a um erro no nosso servidor.'}), 500
     finally:
         if con:

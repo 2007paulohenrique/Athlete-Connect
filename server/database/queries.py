@@ -1,6 +1,6 @@
 from datetime import datetime
-from ..app import send_email_notification
 import sqlparse
+import sys
 
 def get_profiles(con):
      try:
@@ -11,7 +11,8 @@ def get_profiles(con):
 
           return result
      except Exception as e:
-          print(f"Erro ao recuperar perfis: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar perfis: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def get_profile_email(con, profile_id):
@@ -23,7 +24,8 @@ def get_profile_email(con, profile_id):
 
           return result["email"]
      except Exception as e:
-          print(f"Erro ao recuperar email do perfil: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar email do perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
      
 def get_profile_name(con, profile_id):
@@ -35,7 +37,8 @@ def get_profile_name(con, profile_id):
 
           return result["nome"]
      except Exception as e:
-          print(f"Erro ao recuperar nome do perfil: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar nome do perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def check_email_notification_permission(con, profile_id):
@@ -47,7 +50,8 @@ def check_email_notification_permission(con, profile_id):
 
           return True if result["notificacoes_email"] == 1 else False
      except Exception as e:
-          print(f"Erro ao recuperar permissão de notificação por e-mail do perfil: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar permissão de notificação por e-mail do perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def get_profile_photo_path(con, profile_id):
@@ -57,11 +61,15 @@ def get_profile_photo_path(con, profile_id):
                cursor.execute(sql, (profile_id,))
                result = cursor.fetchone()
 
+               if not result["fk_midia_id_midia"]:
+                    return None
+
                profile_photo = get_media(con, result["fk_midia_id_midia"])
 
           return profile_photo["caminho"]
      except Exception as e:
-          print(f"Erro ao recuperar foto do perfil: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar foto do perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
      
 def get_post_author_id(con, post_id):
@@ -73,7 +81,8 @@ def get_post_author_id(con, post_id):
 
           return result["fk_perfil_id_perfil"]
      except Exception as e:
-          print(f"Erro ao recuperar id do autor da postagem: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar id do autor da postagem: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def get_profile_main_info(con, profile_id):
@@ -96,7 +105,8 @@ def get_profile_main_info(con, profile_id):
                
           return result
      except Exception as e:
-          print(f"Erro ao recuperar perfil: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
           
@@ -163,7 +173,8 @@ def get_profile(con, profile_id, profile_viewer_id=None):
                     
           return result
      except Exception as e:
-          print(f"Erro ao recuperar perfil: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
      
 def get_profile_likes(con, profile_id):
@@ -181,7 +192,8 @@ def get_profile_likes(con, profile_id):
 
           return result['total_likes'] if result else 0  
      except Exception as e:
-          print(f"Erro ao recuperar número de curtidas do perfil: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar número de curtidas do perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
      
 # O usuário é recuperado através do id do perfil
@@ -205,7 +217,8 @@ def get_user(con, profile_id, profile_viewer_id = None):
 
           return profile
      except Exception as e:
-          print(f"Erro ao recuperar usuário: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar usuário: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
      
 def get_profile_posts(con, profile_id, profile_viewer_id = None, offset=None, limit=24):
@@ -287,7 +300,8 @@ def get_profile_posts(con, profile_id, profile_viewer_id = None, offset=None, li
 
           return posts
      except Exception as e:
-          print(f"Erro ao recuperar postagens do perfil: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar postagens do perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def get_profile_tag_posts(con, profile_id, profile_viewer_id=None, offset=None, limit=24):
@@ -373,7 +387,8 @@ def get_profile_tag_posts(con, profile_id, profile_viewer_id=None, offset=None, 
 
           return posts
      except Exception as e:
-          print(f"Erro ao recuperar postagens em que o perfil foi marcado: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar postagens em que o perfil foi marcado: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
           
 def insert_profile(con, email, password, name, bio, private):
@@ -392,8 +407,9 @@ def insert_profile(con, email, password, name, bio, private):
           con.commit() 
           return profile_id
      except Exception as e:
+          _, _, exc_tb = sys.exc_info()
           con.rollback()
-          print(f"Erro ao inserir perfil: {e}")
+          print(f"Erro ao inserir perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def put_profile(con, profile_id, name=None, bio=None, private=None, active=None):
@@ -417,8 +433,9 @@ def put_profile(con, profile_id, name=None, bio=None, private=None, active=None)
           con.commit() 
           return profile_id
      except Exception as e:
+          _, _, exc_tb = sys.exc_info()
           con.rollback()
-          print(f"Erro ao modificar perfil: {e}")
+          print(f"Erro ao modificar perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
      
 def put_config(con, field_name, field_value, profile_id):
@@ -438,8 +455,9 @@ def put_config(con, field_name, field_value, profile_id):
           con.commit() 
           return True
      except Exception as e:
+          _, _, exc_tb = sys.exc_info()
           con.rollback()
-          print(f"Erro ao modificar perfil: {e}")
+          print(f"Erro ao modificar perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return False
 
 def insert_profile_preferences(con, profile_id, sports_ids):
@@ -455,8 +473,9 @@ def insert_profile_preferences(con, profile_id, sports_ids):
           con.commit() 
           return True
      except Exception as e:
+          _, _, exc_tb = sys.exc_info()
           con.rollback()
-          print(f"Erro ao inserir preferências do perfil: {e}")
+          print(f"Erro ao inserir preferências do perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return False
 
 def put_profile_preferences(con, profile_id, sports_ids):
@@ -476,8 +495,9 @@ def put_profile_preferences(con, profile_id, sports_ids):
           con.commit() 
           return True
      except Exception as e:
+          _, _, exc_tb = sys.exc_info()
           con.rollback()
-          print(f"Erro ao modificar preferências do perfil: {e}")
+          print(f"Erro ao modificar preferências do perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return False
              
 def get_user_qualifications(con, user_id):
@@ -504,7 +524,8 @@ def get_user_qualifications(con, user_id):
 
           return result
      except Exception as e:
-          print(f"Erro ao recuperar formações do usuário: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar formações do usuário: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
      
 def get_profile_preferences(con, profile_id):
@@ -524,7 +545,8 @@ def get_profile_preferences(con, profile_id):
 
           return result
      except Exception as e:
-          print(f"Erro ao recuperar preferências do perfil: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar preferências do perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None 
 
 def get_profile_config(con, profile_id):
@@ -543,7 +565,8 @@ def get_profile_config(con, profile_id):
 
           return result
      except Exception as e:
-          print(f"Erro ao recuperar configurações do perfil: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar configurações do perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
      
 def insert_user(con, profile_id):
@@ -556,8 +579,9 @@ def insert_user(con, profile_id):
           con.commit()
           return user_id
      except Exception as e:
+          _, _, exc_tb = sys.exc_info()
           con.rollback()
-          print(f"Erro ao inserir usuário: {e}")
+          print(f"Erro ao inserir usuário: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def insert_default_profile_config(con, profile_id):
@@ -609,8 +633,9 @@ def insert_default_profile_config(con, profile_id):
           con.commit() 
           return config_id
      except Exception as e:
+          _, _, exc_tb = sys.exc_info()
           con.rollback()
-          print(f"Erro ao inserir configuração do perfil: {e}")
+          print(f"Erro ao inserir configuração do perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def get_profile_max_daily_notifications(con, profile_id):
@@ -622,7 +647,8 @@ def get_profile_max_daily_notifications(con, profile_id):
 
           return result["maximo_notificacoes_diarias"]
      except Exception as e:
-          print(f"Erro ao recuperar configuração de número máximo de notificações diárias: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar configuração de número máximo de notificações diárias: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def check_can_insert_notification(con, profile_id):
@@ -644,7 +670,8 @@ def check_can_insert_notification(con, profile_id):
                     return False
                
      except Exception as e:
-          print(f"Erro ao conferir possibilidade de criação da notificação: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao conferir possibilidade de criação da notificação: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return False
 
 def insert_post(con, caption, profile_id, hashtags_ids, tags_ids, medias):
@@ -666,33 +693,12 @@ def insert_post(con, caption, profile_id, hashtags_ids, tags_ids, medias):
                if not insert_post_medias(con, post_id, medias):
                     raise Exception("Erro ao inserir mídias da postagem.")
 
-               name = get_profile_name(con, profile_id)
-
-               if name is None:
-                    print("Erro ao recuperar nome do perfil")
-               else:
-                    for tag_id in tags_ids:
-                         message = f"""
-                              {name} publicou uma postagem e te marcou.
-                         """
-
-                         if not insert_notification(con, "marcacao", message, tag_id, profile_id, post_id):
-                              print('Erro ao inserir notificação')
-
-                         email = get_profile_email(con, tag_id)
-
-                         if email is None:
-                              print("Erro ao recuperar email do perfil")
-                         else:
-                              profile_photo = get_profile_photo_path(con, profile_id)
-
-                              send_email_notification(tag_id, email, "Marcação em postagem no Athlete Connect", message, profile_photo_path=profile_photo)
-
           con.commit()
           return post_id
      except Exception as e:
+          _, _, exc_tb = sys.exc_info()
           con.rollback()
-          print(f"Erro ao inserir postagem: {e}")
+          print(f"Erro ao inserir postagem: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
      
 def insert_post_hashtags(con, post_id, hashtags_ids):
@@ -705,8 +711,9 @@ def insert_post_hashtags(con, post_id, hashtags_ids):
           con.commit()
           return True
      except Exception as e:
+          _, _, exc_tb = sys.exc_info()
           con.rollback()
-          print(f"Erro ao inserir hashtags da postagem: {e}")
+          print(f"Erro ao inserir hashtags da postagem: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return False
     
 def insert_post_tags(con, post_id, profiles_ids):
@@ -719,8 +726,9 @@ def insert_post_tags(con, post_id, profiles_ids):
           con.commit()
           return True
      except Exception as e:
+          _, _, exc_tb = sys.exc_info()
           con.rollback()
-          print(f"Erro ao inserir marcações da postagem: {e}")      
+          print(f"Erro ao inserir marcações da postagem: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")      
           return False
          
 def insert_post_medias(con, post_id, medias):
@@ -733,8 +741,9 @@ def insert_post_medias(con, post_id, medias):
           con.commit()
           return True
      except Exception as e:
+          _, _, exc_tb = sys.exc_info()
           con.rollback()
-          print(f"Erro ao inserir mídias da postagem: {e}")      
+          print(f"Erro ao inserir mídias da postagem: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")      
           return False
          
 def insert_media(con, path, type, format):
@@ -747,8 +756,9 @@ def insert_media(con, path, type, format):
           con.commit()
           return media_id
      except Exception as e:
+          _, _, exc_tb = sys.exc_info()
           con.rollback()
-          print(f"Erro ao inserir mídia: {e}")
+          print(f"Erro ao inserir mídia: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def get_media(con, media_id):
@@ -760,7 +770,8 @@ def get_media(con, media_id):
 
           return result
      except Exception as e:
-          print(f"Erro ao recuperar mídia: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar mídia: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def insert_profile_photo(con, profile_id, media_id):
@@ -772,8 +783,9 @@ def insert_profile_photo(con, profile_id, media_id):
           con.commit()
           return True
      except Exception as e:
+          _, _, exc_tb = sys.exc_info()
           con.rollback()
-          print(f"Erro ao inserir foto de perfil: {e}")
+          print(f"Erro ao inserir foto de perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return False
      
 def get_followeds(con, follower_profile_id):
@@ -788,7 +800,8 @@ def get_followeds(con, follower_profile_id):
           con.commit()
           return followeds_ids
      except Exception as e:
-          print(f"Erro ao recuperar perfis seguidos: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar perfis seguidos: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
      
 def get_followers(con, followed_profile_id):
@@ -803,7 +816,8 @@ def get_followers(con, followed_profile_id):
           con.commit()
           return followers_ids
      except Exception as e:
-          print(f"Erro ao recuperar perfis seguidores: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar perfis seguidores: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def get_feed_posts(con, profile_id, offset):
@@ -896,7 +910,8 @@ def get_feed_posts(con, profile_id, offset):
 
           return feed
      except Exception as e:
-          print(f"Erro ao recuperar feed do perfil: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar feed do perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def get_post(con, post_id, profile_viewer_id):
@@ -964,7 +979,8 @@ def get_post(con, post_id, profile_viewer_id):
 
           return result
      except Exception as e:
-          print(f"Erro ao recuperar postagem: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar postagem: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
           
 def get_profiles_for_feed(con, profiles_ids):
@@ -988,7 +1004,8 @@ def get_profiles_for_feed(con, profiles_ids):
                          profile["media"] = profiles_photos.get(profile["id_perfil"], {})
           return profiles
      except Exception as e:
-          print(f"Erro ao recuperar perfis para o feed: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar perfis para o feed: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def get_profiles_photos_for_feed(con, profiles_ids):
@@ -1008,7 +1025,8 @@ def get_profiles_photos_for_feed(con, profiles_ids):
           
           return profiles_photos
      except Exception as e:
-          print(f"Erro ao recuperar fotos dos perfis: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar fotos dos perfis: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def get_post_medias(con, post_id):
@@ -1020,7 +1038,8 @@ def get_post_medias(con, post_id):
 
           return result
      except Exception as e:
-          print(f"Erro ao recuperar mídias do post: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar mídias do post: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def get_post_medias_for_feed(con, posts_ids):
@@ -1041,7 +1060,8 @@ def get_post_medias_for_feed(con, posts_ids):
 
           return medias
      except Exception as e:
-          print(f"Erro ao recuperar mídias das postagens: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar mídias das postagens: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def get_post_hashtags(con, post_id):
@@ -1058,7 +1078,8 @@ def get_post_hashtags(con, post_id):
 
           return result
      except Exception as e:
-          print(f"Erro ao recuperar hashtags da postagem: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar hashtags da postagem: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def get_post_hashtags_for_feed(con, posts_ids):
@@ -1081,7 +1102,8 @@ def get_post_hashtags_for_feed(con, posts_ids):
 
           return hashtags
      except Exception as e:
-          print(f"Erro ao recuperar hashtags das postagens: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar hashtags das postagens: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def get_post_comments(con, post_id):
@@ -1099,7 +1121,8 @@ def get_post_comments(con, post_id):
 
           return result
      except Exception as e:
-          print(f"Erro ao recuperar comentários da postagem: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar comentários da postagem: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def get_post_comments_for_feed(con, post_ids):
@@ -1124,7 +1147,8 @@ def get_post_comments_for_feed(con, post_ids):
 
           return comments
      except Exception as e:
-          print(f"Erro ao recuperar comentários das postagens: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar comentários das postagens: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def get_post_tags(con, post_id):
@@ -1142,7 +1166,8 @@ def get_post_tags(con, post_id):
 
           return result
      except Exception as e:
-          print(f"Erro ao recuperar marcações da postagem: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar marcações da postagem: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def get_post_tags_for_feed(con, posts_ids):
@@ -1166,7 +1191,8 @@ def get_post_tags_for_feed(con, posts_ids):
 
           return tags
      except Exception as e:
-          print(f"Erro ao recuperar marcações das postagens: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar marcações das postagens: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def toggle_like(con, profile_id, post_id):
@@ -1189,8 +1215,9 @@ def toggle_like(con, profile_id, post_id):
           con.commit()
           return is_liked
      except Exception as e:
+          _, _, exc_tb = sys.exc_info()
           con.rollback()
-          print(f"Erro ao curtir postagem: {e}")
+          print(f"Erro ao curtir postagem: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
      
 def toggle_follow(con, follower_id, followed_id):
@@ -1212,8 +1239,9 @@ def toggle_follow(con, follower_id, followed_id):
           con.commit()
           return is_followed
      except Exception as e:
+          _, _, exc_tb = sys.exc_info()
           con.rollback()
-          print(f"Erro ao seguir perfil: {e}")
+          print(f"Erro ao seguir perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def check_follow(con, follower_id, followed_id):
@@ -1225,7 +1253,8 @@ def check_follow(con, follower_id, followed_id):
 
           return result is not None
      except Exception as e:
-          print(f"Erro ao conferir estado de seguidor do perfil: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao conferir estado de seguidor do perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
                
 def check_like(con, profile_id, post_id):
@@ -1237,7 +1266,8 @@ def check_like(con, profile_id, post_id):
 
           return result is not None
      except Exception as e:
-          print(f"Erro ao conferir estado de curtida da postagem: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao conferir estado de curtida da postagem: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def check_post_complaint(con, author_id, post_id):
@@ -1249,7 +1279,8 @@ def check_post_complaint(con, author_id, post_id):
 
           return result is not None
      except Exception as e:
-          print(f"Erro ao conferir denúncia da postagem: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao conferir denúncia da postagem: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
      
 def check_profile_complaint(con, author_id, profile_id):
@@ -1261,7 +1292,8 @@ def check_profile_complaint(con, author_id, profile_id):
 
           return result is not None
      except Exception as e:
-          print(f"Erro ao conferir denúncia do perfil: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao conferir denúncia do perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def insert_search(con, text, profile_id):
@@ -1274,8 +1306,9 @@ def insert_search(con, text, profile_id):
           con.commit() 
           return text
      except Exception as e:
+          _, _, exc_tb = sys.exc_info()
           con.rollback()
-          print(f"Erro ao inserir pesquisa: {e}")
+          print(f"Erro ao inserir pesquisa: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return 
      
 def get_search_sugestions(con, profile_id):
@@ -1305,7 +1338,8 @@ def get_search_sugestions(con, profile_id):
                
           return result
      except Exception as e:
-          print(f"Erro ao recuperar sugestões de pesquisa do usuário: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar sugestões de pesquisa do usuário: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def insert_sharing(con, caption, post_id, profile_id, shared_profiles_ids):
@@ -1325,8 +1359,9 @@ def insert_sharing(con, caption, post_id, profile_id, shared_profiles_ids):
           con.commit() 
           return True
      except Exception as e:
+          _, _, exc_tb = sys.exc_info()
           con.rollback()
-          print(f"Erro ao compartilhar postagem: {e}")
+          print(f"Erro ao compartilhar postagem: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return False
 
 def insert_shareds(con, shared_profiles_ids, sharing_id):
@@ -1343,8 +1378,9 @@ def insert_shareds(con, shared_profiles_ids, sharing_id):
           con.commit() 
           return True
      except Exception as e:
+          _, _, exc_tb = sys.exc_info()
           con.rollback()
-          print(f"Erro ao compartilhar postagem: {e}")
+          print(f"Erro ao compartilhar postagem: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return False
                    
 def insert_comment(con, text, post_id, profile_id):
@@ -1367,8 +1403,9 @@ def insert_comment(con, text, post_id, profile_id):
           con.commit() 
           return new_comment
      except Exception as e:
+          _, _, exc_tb = sys.exc_info()
           con.rollback()
-          print(f"Erro ao comentar na postagem: {e}")
+          print(f"Erro ao comentar na postagem: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def insert_post_complaint(con, description, author_id, post_id, complaint_reasons_ids):
@@ -1385,8 +1422,9 @@ def insert_post_complaint(con, description, author_id, post_id, complaint_reason
           con.commit() 
           return True
      except Exception as e:
+          _, _, exc_tb = sys.exc_info()
           con.rollback()
-          print(f"Erro ao denúnciar postagem: {e}")
+          print(f"Erro ao denúnciar postagem: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return False
 
 def insert_profile_complaint(con, description, author_id, profile_id, complaint_reasons_ids):
@@ -1403,8 +1441,9 @@ def insert_profile_complaint(con, description, author_id, profile_id, complaint_
           con.commit() 
           return True
      except Exception as e:
+          _, _, exc_tb = sys.exc_info()
           con.rollback()
-          print(f"Erro ao denúnciar perfil: {e}")
+          print(f"Erro ao denúnciar perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return False
 
 def insert_complaint_reasons(con, complaint_reasons_ids, complaint_id):
@@ -1421,8 +1460,9 @@ def insert_complaint_reasons(con, complaint_reasons_ids, complaint_id):
           con.commit() 
           return True
      except Exception as e:
+          _, _, exc_tb = sys.exc_info()
           con.rollback()
-          print(f"Erro ao inserir motivos da denúncia: {e}")
+          print(f"Erro ao inserir motivos da denúncia: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return False
           
 def get_complaint_reasons(con):
@@ -1434,7 +1474,8 @@ def get_complaint_reasons(con):
      
           return result
      except Exception as e:
-          print(f"Erro ao recuperar motivos de denúncia: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar motivos de denúncia: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def insert_flash(con, flash_available_time, profile_id, media_id):
@@ -1447,8 +1488,9 @@ def insert_flash(con, flash_available_time, profile_id, media_id):
           con.commit()
           return flash_id
      except Exception as e:
+          _, _, exc_tb = sys.exc_info()
           con.rollback()
-          print(f"Erro ao inserir flash: {e}")
+          print(f"Erro ao inserir flash: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def get_flashs(con, profile_id):
@@ -1466,7 +1508,8 @@ def get_flashs(con, profile_id):
 
           return result
      except Exception as e:
-          print(f"Erro ao recuperar flashs: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar flashs: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
      
 def get_sports(con, text=None):
@@ -1523,7 +1566,8 @@ def get_sports(con, text=None):
 
           return sports
      except Exception as e:
-          print(f"Erro ao recuperar esportes: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar esportes: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
                               
 def get_sport_categories(con, sport_id):
@@ -1541,7 +1585,8 @@ def get_sport_categories(con, sport_id):
 
           return result
      except Exception as e:
-          print(f"Erro ao recuperar categorias do esporte: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar categorias do esporte: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def get_sports_categories_for_preferences(con):
@@ -1563,7 +1608,8 @@ def get_sports_categories_for_preferences(con):
 
           return categories
      except Exception as e:
-          print(f"Erro ao recuperar categorias dos esportes: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar categorias dos esportes: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def get_sports_icons_for_preferences(con):
@@ -1581,7 +1627,8 @@ def get_sports_icons_for_preferences(con):
 
           return sports_icons_paths
      except Exception as e:
-          print(f"Erro ao recuperar ícones dos esportes: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar ícones dos esportes: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def get_hashtags(con, text=None):
@@ -1604,7 +1651,8 @@ def get_hashtags(con, text=None):
 
           return result
      except Exception as e:
-          print(f"Erro ao recuperar hashtags: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar hashtags: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def get_tags(con, profile_viewer_id, offset, text, limit=None):
@@ -1663,7 +1711,8 @@ def get_tags(con, profile_viewer_id, offset, text, limit=None):
 
           return result
      except Exception as e:
-          print(f"Erro ao recuperar tags dos perfis: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar tags dos perfis: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def get_followers_tags(con, offset, profile_id):
@@ -1686,7 +1735,8 @@ def get_followers_tags(con, offset, profile_id):
 
           return result
      except Exception as e:
-          print(f"Erro ao recuperar seguidores do perfil: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar seguidores do perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 
@@ -1710,7 +1760,8 @@ def get_followeds_tags(con, offset, profile_id):
 
           return result
      except Exception as e:
-          print(f"Erro ao recuperar perfis seguidos: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar perfis seguidos: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def get_search_result(con, text):
@@ -1725,7 +1776,8 @@ def get_search_result(con, text):
 
           return result
      except Exception as e:
-          print(f"Erro ao recuperar resultados da pesquisa: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar resultados da pesquisa: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
      
 def get_posts_for_search(con, text, offset, profile_viewer_id, limit=24):
@@ -1821,7 +1873,8 @@ def get_posts_for_search(con, text, offset, profile_viewer_id, limit=24):
 
           return posts
      except Exception as e:
-          print(f"Erro ao recuperar resultados de postagens: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar resultados de postagens: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
      
 def get_profile_liked_posts(con, profile_id, offset=None, limit=24):
@@ -1905,7 +1958,8 @@ def get_profile_liked_posts(con, profile_id, offset=None, limit=24):
 
           return posts
      except Exception as e:
-          print(f"Erro ao recuperar postagens curtidas pelo perfil: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar postagens curtidas pelo perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def get_profile_commented_posts(con, profile_id, offset=None, limit=24):
@@ -1989,7 +2043,8 @@ def get_profile_commented_posts(con, profile_id, offset=None, limit=24):
 
           return posts
      except Exception as e:
-          print(f"Erro ao recuperar postagens comentadas pelo perfil: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar postagens comentadas pelo perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def get_profile_shared_posts(con, profile_id, offset=None, limit=24):
@@ -2073,7 +2128,8 @@ def get_profile_shared_posts(con, profile_id, offset=None, limit=24):
 
           return posts
      except Exception as e:
-          print(f"Erro ao recuperar postagens compartilhadas pelo perfil: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar postagens compartilhadas pelo perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def send_follower_request(con, follower_id, followed_id):
@@ -2086,22 +2142,31 @@ def send_follower_request(con, follower_id, followed_id):
           con.commit()
           return True
      except Exception as e:
+          _, _, exc_tb = sys.exc_info()
           con.rollback()
-          print(f"Erro ao enviar solicitação de seguidor: {e}")
+          print(f"Erro ao enviar solicitação de seguidor: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return False
      
 def accept_follower_request(con, follower_id, followed_id):
      try:
           with con.cursor() as cursor:
                date = datetime.now()
+
                sql = "DELETE FROM solicitacao_seguidor WHERE fk_perfil_id_seguidor = %s AND fk_perfil_id_seguido = %s"
                cursor.execute(sql, (follower_id, followed_id))
+
+               if check_follow(con, follower_id, followed_id):
+                    return
+
+               if toggle_follow(con, follower_id, followed_id) is None:
+                    raise Exception("Erro ao aceitar solicitação de seguidor")
 
           con.commit()
           return True
      except Exception as e:
+          _, _, exc_tb = sys.exc_info()
           con.rollback()
-          print(f"Erro ao enviar solicitação de seguidor: {e}")
+          print(f"Erro ao aceitar solicitação de seguidor: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return False
      
 def insert_notification(con, type, message, profile_destiny_id, profile_origin_id=None, post_id=None):
@@ -2135,8 +2200,9 @@ def insert_notification(con, type, message, profile_destiny_id, profile_origin_i
                con.commit()
                return True
      except Exception as e:
+          _, _, exc_tb = sys.exc_info()
           con.rollback()
-          print(f"Erro ao criar notificação: {e}")
+          print(f"Erro ao criar notificação: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return False
 
 def get_profile_notifications(con, profile_id, offset, limit):
@@ -2162,7 +2228,8 @@ def get_profile_notifications(con, profile_id, offset, limit):
 
           return notifications
      except Exception as e:
-          print(f"Erro ao recuperar notificações do perfil: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar notificações do perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def get_profile_follow_requests(con, profile_id, offset, limit):
@@ -2183,12 +2250,52 @@ def get_profile_follow_requests(con, profile_id, offset, limit):
                for follow_request in result:
                     follow_request["follower_photo"] = get_profile_photo_path(con, follow_request["fk_perfil_id_seguidor"])
                     follow_request["follower_name"] = get_profile_name(con, follow_request["fk_perfil_id_seguidor"])
+
+                    if follow_request["follower_name"] is None:
+                         print("Erro ao recuperar dados do perfil que fez a solicitação")
                     
                     follow_requests.append(follow_request)
 
           return follow_requests
      except Exception as e:
-          print(f"Erro ao recuperar solicitações para seguir o perfil: {e}")
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar solicitações para seguir o perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
+          return None
+     
+def get_profile_sharings(con, profile_id, offset, limit):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               sql = """
+                    SELECT c.* 
+                    FROM compartilhamento c
+                    JOIN compartilhado co ON co.fk_compartilhamento_id_compartilhamento = c.id_compartilhamento
+                    WHERE c.fk_perfil_id_perfil = %s OR co.fk_perfil_id_perfil = %s
+                    ORDER BY c.data_compartilhamento DESC
+                    LIMIT %s OFFSET %s
+               """
+               cursor.execute(sql, (profile_id, profile_id, limit, offset))
+               result = cursor.fetchall()
+
+               sharings = []
+
+               for sharing in result:
+                    sharing["profile_origin_name"] = get_profile_name(con, sharing["fk_perfil_id_perfil"])
+                    sharing["profile_origin_photo"] = get_profile_photo_path(con, sharing["fk_perfil_id_perfil"])
+
+                    if sharing["profile_origin_name"] is None or sharing["profile_origin_photo"] is None:
+                         print("Erro ao recuperar dados do perfil que compartilhou a postagem")
+
+                    sharing["post"] = get_post(con, sharing["fk_postagem_id_postagem"], profile_id)
+
+                    if sharing["post"] is None:
+                         print('Erro ao recuperar postagem do compartilhamento')
+                    
+                    sharings.append(sharing)
+
+          return sharings
+     except Exception as e:
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar compartilhamentos do perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def create_database(con):
@@ -2208,8 +2315,9 @@ def create_database(con):
           con.commit()
           return True
      except Exception as e:
+          _, _, exc_tb = sys.exc_info()
           con.rollback()
-          print(f"Erro ao criar banco de dados: {e}")
+          print(f"Erro ao criar banco de dados: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return False
 
 def seed_data(con):
@@ -2229,7 +2337,8 @@ def seed_data(con):
           con.commit()
           return True
      except Exception as e:
+          _, _, exc_tb = sys.exc_info()
           con.rollback()
-          print(f"Erro ao inserir dados de inicialização: {e}")
+          print(f"Erro ao inserir dados de inicialização: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return False
           
