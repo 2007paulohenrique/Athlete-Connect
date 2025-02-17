@@ -1,0 +1,60 @@
+.notifications_page {
+    background-color: var(--dark-bg-color);
+    min-height: 100dvh;
+    padding: 1.5em 1em 1em;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5em;
+}
+
+.notifications_page > h1 {
+    letter-spacing: 1px;
+}
+
+.notifications_type {
+    list-style-type: none;
+    display: flex;
+    justify-content: space-around;
+    font-size: 1.2em;
+    letter-spacing: 0.6px;
+    margin-bottom: 2em;
+}
+
+.notifications_type > li {
+    cursor: pointer;
+}
+
+.notifications_type > li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 1px;
+    width: 100%;
+    background-color: var(--ligth-theme-color);
+}
+
+.selected_notifications_type {
+    color: var(--ligth-theme-color);
+    position: relative;
+}
+
+
+.notifications,
+.sharings {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+}
+
+.notifications > h2 {
+    letter-spacing: 0.8px;
+}
+
+span.see_more {
+    display: block;
+    margin-top: 3em;
+    text-align: center;
+    color: var(--white-bg-color);
+}

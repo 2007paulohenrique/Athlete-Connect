@@ -121,20 +121,21 @@ function Login() {
 
                 throw new Error("Erro ao fazer login");
             } else {
-                setProfileId(data.profile.id_perfil);
-                localStorage.setItem('athleteConnectProfileId', data.profile.id_perfil);
-                localStorage.setItem('athleteConnectProfile', JSON.stringify({profile: data.profile, updateDate: Date.now()}));
-                
-                if (data.isActived === false) {
+                console.log(data)
+                if (data.ativo === false) {
                     setShowConfirmation(true);
                 } else {
                     setLoginSubmitError(false);
                     
                     navigate("/", {state: {message: "Bem-vindo de volta!", type: "success"}});
                 }
+
+                setProfileId(data.id_perfil);
+                localStorage.setItem('athleteConnectProfileId', data.id_perfil);
+                localStorage.setItem('athleteConnectProfile', JSON.stringify({profile: data, updateDate: Date.now()}));
             }
         } catch (err) {
-            if (err.response.status === 401) {
+            if (err.response?.status === 401) {
                 setLoginSubmitError(true);
             } else {
                 navigate("/errorPage", {state: {error: err.message}})

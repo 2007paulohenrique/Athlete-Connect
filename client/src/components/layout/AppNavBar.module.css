@@ -58,20 +58,3 @@
 li:where(.profile_photo).selected {
     filter: brightness(0.4);
 }
-
-.app_nav_bar > ul > li.profile_photo > img {
-    object-fit: cover;
-    height: 100%;
-    width: 100%;
-}
-
-@media screen and (min-width: 1500px) {
-    .app_nav_bar > ul > li:not(.profile_photo) > img {
-        height: 2em;
-    }
-
-    .app_nav_bar > ul > li.profile_photo {
-        height: 2.9em;
-        width: 2.9em;
-    }
-}

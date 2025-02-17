@@ -11,6 +11,7 @@ import Config from "./components/pages/Config";
 import SearchPage from "./components/pages/SearchPage";
 import PostPage from "./components/pages/PostPage";
 import NotificationsPage from "./components/pages/NotificationsPage";
+import NewQualification from "./components/pages/NewQualification";
 
 export const EXPIRATION_TIME = 24 * 60 * 60 * 1000;
 
@@ -41,8 +42,13 @@ function App() {
           />
 
           <Route 
-            path="/newPost" 
+            path="/myProfile/newPost" 
             element={<NewPost/>} 
+          />
+
+          <Route 
+            path="/myProfile/newQualification" 
+            element={<NewQualification/>} 
           />
 
           <Route 

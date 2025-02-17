@@ -17,7 +17,11 @@
                 <td style="padding: 1.5em 2em; text-align: center; height: 100%;">            
                     <div class="message" style="margin: auto;">
                         {% if profile_photo_path %}
-                            <img src="{{ profile_photo_path }}" alt="Profile Photo" style="height: 5em; width: 5em; border-radius: 50%; display: block; margin: auto; border: 3.5px solid #00572d;">
+                            {% set profile_photo = 'https://res.cloudinary.com/ddg7swr5r/image/upload/fl_preserve_transparency/v1739140272/userIcon_wojoa8.jpg?_s=public-apps' if profile_photo_path is true else profile_photo_path %}
+
+                            <div style="height: 5em; width: 5em; border-radius: 50%; margin: auto; border: 3.5px solid #00572d; overflow: hidden; background-color: #898989;">
+                                <img src="{{ profile_photo }}" alt="Profile Photo" style="height: 5em; width: 5em; border-radius: 50%; display: block;">
+                            </div>
                         {% endif %}
 
                         {% if key_word %}

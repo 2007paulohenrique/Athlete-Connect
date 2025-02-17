@@ -468,17 +468,18 @@ def login():
                 if bcrypt.check_password_hash(profile['senha'], passwordLogin):
                     correct_profile = get_profile(con, profile['id_perfil'], profile['id_perfil'])
 
-                    message = f"""
-                        Estamos felizes em vê-lo novamente, {profile['nome']}! volte a usar nossos serviços 
-                        e contribuir para o crescimento do mundo dos esportes.
-                    """
-                    
-                    if not insert_notification(con, "generica", message, correct_profile['id_perfil']):
-                        print('Erro ao inserir notificação')
+                    if correct_profile["ativo"]:
+                        message = f"""
+                            Estamos felizes em vê-lo novamente, {profile['nome']}! volte a usar nossos serviços 
+                            e contribuir para o crescimento do mundo dos esportes.
+                        """
+                        
+                        if not insert_notification(con, "generica", message, correct_profile['id_perfil']):
+                            print('Erro ao inserir notificação')
 
-                    send_email_notification(correct_profile['id_perfil'], profile['email'], "Login no Athlete Connect", message, "Bem-vindo de volta!")
+                        send_email_notification(correct_profile['id_perfil'], profile['email'], "Login no Athlete Connect", message, "Bem-vindo de volta!")
 
-                    return jsonify({'profile': correct_profile}), 200
+                    return jsonify(correct_profile), 200
                 else:
                     message = f"""
                         Alguém acabou de tentar acessar a sua conta.
@@ -568,6 +569,40 @@ def get_profile_route(profile_id):
         if con:
             close_connection(con)
 
+@app.route('/profiles/<int:profile_id>/qualifications', methods=['GET'])
+def get_profile_qualifications(profile_id):
+    try:
+        con = open_connection(*con_params)
+
+        if con is None:
+            print('Erro ao abrir conexão com banco de dados')
+            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+        
+        profile = get_profile_main_info(con, profile_id)
+    
+        if profile is None:
+            print('Erro ao recuperar perfil')
+            return jsonify({'error': 'Não foi possível encontrar nenhum perfil com o id fornecido. Tente fazer o login.'}), 404
+        
+        if profile["ativo"] == False:
+            print('Perfil desativado')
+            return jsonify({'error': 'O perfil foi desativado. Faça login e o ative para voltar a usá-lo.'}), 204
+        
+        qualifications = get_user_qualifications(con, profile_id)
+
+        if qualifications is None:
+            print('Erro ao recuperar formações do perfil')
+            return jsonify({'error': 'Não foi possível recuperar as formações do perfil devido a um erro no nosso servidor.'}), 500
+
+        return jsonify(qualifications), 200
+    except Exception as e:
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao recuperar formações do perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
+        return jsonify({'error': 'Não foi possível recuperar as formações do perfil devido a um erro no nosso servidor.'}), 500
+    finally:
+        if con:
+            close_connection(con)
+
 @app.route('/profiles/<int:profile_id>/followers', methods=['GET'])
 def get_profile_followers(profile_id):
     try:
@@ -583,13 +618,13 @@ def get_profile_followers(profile_id):
     
         if followers is None:
             print('Erro ao recuperar seguidores do perfil.')
-            return jsonify({'error': 'Não foi possível recuperar os seguidores do perfil devido a um erro no nosso servidor.'}), 404  
+            return jsonify({'error': 'Não foi possível recuperar os seguidores do perfil devido a um erro no nosso servidor.'}), 500  
       
         return jsonify(followers), 200
     except Exception as e:
         _, _, exc_tb = sys.exc_info()
         print(f'Erro ao recuperar seguidores do perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
-        return jsonify({'error': 'Não foi possível recuperar os seguidores do perfil devido a um erro no nosso servidor.'}), 404  
+        return jsonify({'error': 'Não foi possível recuperar os seguidores do perfil devido a um erro no nosso servidor.'}), 500  
     finally:
         if con:
             close_connection(con)
@@ -609,13 +644,13 @@ def get_profile_followeds(profile_id):
     
         if followeds is None:
             print('Erro ao recuperar perfis seguidos.')
-            return jsonify({'error': 'Não foi possível recuperar os perfis seguidos devido a um erro no nosso servidor.'}), 404  
+            return jsonify({'error': 'Não foi possível recuperar os perfis seguidos devido a um erro no nosso servidor.'}), 500  
       
         return jsonify(followeds), 200
     except Exception as e:
         _, _, exc_tb = sys.exc_info()
         print(f'Erro ao recuperar perfis seguidos: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
-        return jsonify({'error': 'Não foi possível recuperar os perfis seguidos devido a um erro no nosso servidor.'}), 404  
+        return jsonify({'error': 'Não foi possível recuperar os perfis seguidos devido a um erro no nosso servidor.'}), 500 
     finally:
         if con:
             close_connection(con)
@@ -656,7 +691,7 @@ def post_follow(profile_id):
                 else:
                     profile_photo = get_profile_photo_path(con, follower_id)
 
-                    send_email_notification(profile_id, email, "Novo seguidor no Athlete Connect", message, profile_photo_path=profile_photo)
+                    send_email_notification(profile_id, email, "Novo seguidor no Athlete Connect", message, profile_photo_path=profile_photo if profile_photo is not None else True)
 
         req_status = 201 if is_followed else 204
 
@@ -701,7 +736,7 @@ def post_follow_request(profile_id):
             else:
                 profile_photo = get_profile_photo_path(con, follower_id)
 
-                send_email_notification(profile_id, email, "Solicitação no Athlete Connect", message, profile_photo_path=profile_photo)
+                send_email_notification(profile_id, email, "Solicitação no Athlete Connect", message, profile_photo_path=profile_photo if profile_photo is not None else True)
 
         return ({'success': 'success'}), 201
     except Exception as e:
@@ -746,7 +781,7 @@ def post_follow_request_accept(profile_id):
             else:
                 profile_photo = get_profile_photo_path(con, profile_id)
 
-                send_email_notification(follower_id, email, "Solicitação aceita no Athlete Connect", message, profile_photo_path=profile_photo)
+                send_email_notification(follower_id, email, "Solicitação aceita no Athlete Connect", message, profile_photo_path=profile_photo if profile_photo is not None else True)
 
         return ({'success': 'success'}), 201
     except Exception as e:
@@ -795,6 +830,53 @@ def profile_complaint(profile_id):
         _, _, exc_tb = sys.exc_info()
         print(f'Erro ao denunciar perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível denunciar o perfil devido a um erro no nosso servidor.'}), 500
+    finally:
+        if con:
+            close_connection(con)
+
+@app.route('/profiles/<int:profile_id>/qualifications', methods=['POST'])
+def post_qualification(profile_id):
+    try:
+        con = open_connection(*con_params)
+
+        if con is None:
+            print('Erro ao abrir conexão com banco de dados')
+            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+
+        course_id = int(request.form.get('courseId'))
+        degree_id = int(request.form.get('degreeId'))
+
+        user_id = get_user_id_by_profile(con, profile_id)
+
+        if user_id is None:
+            print('Erro ao recuperar id do usuário')
+            return jsonify({'error': 'Não foi possível recuperar o id do usuário devido a um erro no nosso servidor.'}), 500
+ 
+        if not insert_user_qualification(con, user_id, course_id, degree_id):
+            print('Erro ao adicionar formação')
+            return jsonify({'error': 'Não foi possível adicionar a formação devido a um erro no nosso servidor.'}), 500
+        
+        message = """
+            Agora, sua formação é exibida sempre que alguém visitar seu perfil.
+            Você passa mais credibilidade e segurança ao ter uma comprovação das suas habilidade, por isso, 
+            não se esqueça de adicionar suas formações.  
+        """
+        
+        if not insert_notification(con, "generica", message, profile_id):
+            print('Erro ao inserir notificação')
+
+        email = get_profile_email(con, profile_id)
+
+        if email is None:
+            print("Erro ao recuperar email do perfil")
+        else:
+            send_email_notification(profile_id, email, "Formação no Athlete Connect", message, "Parabéns!", True)
+        
+        return ({'success': 'success'}), 201
+    except Exception as e:
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao adicionar formação: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
+        return jsonify({'error': 'Não foi possível adicionar a formação devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
             close_connection(con)
@@ -886,7 +968,7 @@ def post_post(profile_id):
                     else:
                         profile_photo = get_profile_photo_path(con, profile_id)
 
-                        send_email_notification(tag_id, email, "Marcação em postagem no Athlete Connect", message, profile_photo_path=profile_photo)
+                        send_email_notification(tag_id, email, "Marcação em postagem no Athlete Connect", message, profile_photo_path=profile_photo if profile_photo is not None else True)
     
         return jsonify({'postId': post_id}), 201
     except Exception as e:
@@ -939,7 +1021,7 @@ def post_like(post_id):
                         else:
                             profile_photo = get_profile_photo_path(con, profile_id)
 
-                            send_email_notification(author_id, email, "Curtida no Athlete Connect", message, profile_photo_path=profile_photo)
+                            send_email_notification(author_id, email, "Curtida no Athlete Connect", message, profile_photo_path=profile_photo if profile_photo is not None else True)
 
         req_status = 201 if is_liked else 204
 
@@ -996,7 +1078,7 @@ def post_sharing(post_id):
                 else:
                     profile_photo = get_profile_photo_path(con, author_id)
 
-                    send_email_notification(post_author_id, email, "Compartilhamento no Athlete Connect", message, profile_photo_path=profile_photo)
+                    send_email_notification(post_author_id, email, "Compartilhamento no Athlete Connect", message, profile_photo_path=profile_photo if profile_photo is not None else True)
     
         return ({'success': 'success'}), 201
     except Exception as e:
@@ -1099,7 +1181,7 @@ def post_comment(post_id):
                     else:
                         profile_photo = get_profile_photo_path(con, author_id)
 
-                        send_email_notification(post_author_id, email, "Comentário no Athlete Connect", message, profile_photo_path=profile_photo)
+                        send_email_notification(post_author_id, email, "Comentário no Athlete Connect", message, profile_photo_path=profile_photo if profile_photo is not None else True)
             
         return jsonify({'newComment': new_comment}), 201
     except Exception as e:
@@ -1256,7 +1338,7 @@ def get_post_route(post_id):
             print('Erro ao abrir conexão com banco de dados')
             return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
         
-        viewer_id = int(request.args.get('viewer_id'))
+        viewer_id = int(request.args.get('viewerId'))
 
         post = get_post(con, post_id, viewer_id)
 
@@ -1267,8 +1349,8 @@ def get_post_route(post_id):
         return jsonify(post), 200
     except Exception as e:
         _, _, exc_tb = sys.exc_info()
-        print(f'Erro ao recuperar resultados da pesquisa: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
-        return jsonify({'error': 'Não foi possível recuperar os resultados da pesquisa devido a um erro no nosso servidor.'}), 500
+        print(f'Erro ao recuperar postagem: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
+        return jsonify({'error': 'Não foi possível recuperar a postagem devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
             close_connection(con)
@@ -1570,6 +1652,129 @@ def get_profile_shared_posts_route(profile_id):
     finally:
         if con:
             close_connection(con)
+
+@app.route('/states', methods=['GET'])
+def get_states_route():
+    try:
+        con = open_connection(*con_params)
+
+        if con is None:
+            print('Erro ao abrir conexão com banco de dados')
+            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+        
+        states = get_states(con)
+
+        if states is None:
+            print('Erro ao recuperar estados')
+            return jsonify({'error': 'Não foi possível recuperar os estados devido a um erro no nosso servidor.'}), 500
+
+        return jsonify(states), 200
+    except Exception as e:
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao recuperar estados: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
+        return jsonify({'error': 'Não foi possível recuperar os estados devido a um erro no nosso servidor.'}), 500
+    finally:
+        if con:
+            close_connection(con)
+
+
+@app.route('/degrees', methods=['GET'])
+def get_degrees_route():
+    try:
+        con = open_connection(*con_params)
+
+        if con is None:
+            print('Erro ao abrir conexão com banco de dados')
+            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+        
+        degrees = get_degrees(con)
+
+        if degrees is None:
+            print('Erro ao recuperar graus de formação')
+            return jsonify({'error': 'Não foi possível recuperar os graus de formação devido a um erro no nosso servidor.'}), 500
+
+        return jsonify(degrees), 200
+    except Exception as e:
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao recuperar graus de formação: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
+        return jsonify({'error': 'Não foi possível recuperar os graus de formação devido a um erro no nosso servidor.'}), 500
+    finally:
+        if con:
+            close_connection(con)
+
+@app.route('/states/<int:state_id>/cities', methods=['GET'])
+def get_cities_route(state_id):
+    try:
+        con = open_connection(*con_params)
+
+        if con is None:
+            print('Erro ao abrir conexão com banco de dados')
+            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+        
+        cities = get_cities(con, state_id)
+
+        if cities is None:
+            print('Erro ao recuperar cidades')
+            return jsonify({'error': 'Não foi possível recuperar as cidades devido a um erro no nosso servidor.'}), 500
+
+        return jsonify(cities), 200
+    except Exception as e:
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao recuperar cidades: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
+        return jsonify({'error': 'Não foi possível recuperar as cidades devido a um erro no nosso servidor.'}), 500
+    finally:
+        if con:
+            close_connection(con)
+
+@app.route('/cities/<int:city_id>/institutions', methods=['GET'])
+def get_institutions_route(city_id):
+    try:
+        con = open_connection(*con_params)
+
+        if con is None:
+            print('Erro ao abrir conexão com banco de dados')
+            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+        
+        institutions = get_institutions(con, city_id)
+
+        if institutions is None:
+            print('Erro ao recuperar instituições')
+            return jsonify({'error': 'Não foi possível recuperar as instituições devido a um erro no nosso servidor.'}), 500
+
+        return jsonify(institutions), 200
+    except Exception as e:
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao recuperar instituições: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
+        return jsonify({'error': 'Não foi possível recuperar as instituições devido a um erro no nosso servidor.'}), 500
+    finally:
+        if con:
+            close_connection(con)
+
+@app.route('/institutions/<int:institution_id>/courses', methods=['GET'])
+def get_courses_route(institution_id):
+    try:
+        con = open_connection(*con_params)
+
+        if con is None:
+            print('Erro ao abrir conexão com banco de dados')
+            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+        
+        courses = get_courses(con, institution_id)
+
+        if courses is None:
+            print('Erro ao recuperar cursos')
+            return jsonify({'error': 'Não foi possível recuperar os cursos devido a um erro no nosso servidor.'}), 500
+
+        return jsonify(courses), 200
+    except Exception as e:
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao recuperar cursos: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
+        return jsonify({'error': 'Não foi possível recuperar os cursos devido a um erro no nosso servidor.'}), 500
+    finally:
+        if con:
+            close_connection(con)
+
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

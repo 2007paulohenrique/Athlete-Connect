@@ -210,7 +210,7 @@ def get_user(con, profile_id, profile_viewer_id = None):
                     if profile is None:
                          raise Exception("Erro ao recuperar perfil do usuário.")  
                     
-                    profile["qualifications"] = get_user_qualifications(con, result.get("id_usuario"))
+                    profile["qualifications"] = get_user_qualifications(con, profile_id)
 
                     if profile["qualifications"] is None:
                          raise Exception("Erro ao recuperar formações do usuário.")  
@@ -500,11 +500,12 @@ def put_profile_preferences(con, profile_id, sports_ids):
           print(f"Erro ao modificar preferências do perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return False
              
-def get_user_qualifications(con, user_id):
+def get_user_qualifications(con, profile_id):
      try:
           with con.cursor(dictionary=True) as cursor:
                sql = """
                     SELECT 
+                    f.id_formacao,
                     c.nome AS curso,
                     i.nome AS instituicao,
                     gf.grau AS grau,
@@ -517,9 +518,10 @@ def get_user_qualifications(con, user_id):
                     JOIN instituicao i ON cui.fk_instituicao_id_instituicao = i.id_instituicao
                     JOIN cidade ci ON i.fk_cidade_id_cidade = ci.id_cidade
                     JOIN estado e ON ci.fk_estado_id_estado = e.id_estado
-                    WHERE f.fk_usuario_id_usuario = %s
+                    JOIN usuario u ON u.id_usuario = f.fk_usuario_id_usuario
+                    WHERE u.fk_perfil_id_perfil = %s
                """
-               cursor.execute(sql, (user_id,))
+               cursor.execute(sql, (profile_id,))
                result = cursor.fetchall()
 
           return result
@@ -667,6 +669,7 @@ def check_can_insert_notification(con, profile_id):
                if max_daily_notifications is not None and result["notificacoes_dia"] < max_daily_notifications:
                     return True
                else:
+                    print("Limite máximo de notificações diárias atingido")
                     return False
                
      except Exception as e:
@@ -1445,6 +1448,33 @@ def insert_profile_complaint(con, description, author_id, profile_id, complaint_
           con.rollback()
           print(f"Erro ao denúnciar perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return False
+     
+def insert_user_qualification(con, user_id, course_institution_id, degree_id):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               sql_check = """
+                    SELECT * 
+                    FROM formacao 
+                    WHERE 
+                         fk_usuario_id_usuario = %s AND 
+                         fk_grau_formacao_id_grau_formacao = %s AND 
+                         fk_curso_instituicao_id_curso_instituicao = %s
+                    """
+               cursor.execute(sql_check, (user_id, degree_id, course_institution_id))
+               result = cursor.fetchone()
+
+               if not result:     
+                    sql_insert = "INSERT INTO formacao (fk_usuario_id_usuario, fk_grau_formacao_id_grau_formacao, fk_curso_instituicao_id_curso_instituicao) VALUES (%s, %s, %s)"
+                    cursor.execute(sql_insert, (user_id, degree_id, course_institution_id))
+
+                    con.commit()   
+
+          return True
+     except Exception as e:
+          _, _, exc_tb = sys.exc_info()
+          con.rollback()
+          print(f"Erro ao adicionar formação: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
+          return False
 
 def insert_complaint_reasons(con, complaint_reasons_ids, complaint_id):
      if not complaint_reasons_ids:
@@ -2136,8 +2166,12 @@ def send_follower_request(con, follower_id, followed_id):
      try:
           with con.cursor() as cursor:
                date = datetime.now()
-               sql = "INSERT INTO solicitacao_seguidor (fk_perfil_id_seguidor, fk_perfil_id_seguido, envio) VALUES (%s, %s, %s)"
-               cursor.execute(sql, (follower_id, followed_id, date))
+
+               sql_delete = "DELETE FROM solicitacao_seguidor WHERE fk_perfil_id_seguidor = %s AND fk_perfil_id_seguido = %s"
+               cursor.execute(sql_delete, (follower_id, followed_id))
+
+               sql_insert = "INSERT INTO solicitacao_seguidor (fk_perfil_id_seguidor, fk_perfil_id_seguido, envio) VALUES (%s, %s, %s)"
+               cursor.execute(sql_insert, (follower_id, followed_id, date))
 
           con.commit()
           return True
@@ -2195,10 +2229,10 @@ def insert_notification(con, type, message, profile_destiny_id, profile_origin_i
                     INSERT INTO notificacao ({", ".join(columns)}) 
                     VALUES ({", ".join(values)})
                """
-               
                cursor.execute(sql, tuple(params))
-               con.commit()
-               return True
+               
+          con.commit()
+          return True
      except Exception as e:
           _, _, exc_tb = sys.exc_info()
           con.rollback()
@@ -2279,6 +2313,12 @@ def get_profile_sharings(con, profile_id, offset, limit):
                sharings = []
 
                for sharing in result:
+                    if profile_id == sharing["fk_perfil_id_perfil"]:
+                         sharing["shareds"] = get_sharing_shareds(con, sharing["id_compartilhamento"])
+
+                         if sharing["shareds"] is None:
+                              raise Exception("Erro ao recuperar os compartilhados do compartilhamento")
+
                     sharing["profile_origin_name"] = get_profile_name(con, sharing["fk_perfil_id_perfil"])
                     sharing["profile_origin_photo"] = get_profile_photo_path(con, sharing["fk_perfil_id_perfil"])
 
@@ -2296,6 +2336,118 @@ def get_profile_sharings(con, profile_id, offset, limit):
      except Exception as e:
           _, _, exc_tb = sys.exc_info()
           print(f"Erro ao recuperar compartilhamentos do perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
+          return None
+
+def get_sharing_shareds(con, sharing_id):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               sql = """
+                    SELECT fk_perfil_id_perfil
+                    FROM compartilhado
+                    WHERE fk_compartilhamento_id_compartilhamento = %s
+               """
+               cursor.execute(sql, (sharing_id,))
+               result = cursor.fetchall()
+
+               shareds = []
+
+               for shared in result:
+                    shared["name"] = get_profile_name(con, shared["fk_perfil_id_perfil"])
+                    shared["photo"] = get_profile_photo_path(con, shared["fk_perfil_id_perfil"])
+
+                    if shared["name"] is None or shared["photo"] is None:
+                         print("Erro ao recuperar dados do perfil da tabela compartilhado")
+
+                    shareds.append(shared)
+
+          return shareds
+     except Exception as e:
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar compartilhados do compartilhamento: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
+          return None
+
+def get_states(con):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               sql = "SELECT * FROM estado ORDER BY sigla"
+               cursor.execute(sql)
+               result = cursor.fetchall()
+     
+          return result
+     except Exception as e:
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar estados: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
+          return None
+
+def get_degrees(con):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               sql = "SELECT * FROM grau_formacao ORDER BY grau"
+               cursor.execute(sql)
+               result = cursor.fetchall()
+     
+          return result
+     except Exception as e:
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar graus de formação: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
+          return None
+     
+def get_cities(con, state_id):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               sql = "SELECT * FROM cidade WHERE fk_estado_id_estado = %s ORDER BY nome"
+               cursor.execute(sql, (state_id,))
+               result = cursor.fetchall()
+     
+          return result
+     except Exception as e:
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar cidades: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
+          return None
+
+def get_institutions(con, city_id):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               sql = "SELECT * FROM instituicao WHERE fk_cidade_id_cidade = %s ORDER BY nome"
+               cursor.execute(sql, (city_id,))
+               result = cursor.fetchall()
+     
+          return result
+     except Exception as e:
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar instituições: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
+          return None
+     
+def get_courses(con, institution_id):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               sql = """
+                    SELECT ci.id_curso_instituicao, c.nome 
+                    FROM curso_instituicao ci 
+                    JOIN curso c ON c.id_curso = ci.fk_curso_id_curso
+                    WHERE ci.fk_instituicao_id_instituicao = %s
+                    ORDER BY c.nome 
+               """
+               cursor.execute(sql, (institution_id,))
+               result = cursor.fetchall()
+     
+          return result
+     except Exception as e:
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar cursos: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
+          return None
+
+def get_user_id_by_profile(con, profile_id):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               sql = "SELECT id_usuario FROM usuario WHERE fk_perfil_id_perfil = %s"
+               cursor.execute(sql, (profile_id,))
+               result = cursor.fetchone()
+     
+          return result["id_usuario"]
+     except Exception as e:
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar id do usuário: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def create_database(con):

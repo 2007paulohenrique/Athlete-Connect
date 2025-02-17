@@ -186,7 +186,7 @@ function Home() {
         const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
 
         if (!confirmedProfileId) {
-            console.error("Erro ao indentificar perfil");
+            console.error("Erro ao identificar perfil");
 
             navigate("/login", {state: {message: "Não conseguimos identificar seu perfil. Tente fazer o login.", type: "error"}});
 

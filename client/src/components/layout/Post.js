@@ -246,22 +246,25 @@ const Post = forwardRef(({ likesVisibility = true, sharingsVisibility = true, co
     }
 
     function viewSharing() {
-        showOffAll("sharings");
+        const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
 
-        setSelectedSharings([]);
-        setSearchTextSharing("");
-        setSharings([]);
-        setSharingCaption("");
-        setShowSharing(!showSharing);  
+        if (author.privado && (String(author.id_perfil) !== String(confirmedProfileId))) {
+            setMessage(`O perfil de ${author.nome} é privado. Suas postagens não podem ser compartilhadas`)
+        } else {
+            showOffAll("sharings");
+    
+            setSelectedSharings([]);
+            setSearchTextSharing("");
+            setSharings([]);
+            setSharingCaption("");
+            setShowSharing(!showSharing);  
+        }
     }
 
     function viewComplaint() {
         const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
 
-        console.log(likesVisibility, commentsVisibility, sharingsVisibility)
-
         if (String(author.id_perfil) === String(confirmedProfileId)) return;
-        
 
         showOffAll("complaint");
 

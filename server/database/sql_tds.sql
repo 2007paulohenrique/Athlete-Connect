@@ -380,10 +380,8 @@ CREATE TABLE IF NOT EXISTS configuracao (
 
 CREATE TABLE IF NOT EXISTS formacao (
     id_formacao int PRIMARY KEY AUTO_INCREMENT,
-    inicio date NOT NULL,
-    conclusao date NOT NULL,
-    fk_grau_formacao_id_grau_formacao int NOT NULL,
     fk_usuario_id_usuario int NOT NULL,
+    fk_grau_formacao_id_grau_formacao int NOT NULL,
     fk_curso_instituicao_id_curso_instituicao int NOT NULL,
     FOREIGN KEY (fk_grau_formacao_id_grau_formacao) REFERENCES grau_formacao(id_grau_formacao),
     FOREIGN KEY (fk_usuario_id_usuario) REFERENCES usuario(id_usuario),

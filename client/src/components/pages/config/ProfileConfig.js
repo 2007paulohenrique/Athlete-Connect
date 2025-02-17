@@ -111,7 +111,9 @@ function ProfileConfig({ initialProfile, profile, setProfile, handleModifyProfil
                         Editar preferências
                     </button>
 
-                    <button>
+                    <button
+                        onClick={() => navigate("/myProfile/newQualification")}
+                    >
                         Adicionar formação
                     </button>
                 </div>

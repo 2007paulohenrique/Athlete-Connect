@@ -6,8 +6,12 @@ function Select({ name, labelText, handleChange, values = [], selectedValue, des
             <label htmlFor={name}>{labelText}</label>
 
             <select name={name} id={name} onChange={handleChange} value={selectedValue}>
+                {!selectedValue &&
+                    <option value="" disabled selected>Selecionar ˅</option>
+                }
+
                 {values?.length !== 0 && values.map((value, index) =>
-                    <option key={index} value={value.toLowerCase()}>{value}</option>
+                    <option key={index} value={typeof value === "string" ? value.toLowerCase() : value}>{value}</option>
                 )}
             </select>
 

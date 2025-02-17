@@ -218,7 +218,7 @@ function Profile() {
             ? `http://localhost:5000/profiles/users/${id}?viewerId=${viewerId}`
             : `http://localhost:5000/profiles/users/${viewerId}`;
             
-            const resp = await axios.get(url)
+            const resp = await axios.get(url);
             const data = resp.data;
 
             if (resp.status === 204) {
@@ -624,8 +624,8 @@ function Profile() {
                                 {(profile.qualifications && profile.qualifications.length !== 0) && (   
                                     <>
                                         <ul className={styles.profile_qualifications}>
-                                            {profile.qualifications.map((qualification, index) => (
-                                                <li key={index}>
+                                            {profile.qualifications.map(qualification => (
+                                                <li key={qualification.id_formacao}>
                                                     <span>{`${qualification.grau} em ${qualification.curso}`}</span>
 
                                                     <span>{`${qualification.instituicao} - ${qualification.estado} - ${qualification.cidade}`}</span>
@@ -681,7 +681,7 @@ function Profile() {
                                                 className={`${styles.follow_button} ${profile.isFollowed && styles.follow_button_selected}`} 
                                                 onClick={profile.privado && !profile.isFollowed ? sendFollowRequest : () => toggleFollow(viewer.id_perfil)}
                                             >
-                                                {profile.isFollowed ? "Seguindo" : "Seguir"}
+                                                {profile.isFollowed ? "Seguindo" : profile.privado ? "Pedir para seguir" : "Seguir"}
                                             </button>
 
                                             <button className={`${styles.complaint_button} ${profile.isComplainted && styles.complaint_button_selected}`}>
@@ -729,7 +729,12 @@ function Profile() {
                                                 Editar preferências
                                             </button>
 
-                                            <button className={styles.follow_button}>Adicionar formação</button>
+                                            <button 
+                                                className={styles.follow_button}
+                                                onClick={() => navigate("/myProfile/newQualification")}
+                                            >
+                                                Adicionar formação
+                                            </button>
                                         </>
                                     )}
                                 </div>

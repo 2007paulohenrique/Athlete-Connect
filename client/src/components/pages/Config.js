@@ -255,6 +255,11 @@ function Config() {
             if (data.error) {
                 setMessageWithReset("Não foi possível desativar seu perfil.", "error");
             } else {
+                localStorage.removeItem("athleteConnectProfileId");
+                localStorage.removeItem("athleteConnectProfile");
+                localStorage.removeItem("athleteConnectFeed");
+                setProfileId(null);
+                
                 navigate("/login", {state: {message: "Conta desativada. Crie ou entre em outra conta para continuar no Athlete Connect.", type: "success"}})
             }
 
@@ -264,7 +269,7 @@ function Config() {
     
             console.error('Erro ao fazer a requisição:', err);
         }
-    }, [navigate]);  
+    }, [navigate, setProfileId]);  
     
     useEffect(() => {
         const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
@@ -281,6 +286,8 @@ function Config() {
 
     function exitAccount() {
         localStorage.removeItem("athleteConnectProfileId");
+        localStorage.removeItem("athleteConnectProfile");
+        localStorage.removeItem("athleteConnectFeed");
         setProfileId(null);
 
         navigate("/login", {state: {message: "Crie ou entre em uma conta para continuar no Athlete Connect.", type: "success"}})

@@ -1,31 +1,10 @@
 import styles from "./PostsInSection.module.css";
 import loading from "../../img/animations/loading.svg";
 import { useEffect, useState } from "react";
+import generateVideoThumbnail from "../../utils/post/GenerateVideoThumbnail";
 
 function PostsInSection({ posts, notFoundText, postsLoading, handlePostClick }) {
     const [thumbnails, setThumbnails] = useState([]);
-    
-    const generateVideoThumbnail = (videoPath) => {
-        return new Promise((resolve) => {
-            const video = document.createElement("video");
-            video.src = videoPath;
-
-            video.addEventListener("loadeddata", () => {
-                const canvas = document.createElement("canvas");
-
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-
-                const context = canvas.getContext("2d");
-
-                context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-                const thumbnailURL = canvas.toDataURL("image/png");
-
-                resolve(thumbnailURL);
-            });
-        });
-    };
 
     useEffect(() => {
         if (posts) {

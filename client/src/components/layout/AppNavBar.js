@@ -2,9 +2,8 @@ import styles from "./AppNavBar.module.css";
 import homeIcon from "../../img/icons/socialMedia/homeIcon.png";
 import newPostIcon from "../../img/icons/socialMedia/newPostIcon.png";
 import favPlacesIcon from "../../img/icons/socialMedia/favPlacesIcon.png";
-import eventIcon from "../../img/icons/socialMedia/eventIcon.png";
-import userIcon from "../../img/icons/socialMedia/userIcon.png";
 import { useLocation, useNavigate } from "react-router-dom";
+import ProfilePhotoContainer from "./ProfilePhotoContainer";
 
 function AppNavBar({ profilePhotoPath }) {
     const navigate = useNavigate();
@@ -17,11 +16,7 @@ function AppNavBar({ profilePhotoPath }) {
                     <img src={homeIcon} alt="Home"/>
                 </li>
 
-                <li className={location.pathname === "/events" ? styles.selected : undefined}>
-                    <img src={eventIcon} alt="Events"/>
-                </li>
-
-                <li onClick={() => navigate("/newPost")}>
+                <li onClick={() => navigate("/myProfile/newPost")}>
                     <img src={newPostIcon} alt="New"/>
                 </li>
                 
@@ -30,13 +25,13 @@ function AppNavBar({ profilePhotoPath }) {
                 </li>
                 
                 <li 
-                    className={`${profilePhotoPath && styles.profile_photo} ${location.pathname === "/myProfile" ? styles.selected : undefined}`} 
+                    className={`${styles.profile_photo} ${location.pathname === "/myProfile" ? styles.selected : undefined}`} 
                     onClick={() => {
                         navigate("/myProfile");
                         window.location.reload();
                     }}
                 >
-                    <img src={profilePhotoPath || userIcon} alt="Profile" onError={(e) => e.target.src = userIcon}/>
+                    <ProfilePhotoContainer size="short" profilePhotoPath={profilePhotoPath}/>
                 </li>
             </ul>
         </nav>

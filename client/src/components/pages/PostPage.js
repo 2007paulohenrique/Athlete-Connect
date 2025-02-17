@@ -53,13 +53,9 @@ function PostPage() {
         }
     }, [searchTextTag]);
 
-    const fetchPost = useCallback(async (id) => {
+    const fetchPost = useCallback(async (postId, viewerId) => {
         try {
-            const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
-            
-            setProfileId(confirmedProfileId);
-
-            const resp = await axios.get(`http://localhost:5000/posts/${id}?viewerId=${confirmedProfileId}`);
+            const resp = await axios.get(`http://localhost:5000/posts/${postId}?viewerId=${viewerId}`);
             const data = resp.data;
 
             if (data.error) {
@@ -83,12 +79,21 @@ function PostPage() {
 
             throw err;
         }
-    }, [profileId, setProfileId, navigate]);
+    }, [navigate]);
 
     useEffect(() => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+
         const fetchData = async () => {
             try {
-                await fetchPost(id);
+                const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
+            
+                setProfileId(confirmedProfileId);
+
+                await fetchPost(id, confirmedProfileId);
                 await fetchComplaintReasons(setComplaintReasons, navigate, setMessageWithReset);
             } catch (err) {
                 console.error("Erro ao recuperar postagem:", err);
@@ -119,7 +124,7 @@ function PostPage() {
             <ExitPageBar handleExitPage={() => navigate(-1)}/>
 
             {!post ? 
-                <img src={loading} alt="Loading"/>    
+                <img className="loading" src={loading} alt="Loading"/>    
             :
                 <Post
                     author={post[0]?.author}
