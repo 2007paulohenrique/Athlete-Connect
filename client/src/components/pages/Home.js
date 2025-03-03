@@ -308,7 +308,6 @@ function Home() {
                         <img src={arrowIcon} alt="Go to top"/>
                     </button>
                 </section>
-
             </main>
         
             <AppNavBar profilePhotoPath={profile?.media ? profile.media.caminho : ""}/>

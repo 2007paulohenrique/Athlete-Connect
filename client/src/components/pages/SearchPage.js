@@ -28,8 +28,8 @@ function SearchPage() {
     const [profilesOffset, setProfilesOffset] = useState(0);
     const [postsOffset, setPostsOffset] = useState(0);
     const [postsLoading, setPostsLoading] = useState(false);
-    const [profilesLoading, setProfilesLoading] = useState(false);
     const [postsEnd, setPostsEnd] = useState();
+    const [profilesLoading, setProfilesLoading] = useState(false);
     const [postsFullScreen, setPostsFullScreen] = useState(false);
     const [selectedPostId, setSelectedPostId] = useState(null);
     const [message, setMessage] = useState({});
@@ -201,7 +201,7 @@ function SearchPage() {
         setSearchText(e.target.value);
     }
 
-    function handleSubmitSearch(e) {
+    function handleOnSubmitSearch(e) {
         e.preventDefault(); 
 
         setSearchParams({text: searchText || "", type: type || "all"});
@@ -272,7 +272,7 @@ function SearchPage() {
                     <main className={styles.search_page}>
                         {message && <Message message={message.message} type={message.type}/>}
 
-                        <form onSubmit={handleSubmitSearch}>
+                        <form onSubmit={handleOnSubmitSearch}>
                             <SearchInput 
                                 name="search" 
                                 handleChange={handleOnChangeSearch} 

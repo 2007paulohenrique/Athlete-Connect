@@ -661,8 +661,8 @@ function Profile() {
                                 {(profile.preferences && profile.preferences.length !== 0) && (
                                     <>
                                         <ul className={styles.profile_preferences}>
-                                            {profile.preferences.map((sport, index) => (
-                                                <li key={index} onClick={() => navigate(`/search?text=${sport.nome}&type=posts`)}>
+                                            {profile.preferences.map(sport => (
+                                                <li key={sport.id_esporte} onClick={() => navigate(`/search?text=${sport.nome}&type=posts`)}>
                                                     <img src={sport.icone} alt={`${sport.nome} Icon`}/>
 
                                                     <span>{sport.nome}</span>

@@ -2450,6 +2450,185 @@ def get_user_id_by_profile(con, profile_id):
           print(f"Erro ao recuperar id do usuário: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
+def get_places(con, offset, limit, text = None, profile_id = None):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               if not text:
+                    sql = """
+                         SELECT DISTINCT e.*, m.caminho as caminho_midia, lf.id_local_favorito, p.id_perfil
+                         FROM endereco e
+                         LEFT JOIN midia m ON m.id_midia = e.fk_midia_id_midia
+                         JOIN local_favorito lf ON lf.fk_endereco_id_endereco = e.id_endereco
+                         LEFT JOIN usuario u ON u.id_usuario = lf.fk_usuario_id_usuario
+                         LEFT JOIN perfil p ON p.id_perfil = u.fk_perfil_id_perfil
+                         WHERE lf.fk_usuario_id_usuario = %s
+                         LIMIT %s OFFSET %s
+                    """
+                    user_id = get_user_id_by_profile(con, profile_id)
+
+                    if user_id is None:
+                         raise Exception("Erro ao recuperar id do usuário para recuperar seus lugares marcados.")
+
+                    cursor.execute(sql, (user_id, limit, offset))
+               else:
+                    lower_text = text.lower()
+                    sql = """
+                         SELECT DISTINCT e.*, m.caminho as caminho_midia, lf.id_local_favorito, p.id_perfil
+                         FROM endereco e
+                         LEFT JOIN midia m ON m.id_midia = e.fk_midia_id_midia
+                         JOIN local_favorito lf ON lf.fk_endereco_id_endereco = e.id_endereco
+                         LEFT JOIN local_favorito_esportes lfe ON lfe.fk_local_favorito_id_local_favorito = lf.id_local_favorito
+                         LEFT JOIN esporte es ON es.id_esporte = lfe.fk_esporte_id_esporte
+                         LEFT JOIN usuario u ON u.id_usuario = lf.fk_usuario_id_usuario
+                         LEFT JOIN perfil p ON p.id_perfil = u.fk_perfil_id_perfil
+                         WHERE LOWER(es.nome) = %s OR LOWER(p.nome) = %s OR LOWER(e.bairro) = %s OR LOWER(e.cidade) = %s
+                         LIMIT %s OFFSET %s
+                    """
+                    cursor.execute(sql, (lower_text, lower_text, lower_text, lower_text, limit, offset))
+               
+               result = cursor.fetchall()
+
+               places = []
+
+               for place in result:
+                    place["author"] = get_profile_main_info(con, place["id_perfil"])
+
+                    if not place["author"]:
+                         raise Exception("Erro ao recuperar perfil marcador do lugar.")
+               
+                    place["sports"] = get_place_sports(con, place["id_local_favorito"])
+
+                    if place["sports"] is None:
+                         raise Exception("Erro ao recuperar esportes do lugar marcado.")
+
+                    places.append(place) 
+          
+          return places
+     except Exception as e:
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar lugares: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
+          return None
+
+def get_place_sports(con, favorite_place_id):
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               sql = """
+                    SELECT 
+                    e.nome, e.id_esporte,
+                    m.caminho AS icone
+                    FROM local_favorito_esportes lfe
+                    JOIN esporte e ON lfe.fk_esporte_id_esporte = e.id_esporte
+                    JOIN midia m ON e.fk_midia_id_icone = m.id_midia
+                    WHERE lfe.fk_local_favorito_id_local_favorito = %s
+               """
+               cursor.execute(sql, (favorite_place_id,))
+               result = cursor.fetchall()
+
+          return result
+     except Exception as e:
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar esportes do lugar marcado: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
+          return None
+
+
+def insert_place(con, street, number, complement, neighborhood, state, city, postal_code, description, photo):
+     try:
+          with con.cursor() as cursor:
+               if photo is not None:
+                    media_id = insert_media(con, photo["path"], photo["type"], photo["format"])
+
+                    if media_id is None:
+                         raise Exception("Erro ao inserir foto do lugar marcado.")
+
+               columns = ["logradouro", "estado", "cidade", "descricao"]
+               values = ["%s", "%s", "%s", "%s"]
+               params = [street, state, city, description]
+
+               if number is not None and number != "":
+                    columns.append("numero")
+                    values.append("%s")
+                    params.append(number)
+
+               if complement is not None and complement != "":
+                    columns.append("complemento")
+                    values.append("%s")
+                    params.append(complement)
+
+               if neighborhood is not None and neighborhood != "":
+                    columns.append("bairro")
+                    values.append("%s")
+                    params.append(neighborhood)
+
+               if postal_code is not None and postal_code != "":
+                    columns.append("cep")
+                    values.append("%s")
+                    params.append(postal_code)
+
+               if photo is not None:
+                    columns.append("fk_midia_id_midia")
+                    values.append("%s")
+                    params.append(media_id)
+
+               sql = f"""
+                    INSERT INTO endereco ({", ".join(columns)}) 
+                    VALUES ({", ".join(values)})
+               """
+               cursor.execute(sql, tuple(params))
+               address_id = cursor.lastrowid
+
+          con.commit()
+          return address_id
+     except Exception as e:
+          _, _, exc_tb = sys.exc_info()
+          con.rollback()
+          print(f"Erro ao inserir endereço: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
+          return None
+
+def insert_favorite_place(con, address_id, profile_id, place_sports_ids):
+     try:
+          with con.cursor() as cursor:
+               user_id = get_user_id_by_profile(con, profile_id)
+
+               if user_id is None:
+                    raise Exception("Erro ao recuperar id do usuário para marcar lugar.")
+               
+               sql = """
+                    INSERT INTO local_favorito (fk_endereco_id_endereco, fk_usuario_id_usuario) 
+                    VALUES (%s, %s)
+               """
+               cursor.execute(sql, (address_id, user_id))
+               favorite_place_id = cursor.lastrowid
+
+               if place_sports_ids:
+                    if not insert_favorite_place_sports(con, favorite_place_id, place_sports_ids):
+                         raise Exception("Erro ao inserir esportes do lugar marcado.")
+
+          con.commit()
+          return True
+     except Exception as e:
+          _, _, exc_tb = sys.exc_info()
+          con.rollback()
+          print(f"Erro ao favoritar lugar: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
+          return False
+
+def insert_favorite_place_sports(con, favorite_place_id, sports_ids):
+     try:
+          with con.cursor() as cursor:
+               data = [(favorite_place_id, sport_id) for sport_id in sports_ids]
+               sql = """
+                    INSERT INTO local_favorito_esportes (fk_local_favorito_id_local_favorito, fk_esporte_id_esporte) 
+                    VALUES (%s, %s)
+               """
+               cursor.executemany(sql, data)
+
+          con.commit()
+          return True
+     except Exception as e:
+          _, _, exc_tb = sys.exc_info()
+          con.rollback()
+          print(f"Erro ao favoritar lugar: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
+          return False
+
 def create_database(con):
      try: 
           with open("database/sql_tds.sql", "r", encoding="utf-8") as file:

@@ -12,6 +12,8 @@ import SearchPage from "./components/pages/SearchPage";
 import PostPage from "./components/pages/PostPage";
 import NotificationsPage from "./components/pages/NotificationsPage";
 import NewQualification from "./components/pages/NewQualification";
+import Places from "./components/pages/Places";
+import NewPlace from "./components/pages/NewPlace";
 
 export const EXPIRATION_TIME = 24 * 60 * 60 * 1000;
 
@@ -39,6 +41,21 @@ function App() {
           <Route 
             path="/profilePreferences" 
             element={<ProfilePreferences/>} 
+          />
+
+          <Route 
+            path="/places" 
+            element={<Places/>} 
+          />
+
+          <Route 
+            path="/places/new" 
+            element={<NewPlace/>} 
+          />
+
+          <Route 
+            path="/places/myPlaces" 
+            element={<Places/>} 
           />
 
           <Route 

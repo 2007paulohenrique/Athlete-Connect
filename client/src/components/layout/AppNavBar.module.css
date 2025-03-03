@@ -38,7 +38,7 @@
     background-color: var(--ligth-bg-color);
 }
 
-.app_nav_bar > ul > li > img {
+.app_nav_bar > ul > li > :where(img, svg) {
     height: 1.5em;
     display: block;
 }

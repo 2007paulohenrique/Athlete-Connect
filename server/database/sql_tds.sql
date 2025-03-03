@@ -175,13 +175,15 @@ CREATE TABLE IF NOT EXISTS pesquisa (
 CREATE TABLE IF NOT EXISTS endereco (
     id_endereco int PRIMARY KEY AUTO_INCREMENT,
     logradouro varchar(100) NOT NULL,
-    numero varchar(10) NOT NULL,
-    complemento varchar(50),
+    numero varchar(10),
     bairro varchar(50),
-    cep char(8),
+    cep varchar(20),
+    estado varchar(30) NOT NULL,
+    cidade varchar(100) NOT NULL,
+    complemento varchar(50),
     descricao varchar(255) NOT NULL,
-    fk_cidade_id_cidade int NOT NULL,
-    FOREIGN KEY (fk_cidade_id_cidade) REFERENCES cidade(id_cidade)
+    fk_midia_id_midia int NULL,
+    FOREIGN KEY (fk_midia_id_midia) REFERENCES midia(id_midia)
 );
 
 CREATE TABLE IF NOT EXISTS denuncia (
@@ -272,10 +274,18 @@ CREATE TABLE IF NOT EXISTS marcacao_postagem (
 );
 
 CREATE TABLE IF NOT EXISTS local_favorito (
+    id_local_favorito int PRIMARY KEY AUTO_INCREMENT,
     fk_usuario_id_usuario int NOT NULL,
     fk_endereco_id_endereco int NOT NULL,
     FOREIGN KEY (fk_usuario_id_usuario) REFERENCES usuario(id_usuario),
     FOREIGN KEY (fk_endereco_id_endereco) REFERENCES endereco(id_endereco)
+);
+
+CREATE TABLE IF NOT EXISTS local_favorito_esportes (
+    fk_local_favorito_id_local_favorito int NOT NULL,
+    fk_esporte_id_esporte int NOT NULL,
+    FOREIGN KEY (fk_local_favorito_id_local_favorito) REFERENCES local_favorito(id_local_favorito),
+    FOREIGN KEY (fk_esporte_id_esporte) REFERENCES esporte(id_esporte)
 );
 
 CREATE TABLE IF NOT EXISTS evento_endereco (

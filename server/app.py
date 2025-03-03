@@ -112,30 +112,6 @@ def get_hastags_route():
         if con:
             close_connection(con)
 
-# @app.route('/tags', methods=['GET'])
-# def get_tags_route():
-#     try:
-#         con = open_connection(*con_params)
-
-#         if con is None:
-#             print('Erro ao abrir conexão com banco de dados')
-#             return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
-        
-#         tags = get_tags(con)
-
-#         if tags is None:
-#             print('Erro ao recuperar tags')
-#             return jsonify({'error': 'Não foi possível recuperar as tags devido a um erro no nosso servidor.'}), 500
-
-#         return jsonify(tags), 200
-#     except Exception as e:
-_, _, exc_tb = sys.exc_info()
-#         print(f'Erro ao recuperar tags: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
-#         return jsonify({'error': 'Não foi possível recuperar as tags devido a um erro no nosso servidor.'}), 500
-#     finally:
-#         if con:
-#             close_connection(con)
-
 @app.route('/complaintReasons', methods=['GET'])
 def get_complaint_reasons_route():
     try:
@@ -180,6 +156,31 @@ def get_profiles_route():
         _, _, exc_tb = sys.exc_info()
         print(f'Erro ao recuperar perfis: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível recuperar os perfis devido a um erro no nosso servidor.'}), 500
+    finally:
+        if con:
+            close_connection(con)
+
+
+@app.route('/profiles/<int:profile_id>/config', methods=['GET'])
+def get_profile_config_route(profile_id):
+    try:
+        con = open_connection(*con_params)
+
+        if con is None:
+            print('Erro ao abrir conexão com banco de dados')
+            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+        
+        config = get_profile_config(con, profile_id)
+
+        if config is None:
+            print('Erro ao recuperar configuração do perfil')
+            return jsonify({'error': 'Não foi possível recuperar a configuração do perfil devido a um erro no nosso servidor.'}), 500
+        
+        return jsonify(config), 200
+    except Exception as e:
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao recuperar configuração do perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
+        return jsonify({'error': 'Não foi possível recuperar a configuração do perfil devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
             close_connection(con)
@@ -1774,7 +1775,93 @@ def get_courses_route(institution_id):
         if con:
             close_connection(con)
 
+@app.route('/search/places', methods=['GET'])
+def get_search_places():
+    try:
+        con = open_connection(*con_params)
 
+        if con is None:
+            print('Erro ao abrir conexão com banco de dados')
+            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+        
+        text = request.args.get('text')
+        profile_id = request.args.get('profileId')
+        offset = int(request.args.get('offset', 10))
+        limit = int(request.args.get('limit'))
+
+        result = get_places(con, offset, limit, text, int(profile_id) if isinstance(profile_id, int) else None)
+
+        if result is None:
+            print('Erro ao recuperar lugares marcados')
+            return jsonify({'error': 'Não foi possível recuperar os lugares marcados devido a um erro no nosso servidor.'}), 500
+
+        return jsonify(result), 200
+    except Exception as e:
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao recuperar lugares marcados: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
+        return jsonify({'error': 'Não foi possível recuperar lugares marcados devido a um erro no nosso servidor.'}), 500
+    finally:
+        if con:
+            close_connection(con)
+
+
+@app.route('/profiles/<int:profile_id>/places', methods=['POST'])
+def post_place(profile_id):
+    try:
+        con = open_connection(*con_params)
+
+        if con is None:
+            print('Erro ao abrir conexão com banco de dados')
+            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+
+        
+        place_sports = request.form.getlist('placeSports')
+        place_sports_ids = [int(sport) for sport in place_sports]
+        photo = request.files.get('photo')
+        street = request.form.get('street')
+        number = request.form.get('number')
+        complement = request.form.get('complement')
+        neighborhood = request.form.get('neighborhood')
+        postal_code = request.form.get('postalCode')
+        state = request.form.get('state')
+        city = request.form.get('city')
+        description = request.form.get('description')
+
+        if photo is not None:
+            photo_path = cloud_upload_media(photo)
+
+            if photo_path is None:
+                print("Erro ao fazer upload da foto do lugar marcado")
+                return jsonify({'error': 'Não foi possível marcar seu lugar devido a um erro durante o upload da foto selecionada.'}), 500
+            
+            filename = os.path.basename(photo.filename)
+            _, file_extension = os.path.splitext(filename)
+            file_extension = file_extension.lower()
+
+            saved_file = {
+                'path': photo_path,
+                'type': 'image' if photo.mimetype.startswith('image/') else 'video',
+                'format': file_extension,
+            }
+
+        place_id = insert_place(con, street, number, complement, neighborhood, state, city, postal_code, description, saved_file if photo is not None else None)
+
+        if place_id is None:
+            print('Erro ao inserir endereço')
+            return jsonify({'error': 'Não foi possível inserir o endreço devido a um erro no nosso servidor.'}), 500
+
+        if not insert_favorite_place(con, place_id, profile_id, place_sports_ids):
+            print('Erro ao inserir lugar favorito')
+            return jsonify({'error': 'Não foi possível marcar seu lugar devido a um erro no nosso servidor.'}), 500
+
+        return jsonify({'placeId': place_id}), 201
+    except Exception as e:
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao inserir postagem: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
+        return jsonify({'error': 'Não foi possível publicar sua postagem devido a um erro no nosso servidor.'}), 500
+    finally:
+        if con:
+            close_connection(con)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

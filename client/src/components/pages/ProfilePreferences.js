@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import SportCard from "../layout/SportCard";
 import styles from "./ProfilePreferences.module.css";
@@ -7,6 +7,7 @@ import { useProfile } from '../../ProfileContext';
 import axios from "axios"
 import loading from "../../img/animations/loading.svg";
 import ConfirmationBox from "../layout/ConfirmationBox";
+import fetchSports from "../../utils/fetch/FetchSports";
 
 function ProfilePreferences() {
     const [sports, setSports] = useState([]);
@@ -19,27 +20,6 @@ function ProfilePreferences() {
 
     const navigate = useNavigate();
     const location = useLocation();
-    
-    const fetchSports = useCallback(async () => {
-        try {
-            const resp = await axios.get("http://localhost:5000/sports");
-            const data = resp.data;
-            
-            if (data.error) {
-                navigate("/errorPage", {state: {error: data.error}});
-
-                throw new Error("Erro ao recuperar esportes");
-            } else {
-                setSports(data);
-            }
-        } catch (err) {
-            navigate("/errorPage", {state: {error: err.message}});
-    
-            console.error('Erro ao fazer a requisição:', err);
-
-            throw err;
-        }
-    }, [navigate]);
 
     useEffect(() => {
         const profileReady = location?.state?.profileReady
@@ -51,11 +31,11 @@ function ProfilePreferences() {
             setProfilePreferences(prevPreferences);
             setIsModifyPreferences(!profileReady);
 
-            fetchSports();
+            fetchSports(navigate, setSports);
         } else {
             navigate("/login");
         }
-    }, [fetchSports, location, navigate]);
+    }, [location, navigate]);
     
     function handleOnClick(sport) {
         setProfilePreferences(prevPreferences => {
@@ -229,7 +209,7 @@ function ProfilePreferences() {
                 {sports.map((sport) => (
                     <SportCard 
                         key={sport.id_esporte}
-                        iconPath={sport.iconPath} 
+                        icon={sport.icon} 
                         sportName={sport.nome} 
                         categories={sport.categories} 
                         handleClick={() => handleOnClick(sport)}
