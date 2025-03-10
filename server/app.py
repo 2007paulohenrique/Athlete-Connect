@@ -6,6 +6,9 @@ from flask_bcrypt import Bcrypt
 from dotenv import load_dotenv
 from flask_mail import Mail, Message
 import cloudinary
+import redis
+import string
+import random
 import cloudinary.uploader
 import cloudinary.api
 import os
@@ -30,6 +33,8 @@ app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'False').lower() in ['tru
 app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 
+redis_client = redis.StrictRedis(host='localhost', port=6379, db=0, decode_responses=True)
+
 mail = Mail(app)
 
 cloudinary.config( 
@@ -38,19 +43,17 @@ cloudinary.config(
     api_secret = os.getenv('API_SECRET')  
 )
 
-def send_email_notification(profile_id, email_dest, subject, message, key_word=None, isAlert=False, profile_photo_path=None):
+def send_email_notification(email_dest, subject, message, key_word=None, profile_id=None, profile_photo_path=None, is_alert=False, is_code=False):
     con = open_connection(*con_params)
-    
-    if not check_can_insert_notification(con, profile_id):
-        return
 
     if con is None:
         print('Erro ao abrir conexão com banco de dados')
-    
-    if not check_email_notification_permission(con, profile_id):
-        return
 
-    email_template = render_template("email.html", profile_photo_path=profile_photo_path, message=message, key_word=key_word, isAlert=isAlert)
+    if not is_code:
+        if profile_id is None or not check_can_insert_notification(con, profile_id) or not check_email_notification_permission(con, profile_id):
+            return
+
+    email_template = render_template("email.html", profile_photo_path=profile_photo_path, message=message, key_word=key_word, is_alert=is_alert)
 
     msg = Message(subject, html=email_template, sender=app.config['MAIL_USERNAME'], recipients=[email_dest])
 
@@ -277,11 +280,11 @@ def post_profile():
         if not insert_notification(con, "generica", message, profile_id):
             print('Erro ao inserir notificação')
         
-        send_email_notification(profile_id, email, f"Criação de perfil no Athlete Connect", message, "Bem-vindo!")
+        send_email_notification(email, f"Criação de perfil no Athlete Connect", message, "Bem-vindo!", profile_id)
 
         profile = get_profile(con, profile_id, profile_id)   
 
-        return jsonify({'profile': profile}), 201
+        return jsonify(profile), 201
     except Exception as e:
         _, _, exc_tb = sys.exc_info()
         print(f'Erro ao inserir perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
@@ -435,7 +438,7 @@ def active_profile_route(profile_id, active):
         if email is None:
             print("Erro ao recuperar email do perfil")
         else:
-            send_email_notification(profile_id, email, f"{'Ativação' if active_bool else 'Desativação'} do perfil no Athlete Connect", message, key_word)
+            send_email_notification(email, f"{'Ativação' if active_bool else 'Desativação'} do perfil no Athlete Connect", message, key_word, profile_id)
         
         return jsonify({'profileId': profile_id}), 201
     except Exception as e:
@@ -471,14 +474,17 @@ def login():
 
                     if correct_profile["ativo"]:
                         message = f"""
-                            Estamos felizes em vê-lo novamente, {profile['nome']}! volte a usar nossos serviços 
+                            Estamos felizes em vê-lo novamente, {profile['nome']}! Insira o código enviado a você por e-mail 
+                            na tela de confirmação de identidade e volte a usar nossos serviços 
                             e contribuir para o crescimento do mundo dos esportes.
                         """
                         
                         if not insert_notification(con, "generica", message, correct_profile['id_perfil']):
                             print('Erro ao inserir notificação')
 
-                        send_email_notification(correct_profile['id_perfil'], profile['email'], "Login no Athlete Connect", message, "Bem-vindo de volta!")
+                        send_email_notification(profile['email'], "Login no Athlete Connect", message, "Bem-vindo de volta!", correct_profile['id_perfil'])
+
+                    correct_profile['email'] = profile['email']
 
                     return jsonify(correct_profile), 200
                 else:
@@ -496,7 +502,7 @@ def login():
                     if email is None:
                         print("Erro ao recuperar email do perfil")
                     else:
-                        send_email_notification(profile['id_perfil'], email, "Tentativa de login no Athlete Connect", message, "Cuidado!", True)
+                        send_email_notification(email, "Tentativa de login no Athlete Connect", message, "Cuidado!", profile['id_perfil'], is_alert=True)
 
                     return jsonify({'error': 'login'}), 401
                 
@@ -536,6 +542,51 @@ def signup():
         _, _, exc_tb = sys.exc_info()
         print(f'Erro ao validar registro do perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível conferir a correspondência de dados no registro do perfil devido a um erro no nosso servidor.'}), 500
+    finally:
+        if con:
+            close_connection(con)
+
+
+@app.route('/identityConfirmation', methods=['POST'])
+def identity_confirmation():
+    try:
+        con = open_connection(*con_params)
+
+        if con is None:
+            print('Erro ao abrir conexão com banco de dados')
+            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+
+        code = request.form.get('code')
+        email = request.form.get('email')
+
+        if not code:
+            caracteres = string.ascii_uppercase + string.digits
+            generated_code = ''.join(random.choices(caracteres, k=4))
+            
+            redis_client.setex(f"verify_code:{email}", 120, generated_code)
+
+            msg = "Insira o código de verificação mostrado acima para confirmar sua identidade."
+
+            if not send_email_notification(email, "Código de verificação no Athlete Connect", msg, generated_code, is_code=True):
+                print('Erro ao enviar código de confirmação')
+                
+                return jsonify({'error': 'Não foi possível enviar o código de confirmação devido a um erro no nosso servidor.'}), 500
+        else:
+            stored_code = redis_client.get(f"verify_code:{email}")
+
+            if stored_code is None:
+                return jsonify({"error": "Código expirado."}), 410
+
+            if stored_code != code:
+                return jsonify({"error": "Código inválido."}), 400
+            
+            redis_client.delete(f"verify_code:{email}")
+    
+        return jsonify({'success': 'success'}), 200
+    except Exception as e:
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao processar código de confirmação: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
+        return jsonify({'error': 'Não foi possível processar código de confirmação devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
             close_connection(con)
@@ -692,7 +743,7 @@ def post_follow(profile_id):
                 else:
                     profile_photo = get_profile_photo_path(con, follower_id)
 
-                    send_email_notification(profile_id, email, "Novo seguidor no Athlete Connect", message, profile_photo_path=profile_photo if profile_photo is not None else True)
+                    send_email_notification(email, "Novo seguidor no Athlete Connect", message, profile_id=profile_id, profile_photo_path=profile_photo if profile_photo is not None else True)
 
         req_status = 201 if is_followed else 204
 
@@ -737,7 +788,7 @@ def post_follow_request(profile_id):
             else:
                 profile_photo = get_profile_photo_path(con, follower_id)
 
-                send_email_notification(profile_id, email, "Solicitação no Athlete Connect", message, profile_photo_path=profile_photo if profile_photo is not None else True)
+                send_email_notification(email, "Solicitação no Athlete Connect", message, profile_id=profile_id, profile_photo_path=profile_photo if profile_photo is not None else True)
 
         return ({'success': 'success'}), 201
     except Exception as e:
@@ -782,7 +833,7 @@ def post_follow_request_accept(profile_id):
             else:
                 profile_photo = get_profile_photo_path(con, profile_id)
 
-                send_email_notification(follower_id, email, "Solicitação aceita no Athlete Connect", message, profile_photo_path=profile_photo if profile_photo is not None else True)
+                send_email_notification(email, "Solicitação aceita no Athlete Connect", message, profile_id=follower_id, profile_photo_path=profile_photo if profile_photo is not None else True)
 
         return ({'success': 'success'}), 201
     except Exception as e:
@@ -824,7 +875,7 @@ def profile_complaint(profile_id):
         if email is None:
             print("Erro ao recuperar email do perfil")
         else:
-            send_email_notification(profile_id, email, "Denúncia ao seu perfil no Athlete Connect", message, "Seu perfil foi denunciado!", True)
+            send_email_notification(email, "Denúncia ao seu perfil no Athlete Connect", message, "Seu perfil foi denunciado!", profile_id, is_alert=True)
         
         return ({'success': 'success'}), 201
     except Exception as e:
@@ -871,7 +922,7 @@ def post_qualification(profile_id):
         if email is None:
             print("Erro ao recuperar email do perfil")
         else:
-            send_email_notification(profile_id, email, "Formação no Athlete Connect", message, "Parabéns!", True)
+            send_email_notification(email, "Formação no Athlete Connect", message, "Parabéns!", profile_id, is_alert=True)
         
         return ({'success': 'success'}), 201
     except Exception as e:
@@ -969,7 +1020,7 @@ def post_post(profile_id):
                     else:
                         profile_photo = get_profile_photo_path(con, profile_id)
 
-                        send_email_notification(tag_id, email, "Marcação em postagem no Athlete Connect", message, profile_photo_path=profile_photo if profile_photo is not None else True)
+                        send_email_notification(email, "Marcação em postagem no Athlete Connect", message, profile_id=tag_id, profile_photo_path=profile_photo if profile_photo is not None else True)
     
         return jsonify({'postId': post_id}), 201
     except Exception as e:
@@ -1022,7 +1073,7 @@ def post_like(post_id):
                         else:
                             profile_photo = get_profile_photo_path(con, profile_id)
 
-                            send_email_notification(author_id, email, "Curtida no Athlete Connect", message, profile_photo_path=profile_photo if profile_photo is not None else True)
+                            send_email_notification(email, "Curtida no Athlete Connect", message, profile_id=author_id, profile_photo_path=profile_photo if profile_photo is not None else True)
 
         req_status = 201 if is_liked else 204
 
@@ -1079,7 +1130,7 @@ def post_sharing(post_id):
                 else:
                     profile_photo = get_profile_photo_path(con, author_id)
 
-                    send_email_notification(post_author_id, email, "Compartilhamento no Athlete Connect", message, profile_photo_path=profile_photo if profile_photo is not None else True)
+                    send_email_notification(email, "Compartilhamento no Athlete Connect", message, profile_id=post_author_id, profile_photo_path=profile_photo if profile_photo is not None else True)
     
         return ({'success': 'success'}), 201
     except Exception as e:
@@ -1128,7 +1179,7 @@ def post_complaint(post_id):
             if email is None:
                 print("Erro ao recuperar email do perfil")
             else:
-                send_email_notification(post_author_id, email, "Denúncia à sua postagem no Athlete Connect", message, "Sua postagem foi denunciada!", True)
+                send_email_notification(email, "Denúncia à sua postagem no Athlete Connect", message, "Sua postagem foi denunciada!", post_author_id, is_alert=True)
     
         return ({'success': 'success'}), 201
     except Exception as e:
@@ -1182,7 +1233,7 @@ def post_comment(post_id):
                     else:
                         profile_photo = get_profile_photo_path(con, author_id)
 
-                        send_email_notification(post_author_id, email, "Comentário no Athlete Connect", message, profile_photo_path=profile_photo if profile_photo is not None else True)
+                        send_email_notification(email, "Comentário no Athlete Connect", message, profile_id=post_author_id, profile_photo_path=profile_photo if profile_photo is not None else True)
             
         return jsonify({'newComment': new_comment}), 201
     except Exception as e:

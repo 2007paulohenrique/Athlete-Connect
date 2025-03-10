@@ -10,7 +10,7 @@ import axios from "axios";
 import { useProfile } from "../../ProfileContext";
 
 function Places() {
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchParams] = useSearchParams();
     const text = searchParams.get('text') || "";
 
     const [message, setMessage] = useState({});
@@ -25,7 +25,7 @@ function Places() {
 
     const LIMIT = 10;
 
-    function setMessageWithReset(newMessage, type = null) {
+    function setMessageWithReset(newMessage, type) {
         setMessage(null);
 
         setTimeout(() => {

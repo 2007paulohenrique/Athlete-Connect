@@ -93,9 +93,9 @@ function ProfilePreferences() {
 
                 throw new Error("Erro ao criar perfil");
             } else {
-                setProfileId(data.profile.id_perfil);
-                localStorage.setItem('athleteConnectProfileId', data.profile.id_perfil);
-                localStorage.setItem('athleteConnectProfile', JSON.stringify({profile: data.profile, updateDate: Date.now()}));
+                setProfileId(data.id_perfil);
+                localStorage.setItem('athleteConnectProfileId', data.id_perfil);
+                localStorage.setItem('athleteConnectProfile', JSON.stringify({profile: data, updateDate: Date.now()}));
                 
                 navigate("/", {state: {message: "Perfil criado com sucesso! Aproveite o Athlete Connect.", type: "success"}});
             }

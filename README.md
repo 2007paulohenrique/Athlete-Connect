@@ -27,3 +27,7 @@ obs: a função de seguir perfis ainda não foi implementada, então para que se
 `insert into segue (fk_perfil_id_seguidor, fk_perfil_id_seguido) values (2, 1);`
 
 obs: verifique se a extensão do python está instalada no vscode
+
+baixar o .zip do servidor redis no link https://github.com/tporadowski/redis/releases e extrair para a pasta redis no server
+
+navegue ate a pasta redis pelo terminal e execute redis-server.exe, ou .\redis-server.exe caso o comando não funcione (iniciar servidor redis)

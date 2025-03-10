@@ -6,6 +6,7 @@ import axios from "axios"
 import { useLocation, useNavigate } from "react-router-dom";
 import { useProfile } from "../../ProfileContext";
 import ConfirmationBox from "../layout/ConfirmationBox";
+import CodeConfirmation from "./CodeConfirmation";
 
 function Login() {
     const [isLogin, setIsLogin] = useState(false);
@@ -15,6 +16,10 @@ function Login() {
     const [message, setMessage] = useState({});
     const {profileId, setProfileId} = useProfile();
     const [showConfirmation, setShowConfirmation] = useState(false); 
+    const [showCodePage, setShowCodePage] = useState(false);
+    const [storagedProfile, setStoragedProfile] = useState({});
+    const [code, setCode] = useState(["", "", "", ""]);
+    const [handleSuccess, setHandleSuccess] = useState(() => undefined);
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -54,11 +59,19 @@ function Login() {
 
                 throw new Error("Erro ao criar perfil");
             } else {
-                const updatedProfile = {...profile, confirmedNameSignUp: profile.nameSignUp};
-            
-                setProfile(updatedProfile);
+                setStoragedProfile({email: profile.emailSignUp});
+                setShowCodePage(true);
+                generateCode(profile.emailSignUp);
+                
+                const signupSuccess = () => {
+                    const updatedProfile = {...profile, confirmedNameSignUp: profile.nameSignUp};
+                    
+                    setProfile(updatedProfile);
+                    
+                    navigate("/editProfile", {state: {profile: updatedProfile}});
+                }
 
-                navigate("/editProfile", {state: {profile: updatedProfile}});
+                setHandleSuccess(() => signupSuccess);
             }
         } catch (err) {
             if (err.response.status === 409) {
@@ -121,18 +134,27 @@ function Login() {
 
                 throw new Error("Erro ao fazer login");
             } else {
-                console.log(data)
-                if (data.ativo === false) {
-                    setShowConfirmation(true);
-                } else {
-                    setLoginSubmitError(false);
-                    
-                    navigate("/", {state: {message: "Bem-vindo de volta!", type: "success"}});
+                setStoragedProfile(data);
+                setShowCodePage(true);
+                generateCode(data.email);
+
+                const loginSuccess = () => {
+                    if (data.ativo === false) {
+                        setShowConfirmation(true);
+                    } else {
+                        setLoginSubmitError(false);
+                        
+                        navigate("/", {state: {message: "Bem-vindo de volta!", type: "success"}});
+                    }
+
+                    delete data.email;
+    
+                    setProfileId(data.id_perfil);
+                    localStorage.setItem('athleteConnectProfileId', data.id_perfil);
+                    localStorage.setItem('athleteConnectProfile', JSON.stringify({profile: data, updateDate: Date.now()}));
                 }
 
-                setProfileId(data.id_perfil);
-                localStorage.setItem('athleteConnectProfileId', data.id_perfil);
-                localStorage.setItem('athleteConnectProfile', JSON.stringify({profile: data, updateDate: Date.now()}));
+                setHandleSuccess(() => loginSuccess);
             }
         } catch (err) {
             if (err.response?.status === 401) {
@@ -146,6 +168,75 @@ function Login() {
             }
         }
     }
+
+    const generateCode = useCallback(async (email) => {
+        try {
+            const formData = new FormData();
+        
+            formData.append("email", email);
+            
+            const resp = await axios.post(`http://localhost:5000/identityConfirmation`, formData, {
+                headers: { "Content-Type": "multipart/form-data" }, 
+            })
+            const data = resp.data;
+
+            if (data.error) {
+                throw new Error("Erro ao enviar código para o e-mail");         
+            } else {
+               
+            }
+        } catch (err) {
+            navigate("/errorPage", {state: {error: err.message}})
+
+            console.error("Erro ao fazer a requisição:", err);            
+        }
+    }, [navigate])
+
+    const handleSubmitCode = useCallback((e) => {
+        e.preventDefault();
+
+        const sendCode = async (handleOnSuccess) => {
+            try {
+                const formData = new FormData();
+            
+                formData.append("email", storagedProfile.email);
+                formData.append("code", code.join(""));
+                
+                const resp = await axios.post(`http://localhost:5000/identityConfirmation`, formData, {
+                    headers: { "Content-Type": "multipart/form-data" }, 
+                })
+                const data = resp.data;
+    
+                if (data.error) {
+                    if (resp.status === 410) {
+                        setMessageWithReset("O código expirou. Tente fazer login novamente.", "error");
+                    } else if (resp.status === 400) {
+                        setMessageWithReset("Código inválido.", "error");
+                    } else {
+                        throw new Error(data.error);
+                    }
+                } else {
+                    handleOnSuccess();
+                }
+            } catch (err) {
+                if (err.response) {
+                    const status = err.response.status;
+        
+                    if (status === 410) {
+                        setMessageWithReset("O código expirou. Tente fazer login novamente.", "error");
+                    } else if (status === 400) {
+                        setMessageWithReset("Código inválido.", "error");
+                    } else {
+                        navigate("/errorPage", {state: {error: "Erro ao confirmar código."}});
+                    }
+        
+                    console.error("Erro na requisição:", err);
+                }
+            }
+        }
+
+        sendCode(handleSuccess);
+    }, [code, handleSuccess, navigate, storagedProfile.email])
     
     function loginSubmit(e) {  
         e.preventDefault();
@@ -172,6 +263,15 @@ function Login() {
     return (
         <main className={styles.login_page}>
             {message && <Message message={message.message} type={message.type}/>}
+
+            {showCodePage && 
+                <CodeConfirmation 
+                    email={storagedProfile.email} 
+                    handleOnSubmit={handleSubmitCode}
+                    code={code}
+                    setCode={setCode}
+                />
+            }
 
             {showConfirmation && 
                 <ConfirmationBox 
