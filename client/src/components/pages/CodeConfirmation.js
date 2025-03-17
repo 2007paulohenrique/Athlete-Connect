@@ -5,10 +5,10 @@ import SubmitButton from "../form/SubmitButton";
 // Essa página vai ser usada antes de ações com informações sensíveis serem executadas. 
 // Não possui uma rota própria. 
 
-function CodeConfirmation({ email, handleOnSubmit, code, setCode }) {
+function CodeConfirmation({ email, handleSubmit, code, setCode }) {
     const inputsRef = useRef([]);
 
-    const handleChange = (e, index) => {
+    const handleOnChange = (e, index) => {
         const value = e.target.value;
 
         if (!/^[a-zA-Z0-9]?$/.test(value)) return;
@@ -27,13 +27,13 @@ function CodeConfirmation({ email, handleOnSubmit, code, setCode }) {
         }
     };
     
-    const handleKeyDown = (e, index) => {
+    const handleOnKeyDown = (e, index) => {
         if (e.key === "Backspace" && !code[index] && index > 0) {
             inputsRef.current[index - 1].focus();
         }
     };
 
-    const handleClick = (index) => {
+    const handleOnClick = (index) => {
         if (index > 0 && !code[index - 1]) {
             let newIndex = index - 1;
 
@@ -62,10 +62,11 @@ function CodeConfirmation({ email, handleOnSubmit, code, setCode }) {
 
                 <p>
                     Enviamos um código para <span>{email}</span>. 
-                    Acesse o e-mail e insira o código enviado abaixo em até dois minutos.
+                    Acesse o e-mail e insira o código enviado abaixo em até dois minutos
+                    para confirmar sua identidade.
                 </p>
 
-                <form onSubmit={handleOnSubmit}>
+                <form onSubmit={handleSubmit}>
                     <div className={styles.code_inputs}>
                         {code.map((num, index) => (
                             <input
@@ -73,9 +74,9 @@ function CodeConfirmation({ email, handleOnSubmit, code, setCode }) {
                                 type="text"
                                 maxLength="1"
                                 value={num}
-                                onChange={(e) => handleChange(e, index)}
-                                onKeyDown={(e) => handleKeyDown(e, index)}
-                                onClick={() => handleClick(index)}
+                                onChange={(e) => handleOnChange(e, index)}
+                                onKeyDown={(e) => handleOnKeyDown(e, index)}
+                                onClick={() => handleOnClick(index)}
                                 ref={(el) => (inputsRef.current[index] = el)}
                             />
                         ))}

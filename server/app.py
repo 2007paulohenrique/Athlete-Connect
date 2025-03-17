@@ -139,31 +139,6 @@ def get_complaint_reasons_route():
         if con:
             close_connection(con)
 
-@app.route('/profiles', methods=['GET'])
-def get_profiles_route():
-    try:
-        con = open_connection(*con_params)
-
-        if con is None:
-            print('Erro ao abrir conexão com banco de dados')
-            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
-        
-        profiles = get_profiles(con)
-
-        if profiles is None:
-            print('Erro ao recuperar perfis')
-            return jsonify({'error': 'Não foi possível recuperar os perfis devido a um erro no nosso servidor.'}), 500
-        
-        return jsonify(profiles), 200
-    except Exception as e:
-        _, _, exc_tb = sys.exc_info()
-        print(f'Erro ao recuperar perfis: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
-        return jsonify({'error': 'Não foi possível recuperar os perfis devido a um erro no nosso servidor.'}), 500
-    finally:
-        if con:
-            close_connection(con)
-
-
 @app.route('/profiles/<int:profile_id>/config', methods=['GET'])
 def get_profile_config_route(profile_id):
     try:
@@ -458,54 +433,49 @@ def login():
             print('Erro ao abrir conexão com banco de dados')
             return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
         
-        profiles = get_profiles(con)
-
-        if profiles is None:
-            print('Erro ao recuperar perfis')
-            return jsonify({'error': 'Não foi possível recuperar os perfis para realizar o login devido a um erro no nosso servidor.'}), 500
-        
         nameOrEmailLogin = request.form.get('nameOrEmail')
         passwordLogin = request.form.get('password')
 
-        for profile in profiles:
-            if profile['nome'] == nameOrEmailLogin or profile['email'] == nameOrEmailLogin:
-                if bcrypt.check_password_hash(profile['senha'], passwordLogin):
-                    correct_profile = get_profile(con, profile['id_perfil'], profile['id_perfil'])
+        profile = get_profile_for_autentication(con, nameOrEmailLogin, nameOrEmailLogin)
+        
+        if profile is not None:
+            if bcrypt.check_password_hash(profile['senha'], passwordLogin):
+                correct_profile = get_profile(con, profile['id_perfil'], profile['id_perfil'])
 
-                    if correct_profile["ativo"]:
-                        message = f"""
-                            Estamos felizes em vê-lo novamente, {profile['nome']}! Insira o código enviado a você por e-mail 
-                            na tela de confirmação de identidade e volte a usar nossos serviços 
-                            e contribuir para o crescimento do mundo dos esportes.
-                        """
-                        
-                        if not insert_notification(con, "generica", message, correct_profile['id_perfil']):
-                            print('Erro ao inserir notificação')
-
-                        send_email_notification(profile['email'], "Login no Athlete Connect", message, "Bem-vindo de volta!", correct_profile['id_perfil'])
-
-                    correct_profile['email'] = profile['email']
-
-                    return jsonify(correct_profile), 200
-                else:
+                if correct_profile["ativo"]:
                     message = f"""
-                        Alguém acabou de tentar acessar a sua conta.
-                        Caso esse alguém seja você, ignore essa mensagem, caso contrário,
-                        lembre-se sempre de guardar sua credencias e não compartilhá-las com ninguém.
+                        Estamos felizes em vê-lo novamente, {profile['nome']}! Insira o código enviado a você por e-mail 
+                        na tela de confirmação de identidade e volte a usar nossos serviços 
+                        e contribuir para o crescimento do mundo dos esportes.
                     """
                     
-                    if not insert_notification(con, "alerta", message, profile['id_perfil']):
+                    if not insert_notification(con, "generica", message, correct_profile['id_perfil']):
                         print('Erro ao inserir notificação')
 
-                    email = get_profile_email(con, profile["id_perfil"])
+                    send_email_notification(profile['email'], "Login no Athlete Connect", message, "Bem-vindo de volta!", correct_profile['id_perfil'])
 
-                    if email is None:
-                        print("Erro ao recuperar email do perfil")
-                    else:
-                        send_email_notification(email, "Tentativa de login no Athlete Connect", message, "Cuidado!", profile['id_perfil'], is_alert=True)
+                correct_profile['email'] = profile['email']
 
-                    return jsonify({'error': 'login'}), 401
+                return jsonify(correct_profile), 200
+            else:
+                message = f"""
+                    Alguém acabou de tentar acessar a sua conta.
+                    Caso esse alguém seja você, ignore essa mensagem, caso contrário,
+                    lembre-se sempre de guardar sua credencias e não compartilhá-las com ninguém.
+                """
                 
+                if not insert_notification(con, "alerta", message, profile['id_perfil']):
+                    print('Erro ao inserir notificação')
+
+                email = get_profile_email(con, profile["id_perfil"])
+
+                if email is None:
+                    print("Erro ao recuperar email do perfil")
+                else:
+                    send_email_notification(email, "Tentativa de login no Athlete Connect", message, "Cuidado!", profile['id_perfil'], is_alert=True)
+
+                return jsonify({'error': 'login'}), 401
+            
         return jsonify({'error': 'login'}), 401
     except Exception as e:
         _, _, exc_tb = sys.exc_info()
@@ -524,18 +494,13 @@ def signup():
             print('Erro ao abrir conexão com banco de dados')
             return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
 
-        profiles = get_profiles(con)
-
-        if profiles is None:
-            print('Erro ao recuperar perfis')
-            return jsonify({'error': 'Não foi possível recuperar os perfis para conferir a correspondência de dados no registro do perfil devido a um erro no nosso servidor.'}), 500
-
         name = request.form.get('name')
         email = request.form.get('email')
 
-        for profile in profiles:
-            if profile['nome'] == name or profile['email'] == email:
-                return jsonify({'error': 'signup'}), 409
+        profile = get_profile_for_autentication(con, email, name)
+
+        if profile is not None:
+            return jsonify({'error': 'signup'}), 409
         
         return jsonify({'success': 'success'}), 200
     except Exception as e:
@@ -545,7 +510,6 @@ def signup():
     finally:
         if con:
             close_connection(con)
-
 
 @app.route('/identityConfirmation', methods=['POST'])
 def identity_confirmation():
@@ -587,6 +551,40 @@ def identity_confirmation():
         _, _, exc_tb = sys.exc_info()
         print(f'Erro ao processar código de confirmação: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
         return jsonify({'error': 'Não foi possível processar código de confirmação devido a um erro no nosso servidor.'}), 500
+    finally:
+        if con:
+            close_connection(con)
+
+
+@app.route('/changePassword', methods=['POST'])
+def change_password():
+    try:
+        con = open_connection(*con_params)
+
+        if con is None:
+            print('Erro ao abrir conexão com banco de dados')
+            return jsonify({'error': 'Não foi possível se conectar a nossa base de dados.'}), 500
+
+        email = request.form.get('email')
+        password = request.form.get('password')
+
+        profile = get_profile_for_autentication(con, email)
+
+        if profile is None:
+            print('Erro ao recuperar perfil')
+            return jsonify({'error': 'Não foi possível encontrar o perfil.'}), 404
+
+        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+        
+        if not change_profile_password(con, profile["id_perfil"], hashed_password):
+            print('Erro ao alterar senha do perfil')
+            return jsonify({'error': 'Não foi possível alterar a senha do perfil devido a um erro no nosso servidor.'}), 500
+
+        return jsonify({'success': 'success'}), 200
+    except Exception as e:
+        _, _, exc_tb = sys.exc_info()
+        print(f'Erro ao alterar senha do perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}')
+        return jsonify({'error': 'Não foi possível alterar a senha do perfil devido a um erro no nosso servidor.'}), 500
     finally:
         if con:
             close_connection(con)

@@ -6,10 +6,13 @@ import athleteConnectIcon from "../../img/icons/socialMedia/icon.ico";
 import userIcon from "../../img/icons/socialMedia/userIcon.png";
 import emailIcon from "../../img/icons/socialMedia/emailIcon.png";
 import passwordIcon from "../../img/icons/socialMedia/passwordIcon.png";
+import { useNavigate } from "react-router-dom";
 
 function LoginForm({ isLoginForm , handleSubmit, handleChangeForm, isLogin = false, profile, setProfile, loginSubmitError = false, setSignUpSubmitError, resetErrors }) {    
     const loginFormRef = useRef(null);
     const signupFormRef = useRef(null);
+
+    const navigate = useNavigate();
 
     function handleOnChangeSignUp(e) {
         e.target.value = e.target.value.replace(/\s+/g, "");
@@ -18,9 +21,8 @@ function LoginForm({ isLoginForm , handleSubmit, handleChangeForm, isLogin = fal
     }
 
     function handleOnChangeLogin(e) {
-        e.target.value = e.target.value.replace(/\s+/g, "");
+        handleOnChangeSignUp(e);
 
-        setProfile(prevProfile => ({...prevProfile, [e.target.name]: e.target.value}));
         resetErrors();
     }
 
@@ -43,7 +45,7 @@ function LoginForm({ isLoginForm , handleSubmit, handleChangeForm, isLogin = fal
     const validateEmail = useCallback(() => {
         return (profile.emailSignUp && 
             /^([a-zA-Z0-9._%+-]{1,64})@([a-zA-Z0-9.-]{1,255})\.([a-zA-Z]{2,})$/.test(profile.emailSignUp) &&
-            profile.emailSignUp.length <= 320) ||
+            profile.emailSignUp.length <= 255) ||
             !profile.emailSignUp;
     }, [profile]); 
     
@@ -111,7 +113,12 @@ function LoginForm({ isLoginForm , handleSubmit, handleChangeForm, isLogin = fal
                         <p className={styles.change_form} onClick={handleOnChangeForm}>Criar perfil</p>
                     </div>
 
-                    <p className={styles.forget_password}>Esqueci minha senha</p>
+                    <p 
+                        className={styles.forget_password}
+                        onClick={() => navigate("/passwordRecover")}
+                    >
+                        Esqueci minha senha
+                    </p>
                 </form>
             ) : (
                 <form ref={signupFormRef} onSubmit={handleSubmit} className={`${styles.login_form} ${!isLogin ? styles.form_visible : styles.form_hidden}`}>

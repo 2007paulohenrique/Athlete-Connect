@@ -2,17 +2,30 @@ from datetime import datetime
 import sqlparse
 import sys
 
-def get_profiles(con):
+def get_profile_for_autentication(con, email, name=None):
      try:
           with con.cursor(dictionary=True) as cursor:
-               sql = "SELECT id_perfil, nome, email, senha FROM perfil"
-               cursor.execute(sql)
-               result = cursor.fetchall()
+               if name is not None:
+                    sql = """
+                         SELECT id_perfil, nome, email, senha
+                         FROM perfil
+                         WHERE nome = %s OR email = %s
+                    """
+                    cursor.execute(sql, (name, email))
+               else:
+                    sql = """
+                         SELECT id_perfil, nome, email, senha
+                         FROM perfil
+                         WHERE email = %s
+                    """
+                    cursor.execute(sql, (email,))
+
+               result = cursor.fetchone()
 
           return result
      except Exception as e:
           _, _, exc_tb = sys.exc_info()
-          print(f"Erro ao recuperar perfis: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
+          print(f"Erro ao recuperar perfil para autenticação: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def get_profile_email(con, profile_id):
@@ -437,7 +450,25 @@ def put_profile(con, profile_id, name=None, bio=None, private=None, active=None)
           con.rollback()
           print(f"Erro ao modificar perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
-     
+
+def change_profile_password(con, profile_id, password):
+     try:
+          with con.cursor(dictionary=True) as cursor:  
+               sql = """
+                    UPDATE perfil 
+                    SET senha = %s 
+                    WHERE id_perfil = %s
+               """
+               cursor.execute(sql, (password, profile_id))
+
+          con.commit() 
+          return True
+     except Exception as e:
+          _, _, exc_tb = sys.exc_info()
+          con.rollback()
+          print(f"Erro ao alterar senha do perfil: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
+          return False
+
 def put_config(con, field_name, field_value, profile_id):
      try:
           with con.cursor(dictionary=True) as cursor:

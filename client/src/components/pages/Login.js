@@ -192,7 +192,7 @@ function Login() {
         }
     }, [navigate])
 
-    const handleSubmitCode = useCallback((e) => {
+    const handleOnSubmitCode = useCallback((e) => {
         e.preventDefault();
 
         const sendCode = async (handleOnSuccess) => {
@@ -267,7 +267,7 @@ function Login() {
             {showCodePage && 
                 <CodeConfirmation 
                     email={storagedProfile.email} 
-                    handleOnSubmit={handleSubmitCode}
+                    handleSubmit={handleOnSubmitCode}
                     code={code}
                     setCode={setCode}
                 />
