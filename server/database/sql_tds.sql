@@ -26,7 +26,6 @@ DROP TABLE IF EXISTS categorias_esporte;
 DROP TABLE IF EXISTS preferencia;
 DROP TABLE IF EXISTS motivos_denuncia;
 DROP TABLE IF EXISTS compartilhado;
-DROP TABLE IF EXISTS marcacao_comentario;
 DROP TABLE IF EXISTS marcacao_postagem;
 DROP TABLE IF EXISTS local_favorito;
 DROP TABLE IF EXISTS evento_endereco;
@@ -257,13 +256,6 @@ CREATE TABLE IF NOT EXISTS compartilhado (
     fk_compartilhamento_id_compartilhamento int NOT NULL,
     FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil),
     FOREIGN KEY (fk_compartilhamento_id_compartilhamento) REFERENCES compartilhamento(id_compartilhamento)
-);
-
-CREATE TABLE IF NOT EXISTS marcacao_comentario (
-    fk_comentario_id_comentario int NOT NULL,
-    fk_perfil_id_perfil int NOT NULL,
-    FOREIGN KEY (fk_comentario_id_comentario) REFERENCES comentario(id_comentario),
-    FOREIGN KEY (fk_perfil_id_perfil) REFERENCES perfil(id_perfil)
 );
 
 CREATE TABLE IF NOT EXISTS marcacao_postagem (

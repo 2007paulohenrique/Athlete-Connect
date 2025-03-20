@@ -14,7 +14,6 @@ import Message from "../layout/Message";
 import AppNavBar from "../layout/AppNavBar";
 import ProfileNavBar from "../layout/ProfileNavBar";
 import PostsInSection from "../layout/PostsInSection";
-import formatDate from "../../utils/DateFormatter";
 import PostsFullScreen from "../layout/PostsFullScreen";
 import fetchComplaintReasons from "../../utils/post/FetchComplaintReasons";
 import SearchResultsContainer from "../layout/SearchResultsContainer";
@@ -142,18 +141,9 @@ function Profile() {
                     setPostsEnd(true);
                 }
 
-                const formattedPosts = data.map(post => ({
-                    ...post,
-                    data_publicacao: formatDate(post.data_publicacao),
-                    comments: post.comments.map(comment => ({
-                        ...comment,
-                        data_comentario: formatDate(comment.data_comentario)
-                    }))
-                }));
-
                 setProfile(prevProfile => ({
                     ...prevProfile, 
-                    posts: [...prevProfile.posts, ...formattedPosts],
+                    posts: [...prevProfile.posts, ...data],
                 })); 
 
                 setPostsOffset(prevOffset => postsFullScreen ? prevOffset + 6 : prevOffset + 24);   
@@ -186,18 +176,9 @@ function Profile() {
                     setTagPostsEnd(true);
                 }
 
-                const formattedPosts = data.map(post => ({
-                    ...post,
-                    data_publicacao: formatDate(post.data_publicacao),
-                    comments: post.comments.map(comment => ({
-                        ...comment,
-                        data_comentario: formatDate(comment.data_comentario)
-                    }))
-                }));
-
                 setProfile(prevProfile => ({
                     ...prevProfile,
-                    tagPosts: [...prevProfile.tagPosts, ...formattedPosts]     
+                    tagPosts: [...prevProfile.tagPosts, ...data]     
                 })); 
 
                 setTagPostsOffset(prevOffset => postsFullScreen ? prevOffset + 6 : prevOffset + 24);   
@@ -232,34 +213,20 @@ function Profile() {
 
                 throw new Error("Erro ao recuperar perfil do usuário");                
             } else {
-                const formatPosts = (posts) => {
-                    return posts.map(post => ({
-                        ...post, 
-                        data_publicacao: formatDate(post.data_publicacao),
-                        comments: post.comments.map(comment => ({
-                            ...comment,
-                            data_comentario: formatDate(comment.data_comentario)
-                        }))}
-                    ));
-                }
-
-                const posts = formatPosts(data.posts);
-                const tagPosts = formatPosts(data.tagPosts);
-
                 setProfile({
                     ...data, 
                     preferences: data.preferences.map(sport => (
                         {...sport, icone: require(`../../img/${sport.icone}`)}
                     )),
-                    posts: posts,
-                    tagPosts: tagPosts     
+                    posts: data.posts,
+                    tagPosts: data.tagPosts     
                 });    
 
                 setFollowersNumber(data.followers.length);
                 setPostsToShowType("posts");
 
-                setPostsEnd(posts.length < postsLimit.current);
-                setTagPostsEnd(tagPosts.length < postsLimit.current);
+                setPostsEnd(data.posts.length < postsLimit.current);
+                setTagPostsEnd(data.tagPosts.length < postsLimit.current);
 
                 await loadFollowers(data.id_perfil);
                 await loadFolloweds(data.id_perfil);

@@ -16,6 +16,8 @@ import formatNumber from "../../utils/NumberFormatter";
 import PostItemsContainer from "./PostItemsContainer";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "../../ProfileContext";
+import PostCommentsContainer from "./PostCommentsContainer";
+import formatDate from "../../utils/DateFormatter";
 
 const Post = forwardRef(({ likesVisibility = true, sharingsVisibility = true, commentsVisibility = true, setMessage, canComment = true, author, hashtags = [], complaintReasons = [], moment, mediasPath = [], blobUrlsMedias = [], caption, isInCreating = false, setHashtagsInPost, postHashtags, setTagsInPost, postTags, sharingSubmit, complaintSubmit, isComplainted, comments, commentSubmit, likeSubmit, isLiked, post, searchTextTag, setSearchTextTag, filteredTags, searchTextSharing, setSearchTextSharing, filteredSharings, tagsLoading }, ref) => {
     const [medias, setMedias] = useState([]);
@@ -36,6 +38,7 @@ const Post = forwardRef(({ likesVisibility = true, sharingsVisibility = true, co
     const [selectedComplaintReasons, setSelectedComplaintReasons] = useState([]);
     const [complaintDescription, setComplaintDescription] = useState("");
     const [sharings, setSharings] = useState([]);
+    const [respComment, setRespComment] = useState({});
     const {profileId} = useProfile();
 
     const navigate = useNavigate();
@@ -206,11 +209,11 @@ const Post = forwardRef(({ likesVisibility = true, sharingsVisibility = true, co
     };
 
     function showOffAll(currentItems) {
-        if (!(currentItems === "hashtags")) setShowHashtags(false); 
+        if (currentItems !== "hashtags") setShowHashtags(false); 
 
-        if (!(currentItems === "tags")) setShowTags(false)
+        if (currentItems !== "tags") setShowTags(false)
         
-        if (!(currentItems === "sharings")) {
+        if (currentItems !== "sharings") {
             setSelectedSharings([]);
 
             if (setSearchTextSharing) setSearchTextSharing("");
@@ -220,16 +223,17 @@ const Post = forwardRef(({ likesVisibility = true, sharingsVisibility = true, co
             setShowSharing(false); 
         }
         
-        if (!(currentItems === "complaint")) {
+        if (currentItems !== "complaint") {
             setSelectedComplaintReasons([]);
             setPostComplaintReasons([])
             setComplaintDescription("");
             setShowComplaintReasons(false);  
         }
 
-        if (!(currentItems === "comments")) {
+        if (currentItems !== "comments") {
             setShowComments(false);
             setCommentText("");
+            setRespComment({});
         }
     }
     
@@ -280,6 +284,7 @@ const Post = forwardRef(({ likesVisibility = true, sharingsVisibility = true, co
     
             setShowComments(!showComments);
             setCommentText("");
+            setRespComment({});
         } else {
             setMessage(`Você não tem permissão para comentar nas postagens de ${author.nome}.`, "error");
         }
@@ -343,9 +348,10 @@ const Post = forwardRef(({ likesVisibility = true, sharingsVisibility = true, co
 
         if (!commentText || commentText.length === 0 || (commentText && commentText.length > 255)) return;
     
-        commentSubmit(commentText);
+        commentSubmit(commentText, respComment.id_comentario);
     
         setCommentText("");
+        setRespComment({});
     };
 
     const validateSharingCaption = useCallback(() => {
@@ -407,7 +413,7 @@ const Post = forwardRef(({ likesVisibility = true, sharingsVisibility = true, co
             <div className={styles.container_divisor}></div>
 
             <div className={styles.second_post_container}>    
-                <span className={styles.date}>Publicado em: {moment}</span>
+                <span className={styles.date}>Publicado em: {formatDate(moment)}</span>
                 
                 <p className={styles.caption}><span>{author?.nome}:</span> {caption}</p>
 
@@ -478,7 +484,11 @@ const Post = forwardRef(({ likesVisibility = true, sharingsVisibility = true, co
                                         <MainInput 
                                             type="text" 
                                             name="commentText" 
-                                            placeholder="Escreva seu comentário aqui"
+                                            placeholder={
+                                                Object.keys(respComment).length === 0 ? 
+                                                "Escreva seu comentário aqui" :
+                                                `Escreva sua resposta para ${respComment.nome}`
+                                            }
                                             maxLength={255} 
                                             alertMessage="Um comentário não pode ter mais que 255 caracteres"
                                             handleChange={handleOnChangeCommentText}    
@@ -487,11 +497,10 @@ const Post = forwardRef(({ likesVisibility = true, sharingsVisibility = true, co
                                         />
                                     </form>
 
-                                    <PostItemsContainer
-                                        searchText={true}
-                                        notFoundText="Faça o primeiro comentário!"
-                                        filteredItems={comments}
-                                        isComment
+                                    <PostCommentsContainer
+                                        comments={comments}
+                                        respComment={respComment}
+                                        setRespComment={setRespComment}
                                     />
                                 </div>
                             )}    

@@ -5,7 +5,6 @@ import ConfirmationBox from "../layout/ConfirmationBox";
 import axios from "axios";
 import PostsFullScreen from "../layout/PostsFullScreen";
 import { useNavigate } from "react-router-dom";
-import formatDate from "../../utils/DateFormatter";
 import ExitPageBar from "../layout/ExitPageBar";
 import ProfileConfig from "./config/ProfileConfig";
 import PermissionConfig from "./config/PermissionConfig";
@@ -71,18 +70,9 @@ function Config() {
                     setLikedPostsEnd(true);
                 }
 
-                const formattedPosts = data.map(post => ({
-                    ...post,
-                    data_publicacao: formatDate(post.data_publicacao),
-                    comments: post.comments.map(comment => ({
-                        ...comment,
-                        data_comentario: formatDate(comment.data_comentario)
-                    }))
-                }));
-
                 setPosts(prevPosts => ({
                     ...prevPosts, 
-                    liked: [...(prevPosts.liked || []), ...formattedPosts],
+                    liked: [...(prevPosts.liked || []), ...data],
                 })); 
 
                 setLikedPostsOffset(prevOffset => postsFullScreen ? prevOffset + 6 : prevOffset + 24);   
@@ -115,18 +105,9 @@ function Config() {
                     setCommentedPostsEnd(true);
                 }
 
-                const formattedPosts = data.map(post => ({
-                    ...post,
-                    data_publicacao: formatDate(post.data_publicacao),
-                    comments: post.comments.map(comment => ({
-                        ...comment,
-                        data_comentario: formatDate(comment.data_comentario)
-                    }))
-                }));
-
                 setPosts(prevPosts => ({
                     ...prevPosts, 
-                    commented: [...(prevPosts.commented || []), ...formattedPosts],
+                    commented: [...(prevPosts.commented || []), ...data],
                 })); 
 
                 setCommentedPostsOffset(prevOffset => postsFullScreen ? prevOffset + 6 : prevOffset + 24);   
@@ -159,18 +140,9 @@ function Config() {
                     setSharedPostsEnd(true);
                 }
 
-                const formattedPosts = data.map(post => ({
-                    ...post,
-                    data_publicacao: formatDate(post.data_publicacao),
-                    comments: post.comments.map(comment => ({
-                        ...comment,
-                        data_comentario: formatDate(comment.data_comentario)
-                    }))
-                }));
-
                 setPosts(prevPosts => ({
                     ...prevPosts, 
-                    shared: [...(prevPosts.shared || []), ...formattedPosts],
+                    shared: [...(prevPosts.shared || []), ...data],
                 })); 
 
                 setSharedPostsOffset(prevOffset => postsFullScreen ? prevOffset + 6 : prevOffset + 24);   

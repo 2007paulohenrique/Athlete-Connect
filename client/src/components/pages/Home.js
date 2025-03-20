@@ -10,7 +10,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useProfile } from '../../ProfileContext';
 import Message from "../layout/Message";
 import loading from "../../img/animations/loading.svg";
-import formatDate from "../../utils/DateFormatter";
 import fetchComplaintReasons from "../../utils/post/FetchComplaintReasons";
 import createComplaint from "../../utils/post/HandleComplaint";
 import toggleLike from "../../utils/post/HandleLike";
@@ -98,21 +97,12 @@ function Home() {
 
                 throw new Error("Erro ao recuperar feed");
             } else {
-                const formattedFeed = data.map(post => ({
-                    ...post,
-                    data_publicacao: formatDate(post.data_publicacao),
-                    comments: post.comments.map(comment => ({
-                        ...comment,
-                        data_comentario: formatDate(comment.data_comentario)
-                    }))
-                }));
-
                 if (isFirstLoading) {
-                    setFeed(formattedFeed);
-                    localStorage.setItem('athleteConnectFeed', JSON.stringify({feed: formattedFeed, updateDate: Date.now()}));
+                    setFeed(data);
+                    localStorage.setItem('athleteConnectFeed', JSON.stringify({feed: data, updateDate: Date.now()}));
                 } else {
-                    setFeed(prevPosts => [...prevPosts, ...formattedFeed]);
-                    localStorage.setItem('athleteConnectFeed', JSON.stringify({feed: [...feed, ...formattedFeed], updateDate: Date.now()}));
+                    setFeed(prevPosts => [...prevPosts, ...data]);
+                    localStorage.setItem('athleteConnectFeed', JSON.stringify({feed: [...feed, ...data], updateDate: Date.now()}));
                 }
 
                 setOffset((prevOffset) => prevOffset + 6);   
@@ -281,7 +271,7 @@ function Home() {
                             complaintSubmit={(postComplaintReasons, complaintDescription) => 
                                 createComplaint(profile.id_perfil, post, postComplaintReasons, complaintDescription, navigate, setFeed, setMessageWithReset)
                             }
-                            commentSubmit={(commentText) => createComment(profile.id_perfil, post, commentText, navigate, setFeed, setMessageWithReset)}
+                            commentSubmit={(commentText, respCommentId) => createComment(respCommentId, profile.id_perfil, post, commentText, navigate, setFeed, setMessageWithReset)}
                             comments={post.comments}
                             post={post}
                             filteredSharings={tags}

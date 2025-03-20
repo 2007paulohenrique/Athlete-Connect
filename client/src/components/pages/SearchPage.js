@@ -10,7 +10,6 @@ import PostsInSection from "../layout/PostsInSection";
 import SearchResultsContainer from "../layout/SearchResultsContainer";
 import formatNumber from "../../utils/NumberFormatter";
 import PostsFullScreen from "../layout/PostsFullScreen";
-import formatDate from "../../utils/DateFormatter";
 import { useProfile } from "../../ProfileContext";
 import Message from "../layout/Message";
 import fetchSearchSugestions from "../../utils/profile/FetchSearchSugestions";
@@ -73,16 +72,7 @@ function SearchPage() {
                     setPostsEnd(true);
                 }
 
-                const formattedPosts = data.map(post => ({
-                    ...post,
-                    data_publicacao: formatDate(post.data_publicacao),
-                    comments: post.comments.map(comment => ({
-                        ...comment,
-                        data_comentario: formatDate(comment.data_comentario)
-                    }))
-                }));
-
-                setPostsResult(prevPosts => [...prevPosts, ...formattedPosts]);
+                setPostsResult(prevPosts => [...prevPosts, ...data]);
                 setPostsOffset(prevOffset => postsFullScreen ? prevOffset + 6 : prevOffset + 24);   
             }   
         } catch (err) {
@@ -158,18 +148,9 @@ function SearchPage() {
                     posts: {notFoundText: "Nenhuma postagem encontrada."},
                 }));
 
-                const formattedPosts = data.posts.map(post => ({
-                    ...post,
-                    data_publicacao: formatDate(post.data_publicacao),
-                    comments: post.comments.map(comment => ({
-                        ...comment,
-                        data_comentario: formatDate(comment.data_comentario)
-                    }))
-                }));
-
                 fetchSearchSugestions(navigate, setSearchSugestions, profileId);
                 
-                setPostsResult(formattedPosts);
+                setPostsResult(data);
                 setPostsOffset(24);
                 setProfilesOffset(10);
             }

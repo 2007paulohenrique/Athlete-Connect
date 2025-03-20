@@ -4,7 +4,7 @@ import ProfileSmallerContainer from "./ProfileSmallerContainer";
 import React from "react";
 import loading from "../../img/animations/loading.svg";
 
-function PostItemsContainer({ searchText, filteredItems = [], handleClick, isSelectable = false, selectedItems, haveProfile = false, notFoundText, isComment = false, isHashtags = false, isComplaintReasons = false, isPostTags = false, isPostHashtags = false, tagsLoading }) {
+function PostItemsContainer({ searchText, filteredItems = [], handleClick, isSelectable = false, selectedItems, haveProfile = false, notFoundText, isHashtags = false, isComplaintReasons = false, isPostTags = false, isPostHashtags = false, tagsLoading }) {
     const navigate = useNavigate();
     
     return (
@@ -18,30 +18,22 @@ function PostItemsContainer({ searchText, filteredItems = [], handleClick, isSel
             )}
 
             {searchText && filteredItems.length > 0 ? filteredItems.map((item, index) => (
-                isComment || isPostHashtags || isPostTags ? (
+                isPostHashtags || isPostTags ? (
                     <React.Fragment key={index}>
-                        {isComment && <hr/>}
-
-                        <li 
-                            className={isComment ? styles.comment : undefined} 
-                            onClick={isPostHashtags ? () => navigate(`/search?text=${item.nome}&type=posts`) : undefined}
+                        <li
+                            onClick={
+                                isPostHashtags ? () => navigate(`/search?text=${item.nome}&type=posts`) : undefined
+                            }
                         >
                             {isPostHashtags && <># {item.nome}</>}
 
-                            {(isComment || isPostTags) && 
+                            {isPostTags && 
                                 <ProfileSmallerContainer 
                                     profilePhotoPath={item.caminho} 
                                     profileName={item.nome} 
                                     handleClick={() => navigate(`/profile/${item.id_perfil}`)}
                                 />
                             }
-
-                            {isComment && (
-                                <div className={styles.comment_content}>
-                                    <p className={styles.comment_date}>{item.data_comentario}</p>
-                                    <p className={styles.comment_text}>{item.texto}</p>
-                                </div>
-                            )}
                         </li>
                     </React.Fragment>
                 ) : (

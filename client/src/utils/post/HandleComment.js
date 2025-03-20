@@ -1,7 +1,7 @@
 import axios from "axios";
 import formatDate from "../DateFormatter";
 
-export default async function createComment(profileId, post, commentText, navigate, setPosts, setMessage) {
+export default async function createComment(respCommentId, profileId, post, commentText, navigate, setPosts, setMessage) {
     try {
         const confirmedProfileId = profileId || localStorage.getItem("athleteConnectProfileId");
 
@@ -9,6 +9,9 @@ export default async function createComment(profileId, post, commentText, naviga
 
         formData.append("text", commentText.trim());
         formData.append("authorId", confirmedProfileId);
+        if (respCommentId) {
+            formData.append("respCommentId", respCommentId);
+        }
 
         const resp = await axios.post(`http://localhost:5000/posts/${post.id_postagem}/comment`, formData, {
             headers: { "Content-Type": "multipart/form-data" }, 

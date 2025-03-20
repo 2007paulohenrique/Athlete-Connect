@@ -9,7 +9,6 @@ import FileInput from "../form/FileInput";
 import mediasIcon from "../../img/icons/socialMedia/mediasIcon.png";
 import captionIcon from "../../img/icons/socialMedia/captionIcon.png";
 import { useProfile } from "../../ProfileContext";
-import formatDate from "../../utils/DateFormatter";
 import Message from "../layout/Message";
 import ExitPageBar from "../layout/ExitPageBar";
 import { EXPIRATION_TIME } from "../../App";
@@ -201,7 +200,7 @@ function NewPost() {
 
     useEffect(() => {
         const interval = setInterval(() => {
-            setCurrentMoment(formatDate(new Date()));
+            setCurrentMoment(new Date());
         }, 1000);
 
         return () => clearInterval(interval);

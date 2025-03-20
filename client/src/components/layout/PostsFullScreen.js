@@ -100,7 +100,7 @@ function PostsFullScreen({ posts, setPosts, postsLoading, initialPostToShow, han
                     complaintSubmit={(postComplaintReasons, complaintDescription) => 
                         createComplaint(profileId, post, postComplaintReasons, complaintDescription, navigate, setPosts, setMessageWithReset)
                     }
-                    commentSubmit={(commentText) => createComment(profileId, post, commentText, navigate, setPosts, setMessageWithReset)}
+                    commentSubmit={(commentText, respCommentId) => createComment(respCommentId, profileId, post, commentText, navigate, setPosts, setMessageWithReset)}
                     comments={post.comments}
                     post={post}
                     filteredSharings={tags}

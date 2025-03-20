@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
 import styles from "./NotificationsPage.module.css";
-import formatDate from "../../utils/DateFormatter";
 import { useProfile } from "../../ProfileContext";
 import axios from "axios";
 import Message from "../layout/Message";
@@ -57,12 +56,7 @@ function NotificationsPage() {
                     setNotificationsEnd(true);
                 }
 
-                const formattedNotifications = data.map(notification => ({
-                    ...notification, 
-                    lancamento: formatDate(notification.lancamento)
-                }));
-
-                setNotifications(prevNotifications => [...(prevNotifications || []), ...formattedNotifications]); 
+                setNotifications(prevNotifications => [...(prevNotifications || []), ...data]); 
 
                 setNotificationsOffset(prevOffset => prevOffset + LIMIT);   
             }
@@ -94,12 +88,7 @@ function NotificationsPage() {
                     setFollowRequestsEnd(true);
                 }
 
-                const formattedFollowRequests = data.map(followRequest => ({
-                    ...followRequest, 
-                    envio: formatDate(followRequest.envio)
-                }));
-
-                setFollowRequests(prevFollowRequests => [...(prevFollowRequests || []), ...formattedFollowRequests]); 
+                setFollowRequests(prevFollowRequests => [...(prevFollowRequests || []), ...data]); 
 
                 setFollowRequestsOffset(prevOffset => prevOffset + LIMIT);   
             }
@@ -131,12 +120,7 @@ function NotificationsPage() {
                     setSharingsEnd(true);
                 }
 
-                const formattedSharings = data.map(sharing => ({
-                    ...sharing, 
-                    data_compartilhamento: formatDate(sharing.data_compartilhamento)
-                }));
-
-                setSharings(prevSharings => [...(prevSharings || []), ...formattedSharings]); 
+                setSharings(prevSharings => [...(prevSharings || []), ...data]); 
 
                 setSharingsOffset(prevOffset => prevOffset + LIMIT);   
             }

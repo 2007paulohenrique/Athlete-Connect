@@ -4,7 +4,6 @@ import Post from "../layout/Post";
 import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import { useProfile } from "../../ProfileContext";
-import formatDate from "../../utils/DateFormatter";
 import toggleLike from "../../utils/post/HandleLike";
 import Message from "../layout/Message";
 import createSharing from "../../utils/post/HandleSharing";
@@ -61,16 +60,8 @@ function PostPage() {
             if (data.error) {
                 throw new Error("Erro ao recuperar postagem");
             } else {
-                const formattedPost = {
-                    ...data,
-                    data_publicacao: formatDate(data.data_publicacao),
-                    comments: data.comments.map(comment => ({
-                        ...comment,
-                        data_comentario: formatDate(comment.data_comentario)
-                    }))
-                };
 
-                setPost([formattedPost]);
+                setPost([data]);
             }
         } catch (err) {
             navigate(-1, {state: {message: "Não foi possível recuperar a postagem.", type: "error"}});

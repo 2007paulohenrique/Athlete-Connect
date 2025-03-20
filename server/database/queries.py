@@ -1164,25 +1164,114 @@ def get_post_comments_for_feed(con, post_ids):
           with con.cursor(dictionary=True) as cursor:
                placeholders = ','.join(['%s'] * len(post_ids))
                sql = f"""
-                    SELECT c.texto, c.fk_postagem_id_postagem, c.data_comentario, m.caminho, p.id_perfil, p.nome
+                    SELECT c.id_comentario, c.texto, c.fk_postagem_id_postagem, c.data_comentario, m.caminho, p.id_perfil, p.nome
                     FROM comentario c
                     JOIN perfil p ON p.id_perfil = c.fk_perfil_id_perfil
                     LEFT JOIN midia m ON m.id_midia = p.fk_midia_id_midia
-                    WHERE c.fk_postagem_id_postagem IN ({placeholders})
+                    LEFT JOIN responde r ON c.id_comentario = r.fk_comentario_id_resposta
+                    WHERE r.fk_comentario_id_resposta IS NULL 
+                    AND c.fk_postagem_id_postagem IN ({placeholders})
                     ORDER BY c.data_comentario
                """
                cursor.execute(sql, tuple(post_ids))
                result = cursor.fetchall()
 
+               comments_ids = [comment["id_comentario"] for comment in result]
+
+               comments_replies = get_comment_replies_for_feed(con, comments_ids)
+
+               if comments_replies is None:
+                    raise Exception("Erro ao recuperar respostas dos comentários.")
+
                comments = {}
 
                for comment in result:
+                    comment["replies"] = comments_replies.get(comment["id_comentario"], [])
                     comments.setdefault(comment['fk_postagem_id_postagem'], []).append(comment)
 
           return comments
      except Exception as e:
           _, _, exc_tb = sys.exc_info()
           print(f"Erro ao recuperar comentários das postagens: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
+          return None
+
+def get_comment_replies_for_feed(con, comment_ids=[]):
+     if not comment_ids:
+          return {}
+     
+     try:
+          with con.cursor(dictionary=True) as cursor:
+               placeholders = ','.join(['%s'] * len(comment_ids))
+               sql = f"""
+                    WITH RECURSIVE comment_replies AS (
+                         SELECT
+                              r.fk_comentario_id_resposta,
+                              r.fk_comentario_id_respondido,
+                              c.id_comentario,
+                              c.texto,
+                              c.data_comentario,
+                              p.id_perfil,
+                              p.nome,
+                              m.caminho,
+                              co.fk_perfil_id_perfil AS id_perfil_resp,
+                              pc.nome AS nome_resp
+                         FROM responde r
+                         JOIN comentario c ON c.id_comentario = r.fk_comentario_id_resposta
+                         JOIN perfil p ON p.id_perfil = c.fk_perfil_id_perfil
+                         LEFT JOIN midia m ON m.id_midia = p.fk_midia_id_midia
+                         JOIN comentario co ON co.id_comentario = r.fk_comentario_id_respondido
+                         JOIN perfil pc ON pc.id_perfil = co.fk_perfil_id_perfil
+                         WHERE r.fk_comentario_id_respondido IN ({placeholders})
+
+                         UNION ALL
+
+                         SELECT
+                              r.fk_comentario_id_resposta,
+                              r.fk_comentario_id_respondido,
+                              c.id_comentario,
+                              c.texto,
+                              c.data_comentario,
+                              p.id_perfil,
+                              p.nome,
+                              m.caminho,
+                              cr.id_perfil_resp,
+                              cr.nome_resp
+                         FROM responde r
+                         JOIN comentario c ON c.id_comentario = r.fk_comentario_id_resposta
+                         JOIN perfil p ON p.id_perfil = c.fk_perfil_id_perfil
+                         LEFT JOIN midia m ON m.id_midia = p.fk_midia_id_midia
+                         JOIN comment_replies cr ON cr.fk_comentario_id_resposta = r.fk_comentario_id_respondido
+                    )
+
+                    SELECT * FROM comment_replies ORDER BY data_comentario DESC
+               """
+               cursor.execute(sql, tuple(comment_ids))
+               result = cursor.fetchall()
+
+               if not result:
+                    return {}
+               
+               replies = {}
+               
+               for reply in result:
+                    reply["replies"] = []
+                    replies.setdefault(reply['fk_comentario_id_respondido'], []).append(reply)
+
+               replies_with_replies = {}
+
+               for reply in result:
+                    reply_id = reply["fk_comentario_id_resposta"]
+
+                    if reply_id in replies:
+                         reply["replies"] = replies.get(reply_id, [])
+                    
+                    if reply['fk_comentario_id_respondido'] in comment_ids:
+                         replies_with_replies.setdefault(reply['fk_comentario_id_respondido'], []).append(reply)
+               
+               return replies
+     except Exception as e:
+          _, _, exc_tb = sys.exc_info()
+          print(f"Erro ao recuperar respostas dos comentários: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return None
 
 def get_post_tags(con, post_id):
@@ -1417,11 +1506,14 @@ def insert_shareds(con, shared_profiles_ids, sharing_id):
           print(f"Erro ao compartilhar postagem: {e} - No arquivo: {exc_tb.tb_frame.f_code.co_filename} - Na linha: {exc_tb.tb_lineno}")
           return False
                    
-def insert_comment(con, text, post_id, profile_id):
+def insert_comment(con, text, post_id, profile_id, resp_comment_id):
      try:
           with con.cursor(dictionary=True) as cursor:
                date = datetime.now()
-               sql_insert = "INSERT INTO comentario (texto, data_comentario, fk_postagem_id_postagem, fk_perfil_id_perfil) VALUES (%s, %s, %s, %s)"
+               sql_insert = """
+                    INSERT INTO comentario (texto, data_comentario, fk_postagem_id_postagem, fk_perfil_id_perfil) 
+                    VALUES (%s, %s, %s, %s)
+               """
                cursor.execute(sql_insert, (text, date, post_id, profile_id))
                comment_id = cursor.lastrowid
                sql_get = """
@@ -1433,6 +1525,14 @@ def insert_comment(con, text, post_id, profile_id):
                """
                cursor.execute(sql_get, (comment_id,))
                new_comment = cursor.fetchone()
+
+               if resp_comment_id is not None:
+                    sql_insert_resp = """
+                         INSERT INTO responde (fk_comentario_id_resposta, fk_comentario_id_respondido) 
+                         VALUES (%s, %s)
+                    """
+                    cursor.execute(sql_insert_resp, (comment_id, resp_comment_id))
+                    new_comment["resp_comment_id"] = resp_comment_id
 
           con.commit() 
           return new_comment

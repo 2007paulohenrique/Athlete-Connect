@@ -29,42 +29,7 @@
     max-height: unset;
 }
 
-.post_items_container > .comment {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.8em;
-}
-
-.comment > div:first-child {
-    margin-top: 0.4em;
-}
-
-.comment_content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    width: min-content;
-    gap: 0.6em;
-}
-
-.comment_text {
-    font-size: 0.8em;
-    overflow-y: auto;
-    max-height: 5em;
-    padding-right: 0.5em;
-    text-align: justify;
-    white-space: pre-wrap;
-    word-break: break-all;
-}
-
-.comment_date {
-    color: var(--ligth-bg-color);
-    font-size: 0.6em;
-    width: max-content;
-    margin-left: auto;
-}
-
-.post_items_container > li:where(:not(.comment)):hover,
+.post_items_container > li:hover,
 .selectedItem {
     background-color: var(--ligth-bg-color);
 }

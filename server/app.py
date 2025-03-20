@@ -1199,8 +1199,9 @@ def post_comment(post_id):
 
         text = request.form.get('text')
         author_id = int(request.form.get('authorId'))
+        resp_comment_id = request.form.get('respCommentId')
 
-        new_comment = insert_comment(con, text, post_id, author_id)
+        new_comment = insert_comment(con, text, post_id, author_id, int(resp_comment_id) if type(resp_comment_id) == str else None)
 
         if new_comment is None:
             print('Erro ao comentar na postagem')
